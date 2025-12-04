@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline'
+
 const blogPosts = [
   {
     id: 1,
@@ -6,7 +9,8 @@ const blogPosts = [
     author: 'Admin',
     date: '2024-11-20',
     status: 'published',
-    category: 'Technológie'
+    category: 'Technológie',
+    previewImage: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=300&fit=crop'
   },
   {
     id: 2,
@@ -15,16 +19,18 @@ const blogPosts = [
     author: 'Admin',
     date: '2024-11-15',
     status: 'published',
-    category: 'SEO'
+    category: 'SEO',
+    previewImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop'
   },
   {
     id: 3,
     title: 'React vs Vue.js: Ktorý framework vybrať?',
-    excerpt: 'Porovnanie dvoch populárnych JavaScript frameworkov a ich výhod.',
+    excerpt: 'Porovnanie dvoch populárnych JavaScript frameworkov a ich výhôd.',
     author: 'Admin',
     date: '2024-11-10',
     status: 'draft',
-    category: 'Frontend'
+    category: 'Frontend',
+    previewImage: 'https://images.unsplash.com/photo-1593720219276-0b1eacd0aef4?w=400&h=300&fit=crop'
   },
   {
     id: 4,
@@ -33,11 +39,14 @@ const blogPosts = [
     author: 'Admin',
     date: '2024-11-05',
     status: 'published',
-    category: 'Bezpečnosť'
+    category: 'Bezpečnosť',
+    previewImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&h=300&fit=crop'
   },
 ]
 
 export default function Blogy() {
+  const [deleteMode, setDeleteMode] = useState(false)
+
   return (
     <div>
       <div className="border-b border-gray-200 pb-5 mb-6">
@@ -50,63 +59,82 @@ export default function Blogy() {
               Spravujte vaše blog príspevky a články
             </p>
           </div>
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-            Nový článok
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => setDeleteMode(!deleteMode)}
+              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center transition-colors ${
+                deleteMode 
+                  ? 'bg-red-600 hover:bg-red-700 text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              }`}
+            >
+              <TrashIcon className="w-4 h-4 mr-2" />
+              {deleteMode ? 'Zrušiť mazanie' : 'Maž režim'}
+            </button>
+            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
+              <PlusIcon className="w-4 h-4 mr-2" />
+              Nový článok
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {blogPosts.map((post) => (
-            <li key={post.id}>
-              <div className="px-4 py-4 flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      post.status === 'published' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {post.status === 'published' ? 'Publikovaný' : 'Koncept'}
-                    </span>
-                  </div>
-                  <div className="ml-4 flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-indigo-600 truncate">
-                        {post.title}
-                      </p>
-                      <div className="ml-2 flex-shrink-0 flex">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {post.category}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500 mt-2">
-                      <span>{post.author}</span>
-                      <span className="mx-2">•</span>
-                      <span>{new Date(post.date).toLocaleDateString('sk-SK')}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button className="text-indigo-600 hover:text-indigo-900 text-sm">
-                    Upraviť
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {blogPosts.map((post) => (
+          <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+            <div className="relative">
+              <img
+                src={post.previewImage}
+                alt={post.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="absolute top-2 right-2 flex space-x-1">
+                {deleteMode ? (
+                  <button className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-md transition-colors">
+                    <TrashIcon className="w-4 h-4" />
                   </button>
-                  <button className="text-gray-600 hover:text-gray-900 text-sm">
-                    Náhľad
-                  </button>
-                  <button className="text-red-600 hover:text-red-900 text-sm">
-                    Zmazať
-                  </button>
-                </div>
+                ) : (
+                  <>
+                    <button className="p-2 bg-white hover:bg-gray-50 text-gray-700 rounded-full shadow-md transition-colors">
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 bg-white hover:bg-gray-50 text-gray-700 rounded-full shadow-md transition-colors">
+                      <EyeIcon className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
-            </li>
-          ))}
-        </ul>
+              <div className="absolute top-2 left-2">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  post.status === 'published' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {post.status === 'published' ? 'Publikovaný' : 'Koncept'}
+                </span>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {post.category}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {new Date(post.date).toLocaleDateString('sk-SK')}
+                </span>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2 line-clamp-2">
+                {post.title}
+              </h3>
+              <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                {post.excerpt}
+              </p>
+              <div className="flex items-center text-xs text-gray-500">
+                <span>Autor: {post.author}</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="mt-6 flex justify-between items-center">

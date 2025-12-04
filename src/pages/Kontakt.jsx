@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { EnvelopeIcon, ClockIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+
 const messages = [
   {
     id: 1,
@@ -29,6 +32,12 @@ const messages = [
 ]
 
 export default function Kontakt() {
+  const [expandedMessage, setExpandedMessage] = useState(null)
+
+  const toggleMessage = (messageId) => {
+    setExpandedMessage(expandedMessage === messageId ? null : messageId)
+  }
+
   return (
     <div>
       <div className="border-b border-gray-200 pb-5 mb-6">
@@ -42,12 +51,12 @@ export default function Kontakt() {
 
       <div className="mb-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+          <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100">
+            <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">📧</span>
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <EnvelopeIcon className="w-6 h-6 text-white" />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -60,12 +69,12 @@ export default function Kontakt() {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+          <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100">
+            <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">⏳</span>
+                  <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <ClockIcon className="w-6 h-6 text-white" />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -78,12 +87,12 @@ export default function Kontakt() {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+          <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100">
+            <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">✅</span>
+                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <CheckCircleIcon className="w-6 h-6 text-white" />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -98,52 +107,87 @@ export default function Kontakt() {
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
+      <div className="bg-white shadow-lg overflow-hidden rounded-xl border border-gray-100">
+        <div className="space-y-3">
           {messages.map((message) => (
-            <li key={message.id}>
-              <div className="px-4 py-4 hover:bg-gray-50">
+            <div key={message.id} className="bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div 
+                className="px-6 py-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => toggleMessage(message.id)}
+              >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        message.status === 'new' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {message.status === 'new' ? 'Nová' : 'Zodpovedaná'}
-                      </span>
-                    </div>
-                    <div className="ml-4 flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900">
-                          {message.name}
-                        </p>
-                        <div className="ml-2 flex-shrink-0">
-                          <p className="text-sm text-gray-500">{new Date(message.date).toLocaleDateString('sk-SK')}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-500">{message.email}</p>
-                      <p className="text-sm font-medium text-gray-900 mt-1">{message.subject}</p>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{message.message}</p>
+                  <div className="flex items-center space-x-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      message.status === 'new' 
+                        ? 'bg-yellow-100 text-yellow-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {message.status === 'new' ? 'Nová' : 'Zodpovedaná'}
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {message.name} ({message.email})
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {message.subject}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex flex-col space-y-2 ml-4">
-                    <button className="text-indigo-600 hover:text-indigo-900 text-sm">
-                      Zobraziť
-                    </button>
-                    <button className="text-green-600 hover:text-green-900 text-sm">
-                      Odpovedať
-                    </button>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-gray-500">
+                      {new Date(message.date).toLocaleDateString('sk-SK')}
+                    </span>
                     <button className="text-red-600 hover:text-red-900 text-sm">
                       Zmazať
                     </button>
+                    {expandedMessage === message.id ? (
+                      <ChevronUpIcon className="w-5 h-5 text-gray-400" />
+                    ) : (
+                      <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                    )}
                   </div>
                 </div>
               </div>
-            </li>
+              
+              {expandedMessage === message.id && (
+                <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Odosielateľ</label>
+                      <p className="mt-1 text-sm text-gray-900">{message.name} ({message.email})</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Predmet</label>
+                      <p className="mt-1 text-sm text-gray-900">{message.subject}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Dátum</label>
+                      <p className="mt-1 text-sm text-gray-900">{new Date(message.date).toLocaleDateString('sk-SK')}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Správa</label>
+                      <div className="mt-1 p-3 bg-white border border-gray-200 rounded-md">
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap">{message.message}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Stav</label>
+                      <p className="mt-1">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          message.status === 'new' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {message.status === 'new' ? 'Nová správa' : 'Zodpovedaná správa'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
       <div className="mt-6 flex justify-between items-center">
