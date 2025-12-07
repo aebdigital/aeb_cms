@@ -1,5 +1,7 @@
-import { useState } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { getPagesForSite } from '../api/pages'
 import {
   FolderIcon,
   PhotoIcon,
@@ -10,20 +12,87 @@ import {
   XMarkIcon,
   BellIcon,
   UserCircleIcon,
-  MagnifyingGlassIcon
+  TruckIcon,
+  HomeIcon,
+  DocumentIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
 
-const navigation = [
-  { name: 'Projekty', href: '/', icon: FolderIcon },
-  { name: 'Galerie', href: '/galerie', icon: PhotoIcon },
-  { name: 'Blogy', href: '/blogy', icon: DocumentTextIcon },
-  { name: 'Kontakt', href: '/kontakt', icon: EnvelopeIcon },
-  { name: 'Nastavenia', href: '/nastavenia', icon: CogIcon },
-]
+// Map page slugs to icons
+const iconMap = {
+  'projekty': FolderIcon,
+  'vozidla': TruckIcon,
+  'galerie': PhotoIcon,
+  'blogy': DocumentTextIcon,
+  'kontakt': EnvelopeIcon,
+  'nastavenia': CogIcon,
+  'home': HomeIcon,
+  'default': DocumentIcon
+}
+
+function getIconForSlug(slug) {
+  return iconMap[slug] || iconMap['default']
+}
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user, profile, currentSite, logout, loading: authLoading } = useAuth()
+
+  const [navPages, setNavPages] = useState([])
+  const [loadingPages, setLoadingPages] = useState(true)
+
+  // Load navigation pages from backend
+  useEffect(() => {
+    if (currentSite?.id) {
+      loadNavPages()
+    }
+  }, [currentSite?.id])
+
+  async function loadNavPages() {
+    try {
+      setLoadingPages(true)
+      const pages = await getPagesForSite(currentSite.id)
+      // Filter to only show pages that should be in nav
+      const navItems = pages
+        .filter(p => p.show_in_nav)
+        .map(p => ({
+          name: p.nav_label || p.title,
+          href: `/${p.slug}`,
+          slug: p.slug,
+          icon: getIconForSlug(p.slug)
+        }))
+      setNavPages(navItems)
+    } catch (err) {
+      console.error('Error loading nav pages:', err)
+      // Fallback to empty nav if error
+      setNavPages([])
+    } finally {
+      setLoadingPages(false)
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logout()
+      navigate('/login')
+    } catch (err) {
+      console.error('Logout error:', err)
+    }
+  }
+
+  // Show loading while auth is checking
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Nacitavam...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-full">
@@ -50,26 +119,62 @@ export default function Layout() {
                 <h1 className="text-xl font-bold text-white">CMS Admin</h1>
               </div>
             </div>
+
+            {/* Site name */}
+            {currentSite && (
+              <div className="px-4 mt-4">
+                <div className="px-3 py-2 bg-white/10 rounded-lg">
+                  <p className="text-xs text-gray-400">Aktualna stranka</p>
+                  <p className="text-sm text-white font-medium">{currentSite.name}</p>
+                </div>
+              </div>
+            )}
+
             <nav className="mt-5 px-2 space-y-1">
-              {navigation.map((item) => {
-                const current = location.pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`${
-                      current
-                        ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
-                        : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="mr-4 h-5 w-5 flex-shrink-0" />
-                    {item.name}
-                  </Link>
-                )
-              })}
+              {loadingPages ? (
+                <div className="px-3 py-2">
+                  <div className="animate-pulse space-y-2">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-10 bg-white/10 rounded-xl"></div>
+                    ))}
+                  </div>
+                </div>
+              ) : navPages.length > 0 ? (
+                navPages.map((item) => {
+                  const current = location.pathname === item.href
+                  return (
+                    <Link
+                      key={item.slug}
+                      to={item.href}
+                      className={`${
+                        current
+                          ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                          : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon className="mr-4 h-5 w-5 flex-shrink-0" />
+                      {item.name}
+                    </Link>
+                  )
+                })
+              ) : (
+                <div className="px-3 py-4 text-center">
+                  <p className="text-gray-400 text-sm">Ziadne stranky v navigacii</p>
+                </div>
+              )}
             </nav>
+          </div>
+
+          {/* Mobile logout */}
+          <div className="px-4 py-4 border-t border-white/10">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all"
+            >
+              <ArrowRightOnRectangleIcon className="mr-4 h-5 w-5" />
+              Odhlasit sa
+            </button>
           </div>
         </div>
       </div>
@@ -88,25 +193,61 @@ export default function Layout() {
                 <h1 className="text-2xl font-bold text-white">CMS Admin</h1>
               </div>
             </div>
+
+            {/* Site name */}
+            {currentSite && (
+              <div className="px-6 mb-4">
+                <div className="px-4 py-3 bg-white/10 rounded-xl">
+                  <p className="text-xs text-gray-400">Aktualna stranka</p>
+                  <p className="text-sm text-white font-medium">{currentSite.name}</p>
+                </div>
+              </div>
+            )}
+
             <nav className="mt-2 flex-1 px-6 space-y-3">
-              {navigation.map((item) => {
-                const current = location.pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`${
-                      current
-                        ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
-                        : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105`}
-                  >
-                    <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                    {item.name}
-                  </Link>
-                )
-              })}
+              {loadingPages ? (
+                <div className="animate-pulse space-y-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-12 bg-white/10 rounded-xl"></div>
+                  ))}
+                </div>
+              ) : navPages.length > 0 ? (
+                navPages.map((item) => {
+                  const current = location.pathname === item.href
+                  return (
+                    <Link
+                      key={item.slug}
+                      to={item.href}
+                      className={`${
+                        current
+                          ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                          : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105`}
+                    >
+                      <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                      {item.name}
+                    </Link>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <DocumentIcon className="h-8 w-8 text-gray-500 mx-auto mb-2" />
+                  <p className="text-gray-400 text-sm">Ziadne stranky</p>
+                  <p className="text-gray-500 text-xs mt-1">Pridajte stranky v nastaveniach</p>
+                </div>
+              )}
             </nav>
+          </div>
+
+          {/* Desktop logout */}
+          <div className="px-6 py-4 border-t border-white/10">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all"
+            >
+              <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
+              Odhlasit sa
+            </button>
           </div>
         </div>
       </div>
@@ -130,8 +271,12 @@ export default function Layout() {
               </button>
               <div className="flex items-center space-x-3">
                 <div className="hidden md:block text-right">
-                  <p className="text-sm font-medium text-gray-900">Admin User</p>
-                  <p className="text-xs text-gray-500">admin@example.com</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {profile?.full_name || user?.email || 'User'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {profile?.role || 'admin'}
+                  </p>
                 </div>
                 <button className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-600 text-white">
                   <UserCircleIcon className="h-5 w-5" />
