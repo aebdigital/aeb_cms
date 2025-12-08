@@ -9,8 +9,9 @@ import {
 } from '../api/dovolenka'
 
 const Dovolenka = () => {
-  const { currentSite } = useAuth()
-  const [loading, setLoading] = useState(true)
+  const { currentSite, loading: authLoading } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState(null)
   const [pageId, setPageId] = useState(null)
   const [phones, setPhones] = useState([])
@@ -19,30 +20,47 @@ const Dovolenka = () => {
 
   // Load vacation phone data when site changes
   useEffect(() => {
-    async function loadVacationPhones() {
-      if (!currentSite?.id) {
-        setLoading(false)
-        return
+    if (authLoading || !currentSite?.id) {
+      if (!authLoading && !currentSite?.id) {
+        setInitialLoad(false)
       }
+      return
+    }
 
+    let cancelled = false
+
+    async function loadVacationPhones() {
       setLoading(true)
       setError(null)
 
       try {
         const page = await getOrCreateDovolenkaPage(currentSite.id)
-        setPageId(page.id)
-        const phoneBlocks = await getVacationPhoneBlocks(page.id)
-        setPhones(phoneBlocks)
+        if (!cancelled) {
+          setPageId(page.id)
+          const phoneBlocks = await getVacationPhoneBlocks(page.id)
+          if (!cancelled) {
+            setPhones(phoneBlocks)
+          }
+        }
       } catch (err) {
         console.error('Failed to load vacation phones:', err)
-        setError(err.message || 'Chyba pri nacitavani telefonnych cisel')
+        if (!cancelled) {
+          setError(err.message || 'Chyba pri nacitavani telefonnych cisel')
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+          setInitialLoad(false)
+        }
       }
     }
 
     loadVacationPhones()
-  }, [currentSite])
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentSite?.id, authLoading])
 
   const handleToggleVacation = async (blockId) => {
     try {
@@ -89,18 +107,18 @@ const Dovolenka = () => {
     }
   }
 
-  if (!currentSite) {
+  if (initialLoad || authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Vyberte stranku pre spravu dovolenky</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
       </div>
     )
   }
 
-  if (loading) {
+  if (!currentSite) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <p className="text-gray-500">Vyberte stranku pre spravu dovolenky</p>
       </div>
     )
   }

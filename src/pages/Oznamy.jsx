@@ -3,8 +3,9 @@ import { useAuth } from '../contexts/AuthContext'
 import { getOrCreateOznamyPage, getOrCreateAnnouncementBlock, updateAnnouncementBlock } from '../api/oznamy'
 
 const Oznamy = () => {
-  const { currentSite } = useAuth()
-  const [loading, setLoading] = useState(true)
+  const { currentSite, loading: authLoading } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
@@ -17,35 +18,50 @@ const Oznamy = () => {
 
   // Load announcement data when site changes
   useEffect(() => {
-    async function loadAnnouncement() {
-      if (!currentSite?.id) {
-        setLoading(false)
-        return
+    if (authLoading || !currentSite?.id) {
+      if (!authLoading && !currentSite?.id) {
+        setInitialLoad(false)
       }
+      return
+    }
 
+    let cancelled = false
+
+    async function loadAnnouncement() {
       setLoading(true)
       setError(null)
 
       try {
         const page = await getOrCreateOznamyPage(currentSite.id)
         const popup = await getOrCreateAnnouncementBlock(page.id)
-        setFormData({
-          id: popup.id,
-          pageId: popup.pageId,
-          title: popup.title,
-          description: popup.description,
-          enabled: popup.enabled,
-        })
+        if (!cancelled) {
+          setFormData({
+            id: popup.id,
+            pageId: popup.pageId,
+            title: popup.title,
+            description: popup.description,
+            enabled: popup.enabled,
+          })
+        }
       } catch (err) {
         console.error('Failed to load announcement:', err)
-        setError(err.message || 'Chyba pri nacitavani oznamu')
+        if (!cancelled) {
+          setError(err.message || 'Chyba pri nacitavani oznamu')
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+          setInitialLoad(false)
+        }
       }
     }
 
     loadAnnouncement()
-  }, [currentSite])
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentSite?.id, authLoading])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -69,18 +85,18 @@ const Oznamy = () => {
     }
   }
 
-  if (!currentSite) {
+  if (initialLoad || authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Vyberte stranku pre zobrazenie oznamov</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
       </div>
     )
   }
 
-  if (loading) {
+  if (!currentSite) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <p className="text-gray-500">Vyberte stranku pre zobrazenie oznamov</p>
       </div>
     )
   }

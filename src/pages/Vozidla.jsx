@@ -29,9 +29,10 @@ const initialCarForm = {
 }
 
 export default function Vozidla() {
-  const { currentSite } = useAuth()
+  const { currentSite, loading: authLoading } = useAuth()
   const [cars, setCars] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -54,29 +55,33 @@ export default function Vozidla() {
 
   // Load cars from Supabase
   useEffect(() => {
-    let isMounted = true
+    // Don't load if auth is still loading or no site selected
+    if (authLoading || !currentSite?.id) {
+      if (!authLoading && !currentSite?.id) {
+        setInitialLoad(false)
+      }
+      return
+    }
+
+    let cancelled = false
 
     async function loadCarsAsync() {
-      if (!currentSite?.id) {
-        setLoading(false)
-        return
-      }
-
       try {
         setLoading(true)
         setError(null)
         const data = await getCarsForSite(currentSite.id)
-        if (isMounted) {
+        if (!cancelled) {
           setCars(data)
         }
       } catch (err) {
         console.error('Error loading cars:', err)
-        if (isMounted) {
+        if (!cancelled) {
           setError(err.message)
         }
       } finally {
-        if (isMounted) {
+        if (!cancelled) {
           setLoading(false)
+          setInitialLoad(false)
         }
       }
     }
@@ -84,23 +89,20 @@ export default function Vozidla() {
     loadCarsAsync()
 
     return () => {
-      isMounted = false
+      cancelled = true
     }
-  }, [currentSite?.id])
+  }, [currentSite?.id, authLoading])
 
   async function loadCars() {
     if (!currentSite?.id) return
 
     try {
-      setLoading(true)
       setError(null)
       const data = await getCarsForSite(currentSite.id)
       setCars(data)
     } catch (err) {
       console.error('Error loading cars:', err)
       setError(err.message)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -408,7 +410,8 @@ export default function Vozidla() {
     }
   }
 
-  if (loading) {
+  // Show loading only on initial load, not on refetches
+  if (initialLoad || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
