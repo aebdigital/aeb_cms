@@ -54,12 +54,43 @@ export default function Vozidla() {
 
   // Load cars from Supabase
   useEffect(() => {
-    if (currentSite?.id) {
-      loadCars()
+    let isMounted = true
+
+    async function loadCarsAsync() {
+      if (!currentSite?.id) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await getCarsForSite(currentSite.id)
+        if (isMounted) {
+          setCars(data)
+        }
+      } catch (err) {
+        console.error('Error loading cars:', err)
+        if (isMounted) {
+          setError(err.message)
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadCarsAsync()
+
+    return () => {
+      isMounted = false
     }
   }, [currentSite?.id])
 
   async function loadCars() {
+    if (!currentSite?.id) return
+
     try {
       setLoading(true)
       setError(null)

@@ -76,7 +76,7 @@ export function mapCarRow(row: CarRow): Car {
 
 // Map frontend Car to DB row for insert/update
 export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> {
-  return {
+  const row: Partial<CarRow> = {
     site_id: siteId,
     brand: car.brand,
     model: car.model,
@@ -85,7 +85,6 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
     mileage: car.mileage,
     fuel: car.fuel,
     transmission: car.transmission,
-    image: car.image,
     images: car.images,
     features: car.features,
     engine: car.engine,
@@ -98,4 +97,12 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
     reserved_until: car.reservedUntil,
     show_on_homepage: car.showOnHomepage ?? false,
   };
+
+  // Only include image if it's defined (to avoid NOT NULL constraint issues)
+  // Use empty string as default for new cars without images
+  if (car.image !== undefined) {
+    row.image = car.image || '';
+  }
+
+  return row;
 }

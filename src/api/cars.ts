@@ -79,6 +79,10 @@ export async function getCar(carId: string): Promise<Car> {
 
 export async function createCar(siteId: string, car: Partial<Car>): Promise<Car> {
   const row = mapCarToRow(car, siteId)
+  // Ensure image has a default value for NOT NULL constraint
+  if (!row.image) {
+    row.image = ''
+  }
   const { data, error } = await supabase
     .from('cars')
     .insert(row)
