@@ -13,6 +13,7 @@ import Dovolenka from './pages/Dovolenka'
 import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
 import DynamicHomePage from './components/DynamicHomePage'
+import NotFound from './pages/NotFound'
 
 function App() {
   return (
@@ -55,8 +56,15 @@ function App() {
             <Route path="dovolenka" element={<Dovolenka />} />
           </Route>
 
-          {/* Catch all - redirect to login if not authenticated */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
+          <Route
+            path="*"
+            element={
+              <ProtectedRoute>
+                <NotFound />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>

@@ -77,7 +77,11 @@ export function AuthProvider({ children }) {
 
       // Set first site as default if none selected
       if (context.memberships.length > 0) {
-        setCurrentSite(context.memberships[0].sites)
+        const defaultSite = context.memberships[0].sites
+        setCurrentSite(prev => {
+          if (prev?.id === defaultSite.id) return prev
+          return defaultSite
+        })
       }
     } catch (err) {
       console.error('Error loading user context:', err)

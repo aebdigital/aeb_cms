@@ -19,8 +19,16 @@ export default function DynamicHomePage() {
       const pages = await getPagesForSite(currentSite.id)
       const navPages = pages.filter(p => p.show_in_nav)
 
-      if (navPages.length > 0) {
-        setFirstNavSlug(navPages[0].slug)
+      // List of valid slugs that have routes defined in App.jsx
+      const VALID_SLUGS = [
+        'projekty', 'galerie', 'blogy', 'kontakt', 'nastavenia', 
+        'vozidla', 'ponuka', 'oznamy', 'dovolenka'
+      ]
+
+      const validNavPage = navPages.find(p => VALID_SLUGS.includes(p.slug))
+
+      if (validNavPage) {
+        setFirstNavSlug(validNavPage.slug)
       }
     } catch (err) {
       console.error('Error loading nav pages:', err)
