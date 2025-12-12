@@ -45,7 +45,7 @@ const Dovolenka = () => {
       } catch (err) {
         console.error('Failed to load vacation phones:', err)
         if (!cancelled) {
-          setError(err.message || 'Chyba pri nacitavani telefonnych cisel')
+          setError(err.message || 'Chyba pri načítavaní telefónnych čísel')
         }
       } finally {
         if (!cancelled) {
@@ -72,7 +72,7 @@ const Dovolenka = () => {
       )
     } catch (err) {
       console.error('Failed to toggle vacation:', err)
-      setError(err.message || 'Chyba pri prepinani dovolenky')
+      setError(err.message || 'Chyba pri prepínaní dovolenky')
     }
   }
 
@@ -89,21 +89,21 @@ const Dovolenka = () => {
       setNewPhone('')
     } catch (err) {
       console.error('Failed to add phone:', err)
-      setError(err.message || 'Chyba pri pridavani telefonu')
+      setError(err.message || 'Chyba pri pridávaní telefónu')
     } finally {
       setAdding(false)
     }
   }
 
   const handleDeletePhone = async (blockId) => {
-    if (!confirm('Naozaj chcete vymazat toto telefonne cislo?')) return
+    if (!confirm('Naozaj chcete vymazať toto telefónne číslo?')) return
 
     try {
       await deleteVacationPhoneBlock(blockId)
       setPhones(prev => prev.filter(p => p.id !== blockId))
     } catch (err) {
       console.error('Failed to delete phone:', err)
-      setError(err.message || 'Chyba pri mazani telefonu')
+      setError(err.message || 'Chyba pri mazaní telefónu')
     }
   }
 
@@ -118,7 +118,7 @@ const Dovolenka = () => {
   if (!currentSite) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Vyberte stranku pre spravu dovolenky</p>
+        <p className="text-gray-500">Vyberte stránku pre správu dovolenky</p>
       </div>
     )
   }
@@ -126,9 +126,9 @@ const Dovolenka = () => {
   return (
     <div className="p-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-semibold mb-6">Dovolenka - Sprava telefonnych cisel</h2>
+        <h2 className="text-2xl font-semibold mb-6">Dovolenka - Správa telefónnych čísel</h2>
         <p className="text-gray-600 mb-6">
-          Aktivujte dovolenku pre telefonne cisla. Cisla na dovolenke nebudu zobrazene v paticke ani na kontaktnej stranke.
+          Aktivujte dovolenku pre telefónne čísla. Čísla na dovolenke nebudú zobrazené v pätičke ani na kontaktnej stránke.
         </p>
 
         {error && (
@@ -144,7 +144,7 @@ const Dovolenka = () => {
               type="text"
               value={newPhone}
               onChange={(e) => setNewPhone(e.target.value)}
-              placeholder="Zadajte telefonne cislo (napr. +421 900 123 456)"
+              placeholder="Zadajte telefónne číslo (napr. +421 900 123 456)"
               className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
             <button
@@ -152,7 +152,7 @@ const Dovolenka = () => {
               disabled={adding || !newPhone.trim()}
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
             >
-              {adding ? 'Pridavam...' : 'Pridat cislo'}
+              {adding ? 'Pridávam...' : 'Pridať číslo'}
             </button>
           </div>
         </form>
@@ -160,8 +160,8 @@ const Dovolenka = () => {
         {/* Phone list */}
         {phones.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            <p>Ziadne telefonne cisla</p>
-            <p className="text-sm mt-1">Pridajte telefonne cislo pomocou formulara vyssie</p>
+            <p>Žiadne telefónne čísla</p>
+            <p className="text-sm mt-1">Pridajte telefónne číslo pomocou formulára vyššie</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -174,8 +174,8 @@ const Dovolenka = () => {
                   <p className="text-lg font-semibold">{phone.phone}</p>
                   <p className="text-sm text-gray-600">
                     {phone.enabled
-                      ? 'Na dovolenke - cislo je skryte'
-                      : 'Aktivne - cislo je zobrazene'}
+                      ? 'Na dovolenke - číslo je skryté'
+                      : 'Aktívne - číslo je zobrazené'}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -187,13 +187,13 @@ const Dovolenka = () => {
                         : 'bg-orange-600 hover:bg-orange-700 text-white'
                     }`}
                   >
-                    {phone.enabled ? 'Ukoncit dovolenku' : 'Aktivovat dovolenku'}
+                    {phone.enabled ? 'Ukončiť dovolenku' : 'Aktivovať dovolenku'}
                   </button>
                   <button
                     onClick={() => handleDeletePhone(phone.id)}
                     className="px-4 py-2 rounded-lg font-semibold bg-red-100 hover:bg-red-200 text-red-700 transition-colors"
                   >
-                    Vymazat
+                    Vymazať
                   </button>
                 </div>
               </div>

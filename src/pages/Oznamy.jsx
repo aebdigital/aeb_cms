@@ -67,7 +67,7 @@ const Oznamy = () => {
     e.preventDefault()
 
     if (!formData.title.trim()) {
-      alert('Vyplnte nazov oznamu')
+      alert('Vyplňte názov oznamu')
       return
     }
 
@@ -76,10 +76,10 @@ const Oznamy = () => {
 
     try {
       await updateAnnouncementBlock(formData)
-      alert('Oznam ulozeny')
+      alert('Oznam uložený')
     } catch (err) {
       console.error('Failed to save announcement:', err)
-      setError(err.message || 'Chyba pri ukladani oznamu')
+      setError(err.message || 'Chyba pri ukladaní oznamu')
     } finally {
       setSaving(false)
     }
@@ -96,7 +96,7 @@ const Oznamy = () => {
   if (!currentSite) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Vyberte stranku pre zobrazenie oznamov</p>
+        <p className="text-gray-500">Vyberte stránku pre zobrazenie oznamov</p>
       </div>
     )
   }
@@ -114,22 +114,22 @@ const Oznamy = () => {
       )}
 
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">Oznam na webovej stranke</h2>
+        <h2 className="text-lg font-semibold mb-4">Oznam na webovej stránke</h2>
         <p className="text-gray-500 text-sm mb-6">
-          Tento oznam sa zobrazi navstevnikom vasej webovej stranky ako popup.
+          Tento oznam sa zobrazí návštevníkom vašej webovej stránky ako popup.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nazov oznamu
+              Názov oznamu
             </label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Zadajte nazov oznamu"
+              placeholder="Zadajte názov oznamu"
             />
           </div>
 
@@ -155,7 +155,7 @@ const Oznamy = () => {
               className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
             />
             <label htmlFor="enabled" className="ml-2 text-sm text-gray-700">
-              Zobrazit oznam na webe
+              Zobraziť oznam na webe
             </label>
           </div>
 
@@ -165,7 +165,7 @@ const Oznamy = () => {
               disabled={saving}
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
             >
-              {saving ? 'Ukladam...' : 'Ulozit'}
+              {saving ? 'Ukladám...' : 'Uložiť'}
             </button>
           </div>
         </form>
@@ -176,11 +176,11 @@ const Oznamy = () => {
             <span className="text-sm text-gray-600">Stav oznamu:</span>
             {formData.enabled ? (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Aktivny - zobrazuje sa na webe
+                Aktívny - zobrazuje sa na webe
               </span>
             ) : (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                Neaktivny - skryty
+                Neaktívny - skrytý
               </span>
             )}
           </div>

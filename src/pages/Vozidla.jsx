@@ -289,12 +289,12 @@ export default function Vozidla() {
     e.preventDefault()
 
     if (!carForm.brand || !carForm.model || !carForm.fuel || !carForm.transmission) {
-      alert('Prosim vyplnte vsetky povinne polia (Znacka, Model, Palivo, Prevodovka)')
+      alert('Prosím vyplňte všetky povinné polia (Značka, Model, Palivo, Prevodovka)')
       return
     }
 
     if (!currentSite?.id) {
-      alert('Chyba: Nie je vybrata ziadna stranka.')
+      alert('Chyba: Nie je vybratá žiadna stránka.')
       return
     }
 
@@ -335,10 +335,10 @@ export default function Vozidla() {
       if (isEditMode && editingCar) {
         // Update existing car with basic data first
         await withTimeout(updateCar(editingCar.id, carData, currentSite.id), 10000, 'Updating car')
-        setUploadProgress('Vozidlo aktualizovane...')
+        setUploadProgress('Vozidlo aktualizované...')
       } else {
         // Create new car first to get the ID
-        setUploadProgress('Vytvaram vozidlo...')
+        setUploadProgress('Vytváram vozidlo...')
         const newCar = await withTimeout(createCar(currentSite.id, carData), 10000, 'Creating car')
         carId = newCar.id
       }
@@ -350,7 +350,7 @@ export default function Vozidla() {
 
         for (let i = 0; i < pendingFiles.length; i++) {
           const file = pendingFiles[i]
-          setUploadProgress(`Nahravam obrazok ${i + 1}/${totalFiles}...`)
+          setUploadProgress(`Nahrávam obrázok ${i + 1}/${totalFiles}...`)
 
           // Upload image only (we'll set the order later)
           // Add 60s timeout for images as they can be large
@@ -379,7 +379,7 @@ export default function Vozidla() {
 
       // Update car with final image order
       if (finalImagePaths.length > 0) {
-        setUploadProgress('Ukladam poradie obrazkov...')
+        setUploadProgress('Ukladám poradie obrázkov...')
         await withTimeout(updateCar(carId, {
           image: finalImagePaths[0], // First image is main
           images: finalImagePaths.slice(1) // Rest are gallery
@@ -393,12 +393,12 @@ export default function Vozidla() {
       }
 
       setUploadProgress('')
-      alert(isEditMode ? 'Vozidlo bolo uspesne upravene!' : 'Vozidlo bolo uspesne pridane!')
+      alert(isEditMode ? 'Vozidlo bolo úspešne upravené!' : 'Vozidlo bolo úspešne pridané!')
       closeAddModal()
       await loadCars()
     } catch (err) {
       console.error('Error saving car:', err)
-      alert('Chyba pri ukladani vozidla: ' + err.message)
+      alert('Chyba pri ukladaní vozidla: ' + err.message)
     } finally {
       setSubmitting(false)
       setUploadProgress('')
@@ -406,7 +406,7 @@ export default function Vozidla() {
   }
 
   const handleDeleteCar = async (carId) => {
-    if (window.confirm('Ste si isti, ze chcete odstranit toto vozidlo?')) {
+    if (window.confirm('Ste si istí, že chcete odstrániť toto vozidlo?')) {
       try {
         const car = cars.find(c => c.id === carId)
 
@@ -425,7 +425,7 @@ export default function Vozidla() {
         await loadCars()
       } catch (err) {
         console.error('Error deleting car:', err)
-        alert('Chyba pri mazani vozidla: ' + err.message)
+        alert('Chyba pri mazaní vozidla: ' + err.message)
       }
     }
   }
@@ -436,7 +436,7 @@ export default function Vozidla() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Nacitavam vozidla...</p>
+          <p className="text-gray-600">Načítavam vozidlá...</p>
         </div>
       </div>
     )
@@ -445,7 +445,7 @@ export default function Vozidla() {
   if (!currentSite) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Vyberte stranku pre zobrazenie vozidiel</p>
+        <p className="text-gray-500">Vyberte stránku pre zobrazenie vozidiel</p>
       </div>
     )
   }
@@ -453,12 +453,12 @@ export default function Vozidla() {
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-        <p className="text-red-600 mb-4">Chyba pri nacitavani vozidiel: {error}</p>
+        <p className="text-red-600 mb-4">Chyba pri načítavaní vozidiel: {error}</p>
         <button
           onClick={loadCars}
           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
-          Skusit znova
+          Skúsiť znova
         </button>
       </div>
     )
@@ -469,7 +469,7 @@ export default function Vozidla() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vozidla</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Vozidlá</h1>
           <p className="mt-1 text-sm text-gray-500">
             Spravujte ponuku vozidiel
           </p>
@@ -479,7 +479,7 @@ export default function Vozidla() {
           className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-          Pridat vozidlo
+          Pridať vozidlo
         </button>
       </div>
 
@@ -491,7 +491,7 @@ export default function Vozidla() {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Hladat vozidlo..."
+              placeholder="Hľadať vozidlo..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -523,8 +523,8 @@ export default function Vozidla() {
                   onChange={(e) => setFilters({...filters, fuel: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="">Vsetky</option>
-                  <option value="Benzin">Benzin</option>
+                  <option value="">Všetky</option>
+                  <option value="Benzin">Benzín</option>
                   <option value="Diesel">Diesel</option>
                   <option value="Hybrid">Hybrid</option>
                   <option value="Elektro">Elektro</option>
@@ -539,9 +539,9 @@ export default function Vozidla() {
                   onChange={(e) => setFilters({...filters, transmission: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="">Vsetky</option>
-                  <option value="Manualna">Manualna</option>
-                  <option value="Automaticka">Automaticka</option>
+                  <option value="">Všetky</option>
+                  <option value="Manualna">Manuálna</option>
+                  <option value="Automaticka">Automatická</option>
                 </select>
               </div>
 
@@ -595,7 +595,7 @@ export default function Vozidla() {
                 onClick={clearFilters}
                 className="text-sm text-gray-600 hover:text-gray-900"
               >
-                Vymazat filtre
+                Vymazať filtre
               </button>
             </div>
           </div>
@@ -618,8 +618,8 @@ export default function Vozidla() {
       {filteredCars.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-400 text-5xl mb-4">🚗</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Ziadne vozidla</h3>
-          <p className="text-gray-500">Skuste zmenit filtre alebo vyhladavanie</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Žiadne vozidlá</h3>
+          <p className="text-gray-500">Skúste zmeniť filtre alebo vyhľadávanie</p>
         </div>
       )}
 
@@ -634,14 +634,14 @@ export default function Vozidla() {
                 <button
                   onClick={() => openEditModal(selectedCar)}
                   className="bg-white rounded-full p-2 shadow-lg hover:bg-blue-50"
-                  title="Upravit"
+                  title="Upraviť"
                 >
                   <PencilIcon className="h-6 w-6 text-blue-600" />
                 </button>
                 <button
                   onClick={() => handleDeleteCar(selectedCar.id)}
                   className="bg-white rounded-full p-2 shadow-lg hover:bg-red-50"
-                  title="Odstranit"
+                  title="Odstrániť"
                 >
                   <TrashIcon className="h-6 w-6 text-red-600" />
                 </button>
@@ -696,11 +696,11 @@ export default function Vozidla() {
                     <p className="font-semibold">{selectedCar.engine || 'N/A'}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Vykon</p>
+                    <p className="text-sm text-gray-500">Výkon</p>
                     <p className="font-semibold">{selectedCar.power || 'N/A'}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Karoseria</p>
+                    <p className="text-sm text-gray-500">Karoséria</p>
                     <p className="font-semibold">{selectedCar.bodyType || 'N/A'}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
@@ -712,7 +712,7 @@ export default function Vozidla() {
                 {/* Gallery Images */}
                 {selectedCar.images && selectedCar.images.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-3">Galeria</h3>
+                    <h3 className="text-lg font-semibold mb-3">Galéria</h3>
                     <div className="grid grid-cols-4 gap-2">
                       {selectedCar.images.map((img, index) => (
                         <img
@@ -735,7 +735,7 @@ export default function Vozidla() {
 
                 {selectedCar.features && selectedCar.features.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">Vybava</h3>
+                    <h3 className="text-lg font-semibold mb-3">Výbava</h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedCar.features.map((feature, index) => (
                         <span
@@ -763,7 +763,7 @@ export default function Vozidla() {
             <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {isEditMode ? 'Upravit vozidlo' : 'Pridat nove vozidlo'}
+                  {isEditMode ? 'Upraviť vozidlo' : 'Pridať nové vozidlo'}
                 </h2>
                 <button
                   onClick={closeAddModal}
@@ -777,7 +777,7 @@ export default function Vozidla() {
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Znacka *</label>
+                    <label className="block text-sm font-semibold mb-2">Značka *</label>
                     <input
                       type="text"
                       value={carForm.brand}
@@ -822,7 +822,7 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Najazdene (km)</label>
+                    <label className="block text-sm font-semibold mb-2">Najazdené (km)</label>
                     <input
                       type="number"
                       value={carForm.mileage}
@@ -841,7 +841,7 @@ export default function Vozidla() {
                       required
                     >
                       <option value="">Vyberte palivo</option>
-                      <option value="Benzin">Benzin</option>
+                      <option value="Benzin">Benzín</option>
                       <option value="Diesel">Diesel</option>
                       <option value="Hybrid">Hybrid</option>
                       <option value="Elektro">Elektro</option>
@@ -859,9 +859,9 @@ export default function Vozidla() {
                       required
                     >
                       <option value="">Vyberte prevodovku</option>
-                      <option value="Manualna">Manualna</option>
-                      <option value="Automaticka">Automaticka</option>
-                      <option value="Poloautomaticka">Poloautomaticka</option>
+                      <option value="Manualna">Manuálna</option>
+                      <option value="Automaticka">Automatická</option>
+                      <option value="Poloautomaticka">Poloautomatická</option>
                     </select>
                   </div>
 
@@ -877,7 +877,7 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Vykon</label>
+                    <label className="block text-sm font-semibold mb-2">Výkon</label>
                     <input
                       type="text"
                       value={carForm.power}
@@ -888,7 +888,7 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Karoseria</label>
+                    <label className="block text-sm font-semibold mb-2">Karoséria</label>
                     <input
                       type="text"
                       value={carForm.bodyType}
@@ -928,13 +928,13 @@ export default function Vozidla() {
                     onChange={(e) => handleCarFormChange('description', e.target.value)}
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Detailny popis vozidla..."
+                    placeholder="Detailný popis vozidla..."
                   />
                 </div>
 
                 {/* Features - Equipment Categories */}
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Vybava</label>
+                  <label className="block text-sm font-semibold mb-2">Výbava</label>
                   <div className="space-y-2">
                     {equipmentCategories.map((category) => (
                       <div key={category.name} className="border border-gray-300 rounded-lg overflow-hidden">
@@ -979,14 +979,14 @@ export default function Vozidla() {
                       onChange={handleImageUpload}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                     />
-                    <p className="text-sm text-gray-500 mt-2">Vyberte jeden alebo viacero obrazkov (JPG, PNG, GIF). Obrazky sa nahraju do Supabase Storage.</p>
+                    <p className="text-sm text-gray-500 mt-2">Vyberte jeden alebo viacero obrázkov (JPG, PNG, GIF). Obrázky sa nahrajú do Supabase Storage.</p>
                   </div>
 
                   {/* Unified Image Grid (existing + pending) */}
                   {carForm.allImages.length > 0 && (
                     <div>
                       <p className="text-sm font-medium text-gray-700 mb-2">
-                        Vsetky obrazky (presunte pre zmenu poradia):
+                        Všetky obrázky (presuňte pre zmenu poradia):
                       </p>
                       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                         {carForm.allImages.map((item, index) => (
@@ -1003,7 +1003,7 @@ export default function Vozidla() {
                           >
                             <img
                               src={item.type === 'existing' ? getImageUrl(item.data) : URL.createObjectURL(item.data)}
-                              alt={`Obrazok ${index + 1}`}
+                              alt={`Obrázok ${index + 1}`}
                               className={`w-full h-24 object-cover rounded-lg ${
                                 item.type === 'pending' ? 'border-2 border-dashed border-green-400' : ''
                               }`}
@@ -1017,7 +1017,7 @@ export default function Vozidla() {
                             </button>
                             {index === 0 && (
                               <span className="absolute bottom-1 left-1 bg-purple-600 text-white text-xs px-1 rounded">
-                                Hlavna
+                                Hlavná
                               </span>
                             )}
                             <span className="absolute top-1 left-1 bg-gray-800 bg-opacity-60 text-white text-xs px-1 rounded">
@@ -1025,7 +1025,7 @@ export default function Vozidla() {
                             </span>
                             {item.type === 'pending' && (
                               <span className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-1 rounded">
-                                Nove
+                                Nové
                               </span>
                             )}
                           </div>
@@ -1037,14 +1037,14 @@ export default function Vozidla() {
 
                 {/* Reservation Date */}
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Rezervovane do</label>
+                  <label className="block text-sm font-semibold mb-2">Rezervované do</label>
                   <input
                     type="date"
                     value={carForm.reservedUntil}
                     onChange={(e) => handleCarFormChange('reservedUntil', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
-                  <p className="text-sm text-gray-500 mt-1">Ak je vozidlo rezervovane, vyberte datum do kedy</p>
+                  <p className="text-sm text-gray-500 mt-1">Ak je vozidlo rezervované, vyberte dátum do kedy</p>
                 </div>
 
                 {/* Show on Homepage */}
@@ -1057,7 +1057,7 @@ export default function Vozidla() {
                     className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
                   />
                   <label htmlFor="showOnHomepage" className="ml-3 text-sm font-semibold text-purple-900">
-                    Zobrazit na domovskej stranke v sekcii "Najnovsie vozidla"
+                    Zobraziť na domovskej stránke v sekcii "Najnovšie vozidlá"
                   </label>
                 </div>
 
@@ -1079,7 +1079,7 @@ export default function Vozidla() {
                     className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                     disabled={submitting}
                   >
-                    Zrusit
+                    Zrušiť
                   </button>
                   <button
                     type="submit"
@@ -1092,10 +1092,10 @@ export default function Vozidla() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Ukladam...
+                        Ukladám...
                       </span>
                     ) : (
-                      isEditMode ? 'Upravit vozidlo' : 'Pridat vozidlo'
+                      isEditMode ? 'Upraviť vozidlo' : 'Pridať vozidlo'
                     )}
                   </button>
                 </div>

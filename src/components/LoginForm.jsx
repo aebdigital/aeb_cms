@@ -42,7 +42,7 @@ export default function LoginForm() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white">Nacitavam...</p>
+          <p className="text-white">Načítavam...</p>
         </div>
       </div>
     )
@@ -60,7 +60,7 @@ export default function LoginForm() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">CMS Admin</h1>
-            <p className="text-gray-500 mt-2">Prihlaste sa do vasho uctu</p>
+            <p className="text-gray-500 mt-2">Prihláste sa do vášho účtu</p>
           </div>
 
           {/* Error Message */}
@@ -116,7 +116,7 @@ export default function LoginForm() {
                   Prihlasovanie...
                 </span>
               ) : (
-                'Prihlasit sa'
+                'Prihlásiť sa'
               )}
             </button>
           </form>

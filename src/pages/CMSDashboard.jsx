@@ -19,7 +19,7 @@ export default function CMSDashboard() {
     try {
       await logout()
     } catch (err) {
-      alert('Chyba pri odhlasovani: ' + err.message)
+      alert('Chyba pri odhlasovaní: ' + err.message)
     }
   }
 
@@ -28,7 +28,7 @@ export default function CMSDashboard() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Nacitavam...</p>
+          <p className="text-gray-600">Načítavam...</p>
         </div>
       </div>
     )
@@ -41,15 +41,15 @@ export default function CMSDashboard() {
           <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
             <HomeIcon className="h-8 w-8 text-gray-400" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Ziadna stranka</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Žiadna stránka</h2>
           <p className="text-gray-600 mb-4">
-            Nemate pristup k ziadnej stranke. Kontaktujte administratora.
+            Nemáte prístup k žiadnej stránke. Kontaktujte administrátora.
           </p>
           <button
             onClick={handleLogout}
             className="text-purple-600 hover:text-purple-700"
           >
-            Odhlasit sa
+            Odhlásiť sa
           </button>
         </div>
       </div>
@@ -87,7 +87,7 @@ export default function CMSDashboard() {
               <button
                 onClick={handleLogout}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                title="Odhlasit sa"
+                title="Odhlásiť sa"
               >
                 <ArrowRightOnRectangleIcon className="h-5 w-5" />
               </button>
@@ -117,7 +117,7 @@ export default function CMSDashboard() {
                     }`}
                   >
                     <DocumentIcon className="h-4 w-4 mx-auto mb-1" />
-                    Stranky
+                    Stránky
                   </button>
                   <button
                     onClick={() => {
@@ -144,7 +144,7 @@ export default function CMSDashboard() {
               {/* Settings placeholder */}
               {activeSection === 'settings' && (
                 <div className="p-4">
-                  <p className="text-sm text-gray-500">Nastavenia stranky</p>
+                  <p className="text-sm text-gray-500">Nastavenia stránky</p>
                   <div className="mt-4 space-y-2">
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-sm font-medium">{currentSite.name}</p>
@@ -168,10 +168,10 @@ export default function CMSDashboard() {
                 <div className="max-w-md mx-auto">
                   <DocumentIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                   <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                    Vyberte stranku
+                    Vyberte stránku
                   </h2>
                   <p className="text-gray-600">
-                    Kliknite na stranku v lavom menu pre upravu jej obsahu a nastaveni.
+                    Kliknite na stránku v ľavom menu pre úpravu jej obsahu a nastavení.
                   </p>
                 </div>
               </div>

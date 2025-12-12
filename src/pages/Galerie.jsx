@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { PlusIcon, XMarkIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
-const categories = ['Všetky', 'Príroda', 'Architektura', 'Ľudia', 'Zvieratá', 'Ostatné']
+const categories = ['Všetky', 'Príroda', 'Architektúra', 'Ľudia', 'Zvieratá', 'Ostatné']
 
 const galleryImages = [
   { id: 1, src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop', alt: 'Mountain landscape', title: 'Krásne hory', category: 'Príroda' },

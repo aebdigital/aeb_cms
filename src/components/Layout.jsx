@@ -88,7 +88,7 @@ export default function Layout() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Nacitavam...</p>
+          <p className="text-gray-600">Načítavam...</p>
         </div>
       </div>
     )
@@ -124,7 +124,7 @@ export default function Layout() {
             {currentSite && (
               <div className="px-4 mt-4">
                 <div className="px-3 py-2 bg-white/10 rounded-lg">
-                  <p className="text-xs text-gray-400">Aktualna stranka</p>
+                  <p className="text-xs text-gray-400">Aktuálna stránka</p>
                   <p className="text-sm text-white font-medium">{currentSite.name}</p>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function Layout() {
                 })
               ) : (
                 <div className="px-3 py-4 text-center">
-                  <p className="text-gray-400 text-sm">Ziadne stranky v navigacii</p>
+                  <p className="text-gray-400 text-sm">Žiadne stránky v navigácii</p>
                 </div>
               )}
             </nav>
@@ -173,7 +173,7 @@ export default function Layout() {
               className="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all"
             >
               <ArrowRightOnRectangleIcon className="mr-4 h-5 w-5" />
-              Odhlasit sa
+              Odhlásiť sa
             </button>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function Layout() {
             {currentSite && (
               <div className="px-6 mb-4">
                 <div className="px-4 py-3 bg-white/10 rounded-xl">
-                  <p className="text-xs text-gray-400">Aktualna stranka</p>
+                  <p className="text-xs text-gray-400">Aktuálna stránka</p>
                   <p className="text-sm text-white font-medium">{currentSite.name}</p>
                 </div>
               </div>
@@ -232,8 +232,8 @@ export default function Layout() {
               ) : (
                 <div className="text-center py-8">
                   <DocumentIcon className="h-8 w-8 text-gray-500 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">Ziadne stranky</p>
-                  <p className="text-gray-500 text-xs mt-1">Pridajte stranky v nastaveniach</p>
+                  <p className="text-gray-400 text-sm">Žiadne stránky</p>
+                  <p className="text-gray-500 text-xs mt-1">Pridajte stránky v nastaveniach</p>
                 </div>
               )}
             </nav>
@@ -246,7 +246,7 @@ export default function Layout() {
               className="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all"
             >
               <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
-              Odhlasit sa
+              Odhlásiť sa
             </button>
           </div>
         </div>

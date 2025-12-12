@@ -69,7 +69,7 @@ export default function Blogy() {
               }`}
             >
               <TrashIcon className="w-4 h-4 mr-2" />
-              {deleteMode ? 'Zrušiť mazanie' : 'Maž režim'}
+              {deleteMode ? 'Zrušiť mazanie' : 'Režim mazania'}
             </button>
             <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
               <PlusIcon className="w-4 h-4 mr-2" />
