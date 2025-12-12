@@ -28,32 +28,51 @@ export interface UserContext {
 }
 
 export async function getUserContext(): Promise<UserContext> {
-  // 1) current auth user
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
-  if (userError || !user) throw userError || new Error('Not logged in')
+  console.log('getUserContext: starting...')
+  
+  // Create a timeout promise
+  const timeout = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('getUserContext timed out after 10s')), 10000)
+  })
 
-  // 2) profile
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  // Wrap the actual logic
+  const fetchContext = async () => {
+    // 1) current auth user
+    console.log('getUserContext: getting auth user...')
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) throw userError || new Error('Not logged in')
+    console.log('getUserContext: auth user found', user.id)
 
-  if (profileError) throw profileError
+    // 2) profile
+    console.log('getUserContext: fetching profile...')
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
 
-  // 3) site memberships + sites
-  const { data: memberships, error: membershipsError } = await supabase
-    .from('site_memberships')
-    .select('role, sites(id, name, slug, domain)')
-    .eq('user_id', user.id)
+    if (profileError) throw profileError
+    console.log('getUserContext: profile found')
 
-  if (membershipsError) throw membershipsError
+    // 3) site memberships + sites
+    console.log('getUserContext: fetching memberships...')
+    const { data: memberships, error: membershipsError } = await supabase
+      .from('site_memberships')
+      .select('role, sites(id, name, slug, domain)')
+      .eq('user_id', user.id)
 
-  return {
-    user,
-    profile,
-    memberships: memberships as unknown as SiteMembership[],
+    if (membershipsError) throw membershipsError
+    console.log('getUserContext: memberships found', memberships?.length)
+
+    return {
+      user,
+      profile,
+      memberships: memberships as unknown as SiteMembership[],
+    }
   }
+
+  // Race the fetch against the timeout
+  return Promise.race([fetchContext(), timeout]) as Promise<UserContext>
 }
 
 export async function updateProfile(userId: string, updates: Partial<Profile>) {

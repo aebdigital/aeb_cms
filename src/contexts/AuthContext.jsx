@@ -95,7 +95,14 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Error loading user context:', err)
       setError(err.message)
-      // Clear user state on error
+      
+      // CRITICAL FIX: If loading context fails (e.g. timeout or corrupted data),
+      // we MUST sign out to clear the bad session from localStorage.
+      // Otherwise, the app reloads, sees the session, tries to load context, fails, and loops.
+      console.warn('Clearing potentially corrupted session...')
+      await supabase.auth.signOut()
+      
+      // Clear user state
       setUser(null)
       setProfile(null)
       setMemberships([])
