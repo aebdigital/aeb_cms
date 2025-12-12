@@ -275,11 +275,26 @@ export default function Vozidla() {
     setUploadProgress('')
   }
 
+  // Helper to wrap promise with timeout
+  const withTimeout = (promise, ms = 30000, context = 'Operation') => {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`${context} timed out after ${ms}ms`)), ms)
+      )
+    ])
+  }
+
   const handleSubmitCar = async (e) => {
     e.preventDefault()
 
     if (!carForm.brand || !carForm.model || !carForm.fuel || !carForm.transmission) {
       alert('Prosim vyplnte vsetky povinne polia (Znacka, Model, Palivo, Prevodovka)')
+      return
+    }
+
+    if (!currentSite?.id) {
+      alert('Chyba: Nie je vybrata ziadna stranka.')
       return
     }
 
@@ -319,12 +334,12 @@ export default function Vozidla() {
 
       if (isEditMode && editingCar) {
         // Update existing car with basic data first
-        await updateCar(editingCar.id, carData, currentSite.id)
+        await withTimeout(updateCar(editingCar.id, carData, currentSite.id), 10000, 'Updating car')
         setUploadProgress('Vozidlo aktualizovane...')
       } else {
         // Create new car first to get the ID
         setUploadProgress('Vytvaram vozidlo...')
-        const newCar = await createCar(currentSite.id, carData)
+        const newCar = await withTimeout(createCar(currentSite.id, carData), 10000, 'Creating car')
         carId = newCar.id
       }
 
@@ -338,12 +353,17 @@ export default function Vozidla() {
           setUploadProgress(`Nahravam obrazok ${i + 1}/${totalFiles}...`)
 
           // Upload image only (we'll set the order later)
-          const { path } = await uploadCarImageOnly({
-            file,
-            siteId: currentSite.id,
-            siteSlug,
-            carId,
-          })
+          // Add 60s timeout for images as they can be large
+          const { path } = await withTimeout(
+            uploadCarImageOnly({
+              file,
+              siteId: currentSite.id,
+              siteSlug,
+              carId,
+            }), 
+            60000, 
+            `Uploading image ${i + 1}`
+          )
           uploadedPaths.set(file, path)
         }
       }
@@ -360,16 +380,16 @@ export default function Vozidla() {
       // Update car with final image order
       if (finalImagePaths.length > 0) {
         setUploadProgress('Ukladam poradie obrazkov...')
-        await updateCar(carId, {
+        await withTimeout(updateCar(carId, {
           image: finalImagePaths[0], // First image is main
           images: finalImagePaths.slice(1) // Rest are gallery
-        }, currentSite.id)
+        }, currentSite.id), 10000, 'Saving image order')
       } else {
         // No images - clear them
-        await updateCar(carId, {
+        await withTimeout(updateCar(carId, {
           image: null,
           images: []
-        }, currentSite.id)
+        }, currentSite.id), 10000, 'Clearing images')
       }
 
       setUploadProgress('')
@@ -418,6 +438,14 @@ export default function Vozidla() {
           <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Nacitavam vozidla...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (!currentSite) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">Vyberte stranku pre zobrazenie vozidiel</p>
       </div>
     )
   }

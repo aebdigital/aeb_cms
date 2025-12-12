@@ -21,6 +21,14 @@ export function AuthProvider({ children }) {
     // Check for existing session
     checkUser()
 
+    // Safety timeout - ensure loading stops eventually
+    const timeoutTimer = setTimeout(() => {
+      if (loading) {
+        console.warn('Auth check timed out, forcing loading false')
+        setLoading(false)
+      }
+    }, 5000)
+
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state change:', event, session?.user?.email)
@@ -36,6 +44,7 @@ export function AuthProvider({ children }) {
     })
 
     return () => {
+      clearTimeout(timeoutTimer)
       subscription?.unsubscribe()
     }
   }, [])
