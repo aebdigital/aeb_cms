@@ -17,6 +17,20 @@ function clearSupabaseAuth() {
   console.log('Cleared Supabase auth keys:', keysToRemove.length)
 }
 
+// Check if a JWT token is expired (with 60s buffer)
+function isTokenExpired(token) {
+  if (!token) return true
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const expiresAt = payload.exp * 1000 // Convert to milliseconds
+    const now = Date.now()
+    const buffer = 60 * 1000 // 60 second buffer
+    return now >= (expiresAt - buffer)
+  } catch {
+    return true // If we can't parse, assume expired
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -97,6 +111,34 @@ export function AuthProvider({ children }) {
       console.log('Session check result:', session ? 'Has session' : 'No session')
 
       if (session?.user) {
+        // Check if access token is expired before trying to use it
+        if (isTokenExpired(session.access_token)) {
+          console.log('Access token expired, checking refresh token...')
+
+          // Also check if refresh token is expired
+          if (isTokenExpired(session.refresh_token)) {
+            console.log('Refresh token also expired, clearing session')
+            clearSupabaseAuth()
+            await supabase.auth.signOut({ scope: 'local' })
+            setLoading(false)
+            return
+          }
+
+          // Try to refresh the session
+          console.log('Attempting to refresh session...')
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+
+          if (refreshError || !refreshData.session) {
+            console.error('Failed to refresh session:', refreshError)
+            clearSupabaseAuth()
+            await supabase.auth.signOut({ scope: 'local' })
+            setLoading(false)
+            return
+          }
+
+          console.log('Session refreshed successfully')
+        }
+
         await loadUserContext()
       } else {
         // No session - user needs to login
