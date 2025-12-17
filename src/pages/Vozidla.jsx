@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { getCarsForSite, createCar, updateCar, deleteCar as deleteCarApi } from '../api/cars'
 import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets } from '../api/carsImages'
 import { getPublicUrl } from '../api/storage'
+import { compressImage } from '../lib/fileUtils'
 
 const initialCarForm = {
   brand: '',
@@ -350,13 +351,23 @@ export default function Vozidla() {
 
         for (let i = 0; i < pendingFiles.length; i++) {
           const file = pendingFiles[i]
+          setUploadProgress(`Komprimujem obrázok ${i + 1}/${totalFiles}...`)
+
+          // Compress image to max 500KB before upload
+          let fileToUpload = file
+          try {
+            fileToUpload = await compressImage(file, 500)
+          } catch (compressErr) {
+            console.warn('Compression failed, uploading original:', compressErr)
+          }
+
           setUploadProgress(`Nahrávam obrázok ${i + 1}/${totalFiles}...`)
 
           // Upload image only (we'll set the order later)
           // Add 3 min timeout for images as they can be large
           const { path } = await withTimeout(
             uploadCarImageOnly({
-              file,
+              file: fileToUpload,
               siteId: currentSite.id,
               siteSlug,
               carId,
