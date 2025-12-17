@@ -1,5 +1,15 @@
 import { supabase } from '../lib/supabaseClient'
 
+// Helper to add timeout to any promise
+function withTimeout<T>(promise: Promise<T>, ms: number, operation: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${operation} timed out after ${ms/1000}s`)), ms)
+    )
+  ])
+}
+
 export interface Profile {
   id: string
   full_name: string | null
@@ -29,50 +39,51 @@ export interface UserContext {
 
 export async function getUserContext(): Promise<UserContext> {
   console.log('getUserContext: starting...')
-  
-  // Create a timeout promise (60s to handle slow connections)
-  const timeout = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('getUserContext timed out after 60s')), 60000)
-  })
 
-  // Wrap the actual logic
-  const fetchContext = async () => {
-    // 1) current auth user
-    console.log('getUserContext: getting auth user...')
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) throw userError || new Error('Not logged in')
-    console.log('getUserContext: auth user found', user.id)
+  // 1) current auth user - with 10s timeout (this call can hang on stale tokens)
+  console.log('getUserContext: getting auth user...')
+  const { data: { user }, error: userError } = await withTimeout(
+    supabase.auth.getUser(),
+    10000,
+    'getUser'
+  )
+  if (userError || !user) throw userError || new Error('Not logged in')
+  console.log('getUserContext: auth user found', user.id)
 
-    // 2) profile
-    console.log('getUserContext: fetching profile...')
-    const { data: profile, error: profileError } = await supabase
+  // 2) profile - with 15s timeout
+  console.log('getUserContext: fetching profile...')
+  const { data: profile, error: profileError } = await withTimeout(
+    supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .single()
+      .single(),
+    15000,
+    'getProfile'
+  )
 
-    if (profileError) throw profileError
-    console.log('getUserContext: profile found')
+  if (profileError) throw profileError
+  console.log('getUserContext: profile found')
 
-    // 3) site memberships + sites
-    console.log('getUserContext: fetching memberships...')
-    const { data: memberships, error: membershipsError } = await supabase
+  // 3) site memberships + sites - with 15s timeout
+  console.log('getUserContext: fetching memberships...')
+  const { data: memberships, error: membershipsError } = await withTimeout(
+    supabase
       .from('site_memberships')
       .select('role, sites(id, name, slug, domain)')
-      .eq('user_id', user.id)
+      .eq('user_id', user.id),
+    15000,
+    'getMemberships'
+  )
 
-    if (membershipsError) throw membershipsError
-    console.log('getUserContext: memberships found', memberships?.length)
+  if (membershipsError) throw membershipsError
+  console.log('getUserContext: memberships found', memberships?.length)
 
-    return {
-      user,
-      profile,
-      memberships: memberships as unknown as SiteMembership[],
-    }
+  return {
+    user,
+    profile,
+    memberships: memberships as unknown as SiteMembership[],
   }
-
-  // Race the fetch against the timeout
-  return Promise.race([fetchContext(), timeout]) as Promise<UserContext>
 }
 
 export async function updateProfile(userId: string, updates: Partial<Profile>) {
