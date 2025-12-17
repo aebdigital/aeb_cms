@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -36,6 +37,19 @@ export default function LoginForm() {
     }
   }
 
+  // Clear session and reload - for when auth gets stuck
+  async function handleClearSession() {
+    console.log('Manually clearing session...')
+    await supabase.auth.signOut()
+    // Clear any Supabase-related localStorage items
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sb-')) {
+        localStorage.removeItem(key)
+      }
+    })
+    window.location.reload()
+  }
+
   // Show loading while checking auth status
   if (authLoading) {
     return (
@@ -43,6 +57,12 @@ export default function LoginForm() {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white">Načítavam...</p>
+          <button
+            onClick={handleClearSession}
+            className="mt-6 text-sm text-white/60 hover:text-white underline transition-colors"
+          >
+            Zaseklo sa? Vyčistiť reláciu
+          </button>
         </div>
       </div>
     )

@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const initialized = useRef(false)
+  const loadingContext = useRef(false) // Lock to prevent concurrent loadUserContext calls
 
   useEffect(() => {
     // Prevent double initialization in React strict mode
@@ -20,14 +21,6 @@ export function AuthProvider({ children }) {
 
     // Check for existing session
     checkUser()
-
-    // Safety timeout - ensure loading stops eventually
-    const timeoutTimer = setTimeout(() => {
-      if (loading) {
-        console.warn('Auth check timed out, forcing loading false')
-        setLoading(false)
-      }
-    }, 5000)
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -43,9 +36,31 @@ export function AuthProvider({ children }) {
       }
     })
 
+    // Listen for cross-tab session changes via localStorage
+    const handleStorageChange = async (event) => {
+      // Supabase stores auth in localStorage with keys starting with 'sb-'
+      if (event.key?.startsWith('sb-') && event.key?.includes('auth-token')) {
+        console.log('Cross-tab auth change detected')
+        if (event.newValue === null) {
+          // Session was cleared in another tab
+          console.log('Session cleared in another tab, signing out')
+          setUser(null)
+          setProfile(null)
+          setMemberships([])
+          setCurrentSite(null)
+          setLoading(false)
+        } else if (event.newValue && !user) {
+          // Session was set in another tab and we don't have a user
+          console.log('Session set in another tab, reloading context')
+          await loadUserContext()
+        }
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+
     return () => {
-      clearTimeout(timeoutTimer)
       subscription?.unsubscribe()
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 
@@ -76,6 +91,13 @@ export function AuthProvider({ children }) {
   }
 
   async function loadUserContext() {
+    // Prevent concurrent calls - if already loading, skip
+    if (loadingContext.current) {
+      console.log('loadUserContext already in progress, skipping...')
+      return
+    }
+    loadingContext.current = true
+
     try {
       console.log('Loading user context...')
       const context = await getUserContext()
@@ -108,6 +130,7 @@ export function AuthProvider({ children }) {
       setMemberships([])
       setCurrentSite(null)
     } finally {
+      loadingContext.current = false
       setLoading(false)
     }
   }
