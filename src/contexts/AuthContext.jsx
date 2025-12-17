@@ -50,17 +50,34 @@ export function AuthProvider({ children }) {
     // Check for existing session
     checkUser()
 
-    // Listen for auth changes
+    // Listen for auth changes - but IGNORE the initial SIGNED_IN event
+    // because checkUser() handles the initial session validation with token expiry checks
+    let isInitialEvent = true
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.email)
+      console.log('Auth state change:', event, session?.user?.email, isInitialEvent ? '(initial)' : '')
+
       if (event === 'SIGNED_IN' && session) {
+        // Skip the initial SIGNED_IN event - checkUser() handles it with proper validation
+        if (isInitialEvent) {
+          isInitialEvent = false
+          return
+        }
+        // For subsequent SIGNED_IN events (e.g., after login), load context
         await loadUserContext()
       } else if (event === 'SIGNED_OUT') {
+        isInitialEvent = false
+        authFailed.current = false // Reset so user can login again
         setUser(null)
         setProfile(null)
         setMemberships([])
         setCurrentSite(null)
         setLoading(false)
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        // Token was refreshed successfully - this is good, no action needed
+        isInitialEvent = false
+        console.log('Token refreshed successfully')
+      } else {
+        isInitialEvent = false
       }
     })
 
