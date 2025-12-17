@@ -30,9 +30,9 @@ export interface UserContext {
 export async function getUserContext(): Promise<UserContext> {
   console.log('getUserContext: starting...')
   
-  // Create a timeout promise
+  // Create a timeout promise (60s to handle slow connections)
   const timeout = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('getUserContext timed out after 30s')), 30000)
+    setTimeout(() => reject(new Error('getUserContext timed out after 60s')), 60000)
   })
 
   // Wrap the actual logic

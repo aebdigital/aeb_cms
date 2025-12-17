@@ -4,6 +4,19 @@ import { getUserContext } from '../api/userContext'
 
 const AuthContext = createContext(null)
 
+// Helper to clear all Supabase auth data from localStorage
+function clearSupabaseAuth() {
+  const keysToRemove = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key && key.startsWith('sb-')) {
+      keysToRemove.push(key)
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key))
+  console.log('Cleared Supabase auth keys:', keysToRemove.length)
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -13,6 +26,7 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null)
   const initialized = useRef(false)
   const loadingContext = useRef(false) // Lock to prevent concurrent loadUserContext calls
+  const authFailed = useRef(false) // Track if auth has already failed to prevent loop
 
   useEffect(() => {
     // Prevent double initialization in React strict mode
@@ -40,19 +54,24 @@ export function AuthProvider({ children }) {
     const handleStorageChange = async (event) => {
       // Supabase stores auth in localStorage with keys starting with 'sb-'
       if (event.key?.startsWith('sb-') && event.key?.includes('auth-token')) {
-        console.log('Cross-tab auth change detected')
+        console.log('Cross-tab auth change detected:', event.key)
         if (event.newValue === null) {
           // Session was cleared in another tab
           console.log('Session cleared in another tab, signing out')
+          authFailed.current = false // Reset so user can login again
           setUser(null)
           setProfile(null)
           setMemberships([])
           setCurrentSite(null)
           setLoading(false)
-        } else if (event.newValue && !user) {
-          // Session was set in another tab and we don't have a user
-          console.log('Session set in another tab, reloading context')
-          await loadUserContext()
+        } else if (event.newValue) {
+          // Session was updated in another tab - re-check our auth state
+          console.log('Session updated in another tab, checking auth state')
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session && !user) {
+            authFailed.current = false // Reset to allow loading
+            await loadUserContext()
+          }
         }
       }
     }
@@ -96,6 +115,14 @@ export function AuthProvider({ children }) {
       console.log('loadUserContext already in progress, skipping...')
       return
     }
+
+    // Prevent infinite loop - if auth already failed, don't retry
+    if (authFailed.current) {
+      console.log('Auth previously failed, not retrying to prevent loop')
+      setLoading(false)
+      return
+    }
+
     loadingContext.current = true
 
     try {
@@ -105,6 +132,7 @@ export function AuthProvider({ children }) {
       setUser(context.user)
       setProfile(context.profile)
       setMemberships(context.memberships)
+      authFailed.current = false // Reset on success
 
       // Set first site as default if none selected
       if (context.memberships.length > 0) {
@@ -117,13 +145,22 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Error loading user context:', err)
       setError(err.message)
-      
-      // CRITICAL FIX: If loading context fails (e.g. timeout or corrupted data),
-      // we MUST sign out to clear the bad session from localStorage.
-      // Otherwise, the app reloads, sees the session, tries to load context, fails, and loops.
-      console.warn('Clearing potentially corrupted session...')
-      await supabase.auth.signOut()
-      
+
+      // Mark auth as failed to prevent infinite retry loop
+      authFailed.current = true
+
+      // Clear ALL Supabase auth data from localStorage (not just signOut)
+      // This ensures corrupted sessions are fully removed
+      console.warn('Clearing corrupted session from localStorage...')
+      clearSupabaseAuth()
+
+      // Also call signOut to clean up Supabase client state
+      try {
+        await supabase.auth.signOut({ scope: 'local' })
+      } catch (signOutErr) {
+        console.warn('SignOut error (ignoring):', signOutErr)
+      }
+
       // Clear user state
       setUser(null)
       setProfile(null)
@@ -137,6 +174,8 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     setError(null)
+    authFailed.current = false // Reset on new login attempt
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
