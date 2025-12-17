@@ -353,15 +353,15 @@ export default function Vozidla() {
           setUploadProgress(`Nahrávam obrázok ${i + 1}/${totalFiles}...`)
 
           // Upload image only (we'll set the order later)
-          // Add 60s timeout for images as they can be large
+          // Add 3 min timeout for images as they can be large
           const { path } = await withTimeout(
             uploadCarImageOnly({
               file,
               siteId: currentSite.id,
               siteSlug,
               carId,
-            }), 
-            60000, 
+            }),
+            180000,
             `Uploading image ${i + 1}`
           )
           uploadedPaths.set(file, path)
