@@ -334,12 +334,12 @@ export default function Vozidla() {
 
       if (isEditMode && editingCar) {
         // Update existing car with basic data first
-        await withTimeout(updateCar(editingCar.id, carData, currentSite.id), 10000, 'Updating car')
+        await withTimeout(updateCar(editingCar.id, carData, currentSite.id), 30000, 'Updating car')
         setUploadProgress('Vozidlo aktualizované...')
       } else {
         // Create new car first to get the ID
         setUploadProgress('Vytváram vozidlo...')
-        const newCar = await withTimeout(createCar(currentSite.id, carData), 10000, 'Creating car')
+        const newCar = await withTimeout(createCar(currentSite.id, carData), 30000, 'Creating car')
         carId = newCar.id
       }
 
@@ -383,13 +383,13 @@ export default function Vozidla() {
         await withTimeout(updateCar(carId, {
           image: finalImagePaths[0], // First image is main
           images: finalImagePaths.slice(1) // Rest are gallery
-        }, currentSite.id), 10000, 'Saving image order')
+        }, currentSite.id), 30000, 'Saving image order')
       } else {
         // No images - clear them
         await withTimeout(updateCar(carId, {
           image: null,
           images: []
-        }, currentSite.id), 10000, 'Clearing images')
+        }, currentSite.id), 30000, 'Clearing images')
       }
 
       setUploadProgress('')

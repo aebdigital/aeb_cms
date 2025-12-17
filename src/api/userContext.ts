@@ -32,7 +32,7 @@ export async function getUserContext(): Promise<UserContext> {
   
   // Create a timeout promise
   const timeout = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('getUserContext timed out after 10s')), 10000)
+    setTimeout(() => reject(new Error('getUserContext timed out after 30s')), 30000)
   })
 
   // Wrap the actual logic
