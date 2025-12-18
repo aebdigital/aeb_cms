@@ -482,7 +482,7 @@ export default function Vozidla() {
           .price-box { text-align: right; border: 2px solid #000; padding: 10px 15px; margin-top: 15px; }
           .price { font-size: 78px; font-weight: bold; }
           .price-note { font-size: 14px; color: #666; margin-top: 5px; }
-          .footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #000; font-size: 12px; display: flex; justify-content: space-between; }
+          .footer { margin-top: 15px; padding-top: 15px; font-size: 12px; display: flex; justify-content: space-between; }
           .footer-left { line-height: 1.6; }
           .footer-right { text-align: right; line-height: 1.6; }
           .footer-bold { font-weight: bold; }
