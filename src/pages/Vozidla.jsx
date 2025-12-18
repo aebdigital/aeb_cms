@@ -469,12 +469,8 @@ export default function Vozidla() {
           body { font-family: Arial, sans-serif; padding: 50px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; display: flex; flex-direction: column; }
           .content { flex: 1; }
           .logo-container {
-            position: absolute;
-            top: 50px; /* Matching body padding */
-            left: 50px; /* Matching body padding */
-            width: 80px; /* Example size, adjust as needed */
-            height: auto;
-            z-index: 10; /* Ensure it's on top */
+            width: 200px;
+            margin-bottom: 20px;
           }
           .logo-img {
             max-width: 100%;
