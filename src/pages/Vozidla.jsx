@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { getCarsForSite, createCar, updateCar, deleteCar as deleteCarApi } from '../api/cars'
 import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets } from '../api/carsImages'
 import { getPublicUrl } from '../api/storage'
+import { ensureValidSession } from '../lib/supabaseClient'
 import { compressImage } from '../lib/fileUtils'
 
 const initialCarForm = {
@@ -300,9 +301,17 @@ export default function Vozidla() {
     }
 
     setSubmitting(true)
-    setUploadProgress('')
+    setUploadProgress('Overujem prihlásenie...')
 
     try {
+      // Ensure session is valid before making API calls (fixes stale session after tab switch)
+      const isSessionValid = await ensureValidSession()
+      if (!isSessionValid) {
+        alert('Vaše prihlásenie vypršalo. Prosím prihláste sa znovu.')
+        setSubmitting(false)
+        setUploadProgress('')
+        return
+      }
       let carId = editingCar?.id
       const siteSlug = currentSite.slug
 
