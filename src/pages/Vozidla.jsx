@@ -8,6 +8,7 @@ import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets 
 import { getPublicUrl } from '../api/storage'
 import { ensureValidSession } from '../lib/supabaseClient'
 import { compressImage } from '../lib/fileUtils'
+import logo from '../logo.png'
 
 const initialCarForm = {
   brand: '',
@@ -467,6 +468,18 @@ export default function Vozidla() {
           html, body { height: 100%; }
           body { font-family: Arial, sans-serif; padding: 50px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; display: flex; flex-direction: column; }
           .content { flex: 1; }
+          .logo-container {
+            position: absolute;
+            top: 50px; /* Matching body padding */
+            left: 50px; /* Matching body padding */
+            width: 80px; /* Example size, adjust as needed */
+            height: auto;
+            z-index: 10; /* Ensure it's on top */
+          }
+          .logo-img {
+            max-width: 100%;
+            height: auto;
+          }
           .header { text-align: center; border: 2px solid #000; padding: 10px 15px; margin-bottom: 15px; }
           .title { font-size: 52px; font-weight: bold; }
           .subtitle { font-size: 18px; color: #666; }
@@ -502,6 +515,9 @@ export default function Vozidla() {
         </style>
       </head>
       <body>
+        <div class="logo-container">
+          <img src="${logo}" alt="Logo" class="logo-img"/>
+        </div>
         <div class="content">
           <div class="header">
             <div class="title">${car.brand} ${car.model}</div>
