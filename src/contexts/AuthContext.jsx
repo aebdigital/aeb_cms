@@ -50,22 +50,23 @@ export function AuthProvider({ children }) {
     // Check for existing session
     checkUser()
 
-    // Listen for auth changes - but IGNORE the initial SIGNED_IN event
-    // because checkUser() handles the initial session validation with token expiry checks
-    let isInitialEvent = true
+    // Listen for auth changes
+    // We track if we've already loaded the user to avoid redundant loads
+    let hasLoadedUser = false
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.email, isInitialEvent ? '(initial)' : '')
+      console.log('Auth state change:', event, session?.user?.email, hasLoadedUser ? '(user loaded)' : '')
 
       if (event === 'SIGNED_IN' && session) {
-        // Skip the initial SIGNED_IN event - checkUser() handles it with proper validation
-        if (isInitialEvent) {
-          isInitialEvent = false
-          return
+        // Only load context if we haven't already loaded the user
+        // This prevents duplicate loads from multiple SIGNED_IN events
+        if (!hasLoadedUser) {
+          hasLoadedUser = true
+          // Don't load here - let checkUser() handle the initial load
+          // This event often fires before checkUser() completes
         }
-        // For subsequent SIGNED_IN events (e.g., after login), load context
-        await loadUserContext()
+        // Ignore - user is already loaded or checkUser() will handle it
       } else if (event === 'SIGNED_OUT') {
-        isInitialEvent = false
+        hasLoadedUser = false
         authFailed.current = false // Reset so user can login again
         setUser(null)
         setProfile(null)
@@ -73,11 +74,11 @@ export function AuthProvider({ children }) {
         setCurrentSite(null)
         setLoading(false)
       } else if (event === 'TOKEN_REFRESHED' && session) {
-        // Token was refreshed successfully - this is good, no action needed
-        isInitialEvent = false
+        // Token was refreshed successfully - no action needed
         console.log('Token refreshed successfully')
-      } else {
-        isInitialEvent = false
+      } else if (event === 'INITIAL_SESSION') {
+        // Initial session event - checkUser() handles this
+        console.log('Initial session event')
       }
     })
 
