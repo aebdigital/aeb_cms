@@ -168,7 +168,7 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function loadUserContext() {
+  async function loadUserContext(forceReload = false) {
     // Prevent concurrent calls - if already loading, skip
     if (loadingContext.current) {
       console.log('loadUserContext already in progress, skipping...')
@@ -178,6 +178,14 @@ export function AuthProvider({ children }) {
     // Prevent infinite loop - if auth already failed, don't retry
     if (authFailed.current) {
       console.log('Auth previously failed, not retrying to prevent loop')
+      setLoading(false)
+      return
+    }
+
+    // If user is already loaded and not forcing reload, skip
+    // This prevents unnecessary reloads on tab switches
+    if (user && !forceReload) {
+      console.log('User already loaded, skipping reload')
       setLoading(false)
       return
     }
@@ -245,7 +253,7 @@ export function AuthProvider({ children }) {
       throw error
     }
 
-    await loadUserContext()
+    await loadUserContext(true) // Force reload after login
     return data
   }
 
@@ -276,7 +284,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     selectSite,
-    refreshContext: loadUserContext,
+    refreshContext: () => loadUserContext(true), // Always force reload when manually refreshing
   }
 
   return (
