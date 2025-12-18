@@ -469,21 +469,23 @@ export default function Vozidla() {
           .title { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
           .subtitle { font-size: 18px; color: #666; }
           .info-box { border: 2px solid #000; padding: 25px 30px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px 40px; }
-          .info-row { display: flex; justify-content: space-between; font-size: 18px; }
-          .info-label { font-weight: normal; }
-          .info-value { font-weight: bold; color: #e11d48; font-size: 18px; }
-          .section-title { font-weight: bold; margin: 20px 0 10px 0; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 5px; }
+          .info-row { font-size: 18px; }
+          .info-label { font-weight: bold; }
+          .info-value { font-weight: bold; color: #000; font-size: 18px; }
+          .section-title { font-weight: bold; margin: 20px 0 10px 0; font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; }
           .features-section { margin-bottom: 15px; }
           .features-category { font-weight: bold; margin-bottom: 5px; }
           .features-list { display: flex; flex-wrap: wrap; gap: 5px; }
           .feature-item { background: #f3f4f6; padding: 2px 8px; font-size: 12px; }
           .description { margin: 20px 0; padding: 15px; background: #f9fafb; border: 1px solid #e5e7eb; }
           .description-title { font-weight: bold; margin-bottom: 10px; }
-          .price-box { text-align: center; border: 2px solid #000; padding: 20px; margin-top: 20px; }
-          .price { font-size: 48px; font-weight: bold; }
-          .price-note { font-size: 12px; color: #666; margin-top: 5px; }
-          .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 11px; }
-          .footer-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+          .price-box { text-align: right; border: 2px solid #000; padding: 20px; margin-top: 20px; }
+          .price { font-size: 56px; font-weight: bold; }
+          .price-note { font-size: 14px; color: #666; margin-top: 8px; }
+          .footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #000; font-size: 12px; display: flex; justify-content: space-between; }
+          .footer-left { line-height: 1.6; }
+          .footer-right { text-align: right; line-height: 1.6; }
+          .footer-bold { font-weight: bold; }
           @page { size: auto; margin: 0mm; }
           @media print {
             html, body {
@@ -507,30 +509,17 @@ export default function Vozidla() {
         </div>
 
         <div class="info-box">
-          <div class="info-row">
-            <span class="info-label">Rok výroby:</span>
-            <span class="info-value">${car.year}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Počet km:</span>
-            <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Palivo:</span>
-            <span class="info-value">${car.fuel || 'N/A'}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Prevodovka:</span>
-            <span class="info-value">${car.transmission || 'N/A'}</span>
-          </div>
-          ${car.power ? `<div class="info-row"><span class="info-label">Výkon:</span><span class="info-value">${car.power}</span></div>` : ''}
-          ${car.bodyType ? `<div class="info-row"><span class="info-label">Karoséria:</span><span class="info-value">${car.bodyType}</span></div>` : ''}
-          ${car.drivetrain ? `<div class="info-row"><span class="info-label">Pohon:</span><span class="info-value">${car.drivetrain}</span></div>` : ''}
-          ${car.vin ? `<div class="info-row"><span class="info-label">VIN:</span><span class="info-value">${car.vin}</span></div>` : ''}
+          <div class="info-row"><span class="info-label">Rok výroby:</span> <span class="info-value">${car.year}</span></div>
+          <div class="info-row"><span class="info-label">Počet km:</span> <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span></div>
+          <div class="info-row"><span class="info-label">Palivo:</span> <span class="info-value">${car.fuel || 'N/A'}</span></div>
+          <div class="info-row"><span class="info-label">Prevodovka:</span> <span class="info-value">${car.transmission || 'N/A'}</span></div>
+          ${car.power ? `<div class="info-row"><span class="info-label">Výkon:</span> <span class="info-value">${car.power}</span></div>` : ''}
+          ${car.bodyType ? `<div class="info-row"><span class="info-label">Karoséria:</span> <span class="info-value">${car.bodyType}</span></div>` : ''}
+          ${car.drivetrain ? `<div class="info-row"><span class="info-label">Pohon:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
+          ${car.vin ? `<div class="info-row"><span class="info-label">VIN:</span> <span class="info-value">${car.vin}</span></div>` : ''}
         </div>
 
         ${Object.keys(featuresByCategory).length > 0 ? `
-          <div class="section-title">Výbava</div>
           ${Object.entries(featuresByCategory).map(([category, features]) => `
             <div class="features-section">
               <div class="features-category">${category}</div>
@@ -542,18 +531,28 @@ export default function Vozidla() {
         ` : ''}
 
         ${car.description ? `
+          <div class="section-title">Ďalšia výbava / Popis:</div>
           <div class="description">
             <div>${car.description}</div>
           </div>
         ` : ''}
 
-                  <div class="price-box">
-                    <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
-                  </div>
+        <div class="price-box">
+          <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
+          <div class="price-note">Možný leasing, Možný úver</div>
+        </div>
+
         <div class="footer">
-          <div class="footer-row">
-            <span>${currentSite?.name || ''}</span>
-            <span>Vytlačené: ${new Date().toLocaleDateString('sk-SK')}</span>
+          <div class="footer-left">
+            <div class="footer-bold">MT AUTOS s.r.o.</div>
+            <div>29 Augusta č.2261/145,</div>
+            <div>03852 Sučany, okres Martin</div>
+            <div>(Sučany-Juh, pri Čerpacej stanici Orlen)</div>
+          </div>
+          <div class="footer-right">
+            <div><span class="footer-bold">E-mail:</span> mtautossro@gmail.com</div>
+            <div><span class="footer-bold">Telefón:</span> +421 915 511 111</div>
+            <div><span class="footer-bold">Web:</span> www.mtautos.sk</div>
           </div>
         </div>
       </body>
