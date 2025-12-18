@@ -525,13 +525,6 @@ export default function Vozidla() {
           `).join('')}
         ` : ''}
 
-        ${car.description ? `
-          <div class="section-title">Ďalšia výbava / Popis:</div>
-          <div class="description">
-            <div>${car.description}</div>
-          </div>
-        ` : ''}
-
         <div class="price-box">
           <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
           <div class="price-note">Možný leasing, Možný úver</div>
