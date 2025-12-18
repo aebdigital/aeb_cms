@@ -466,12 +466,12 @@ export default function Vozidla() {
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 50px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; }
           .header { text-align: center; border: 2px solid #000; padding: 10px 15px; margin-bottom: 15px; }
-          .title { font-size: 40px; font-weight: bold; }
+          .title { font-size: 52px; font-weight: bold; }
           .subtitle { font-size: 18px; color: #666; }
           .info-box { border: 2px solid #000; padding: 15px 20px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
-          .info-row { font-size: 20px; }
+          .info-row { font-size: 26px; }
           .info-label { font-weight: normal; }
-          .info-value { font-weight: bold; color: #000; font-size: 20px; }
+          .info-value { font-weight: bold; color: #000; font-size: 26px; }
           .section-title { font-weight: bold; margin: 20px 0 10px 0; font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; }
           .features-section { margin-bottom: 15px; }
           .features-category { font-weight: bold; margin-bottom: 5px; }
@@ -528,20 +528,6 @@ export default function Vozidla() {
         <div class="price-box">
           <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
           <div class="price-note">Možný leasing, Možný úver</div>
-        </div>
-
-        <div class="footer">
-          <div class="footer-left">
-            <div class="footer-bold">MT AUTOS s.r.o.</div>
-            <div>29 Augusta č.2261/145,</div>
-            <div>03852 Sučany, okres Martin</div>
-            <div>(Sučany-Juh, pri Čerpacej stanici Orlen)</div>
-          </div>
-          <div class="footer-right">
-            <div><span class="footer-bold">E-mail:</span> mtautossro@gmail.com</div>
-            <div><span class="footer-bold">Telefón:</span> +421 915 511 111</div>
-            <div><span class="footer-bold">Web:</span> www.mtautos.sk</div>
-          </div>
         </div>
       </body>
       </html>
