@@ -15,6 +15,25 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
+// Refresh session when tab becomes visible (after being in background)
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+      console.log('Tab became visible, refreshing session...')
+      try {
+        const { error } = await supabase.auth.refreshSession()
+        if (error) {
+          console.warn('Background refresh failed:', error.message)
+        } else {
+          console.log('Session refreshed on tab focus')
+        }
+      } catch (err) {
+        console.warn('Error refreshing session on visibility change:', err)
+      }
+    }
+  })
+}
+
 // Helper to add timeout to promises
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
