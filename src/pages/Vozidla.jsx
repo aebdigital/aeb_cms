@@ -464,11 +464,13 @@ export default function Vozidla() {
         <title> </title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; padding: 50px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; }
+          html, body { height: 100%; }
+          body { font-family: Arial, sans-serif; padding: 50px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; display: flex; flex-direction: column; }
+          .content { flex: 1; }
           .header { text-align: center; border: 2px solid #000; padding: 10px 15px; margin-bottom: 15px; }
           .title { font-size: 52px; font-weight: bold; }
           .subtitle { font-size: 18px; color: #666; }
-          .info-box { border: 2px solid #000; padding: 15px 20px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+          .info-box { border: 2px solid #000; padding: 15px 20px; margin-bottom: 15px; display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 8px 10px; }
           .info-row { font-size: 26px; }
           .info-label { font-weight: normal; }
           .info-value { font-weight: bold; color: #000; font-size: 26px; }
@@ -479,19 +481,20 @@ export default function Vozidla() {
           .feature-item { background: #f3f4f6; padding: 2px 8px; font-size: 12px; }
           .description { margin: 20px 0; }
           .description-title { font-weight: bold; margin-bottom: 10px; }
-          .price-box { text-align: right; border: 2px solid #000; padding: 10px 15px; margin-top: 15px; }
+          .price-box { text-align: right; border: 2px solid #000; padding: 10px 15px; margin-top: auto; }
           .price { font-size: 78px; font-weight: bold; }
           .price-note { font-size: 14px; color: #666; margin-top: 5px; }
-          .footer { margin-top: 15px; padding-top: 15px; font-size: 12px; display: flex; justify-content: space-between; }
-          .footer-left { line-height: 1.6; }
-          .footer-right { text-align: right; line-height: 1.6; }
-          .footer-bold { font-weight: bold; }
           @page { size: auto; margin: 0; }
           @media print {
+            html, body { height: 100%; }
             body {
               padding: 15mm;
               -webkit-print-color-adjust: exact;
+              display: flex;
+              flex-direction: column;
             }
+            .content { flex: 1; }
+            .price-box { margin-top: auto; }
             .no-print {
               display: none !important;
             }
@@ -499,31 +502,33 @@ export default function Vozidla() {
         </style>
       </head>
       <body>
-        <div class="header">
-          <div class="title">${car.brand} ${car.model}</div>
-        </div>
+        <div class="content">
+          <div class="header">
+            <div class="title">${car.brand} ${car.model}</div>
+          </div>
 
-        <div class="info-box">
-          <div class="info-row"><span class="info-label">Rok výroby:</span> <span class="info-value">${car.year}</span></div>
-          <div class="info-row"><span class="info-label">Počet km:</span> <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span></div>
-          <div class="info-row"><span class="info-label">Palivo:</span> <span class="info-value">${car.fuel || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Prevodovka:</span> <span class="info-value">${car.transmission || 'N/A'}</span></div>
-          ${car.power ? `<div class="info-row"><span class="info-label">Výkon:</span> <span class="info-value">${car.power}</span></div>` : ''}
-          ${car.bodyType ? `<div class="info-row"><span class="info-label">Karoséria:</span> <span class="info-value">${car.bodyType}</span></div>` : ''}
-          ${car.drivetrain ? `<div class="info-row"><span class="info-label">Pohon:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
-          ${car.vin ? `<div class="info-row"><span class="info-label">VIN:</span> <span class="info-value">${car.vin}</span></div>` : ''}
-        </div>
+          <div class="info-box">
+            <div class="info-row"><span class="info-label">Rok výroby:</span> <span class="info-value">${car.year}</span></div>
+            <div class="info-row"><span class="info-label">Počet km:</span> <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span></div>
+            <div class="info-row"><span class="info-label">Palivo:</span> <span class="info-value">${car.fuel || 'N/A'}</span></div>
+            <div class="info-row"><span class="info-label">Prevodovka:</span> <span class="info-value">${car.transmission || 'N/A'}</span></div>
+            ${car.power ? `<div class="info-row"><span class="info-label">Výkon:</span> <span class="info-value">${car.power}</span></div>` : ''}
+            ${car.bodyType ? `<div class="info-row"><span class="info-label">Karoséria:</span> <span class="info-value">${car.bodyType}</span></div>` : ''}
+            ${car.drivetrain ? `<div class="info-row"><span class="info-label">Pohon:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
+            ${car.vin ? `<div class="info-row"><span class="info-label">VIN:</span> <span class="info-value">${car.vin}</span></div>` : ''}
+          </div>
 
-        ${Object.keys(featuresByCategory).length > 0 ? `
-          ${Object.entries(featuresByCategory).map(([category, features]) => `
-            <div class="features-section">
-              <div class="features-category">${category}</div>
-              <div class="features-list">
-                ${features.map(f => `<span class="feature-item">${f}</span>`).join('')}
+          ${Object.keys(featuresByCategory).length > 0 ? `
+            ${Object.entries(featuresByCategory).map(([category, features]) => `
+              <div class="features-section">
+                <div class="features-category">${category}</div>
+                <div class="features-list">
+                  ${features.map(f => `<span class="feature-item">${f}</span>`).join('')}
+                </div>
               </div>
-            </div>
-          `).join('')}
-        ` : ''}
+            `).join('')}
+          ` : ''}
+        </div>
 
         <div class="price-box">
           <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
