@@ -15,6 +15,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
+// Helper to add timeout to promises
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+    )
+  ])
+}
+
 /**
  * Ensures the Supabase session is valid before making API calls.
  * Call this before operations that might fail due to stale sessions (e.g., after tab switch).
@@ -22,7 +32,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
  */
 export async function ensureValidSession(): Promise<boolean> {
   try {
-    const { data: { session }, error } = await supabase.auth.getSession()
+    // Get session with 5s timeout
+    const { data: { session }, error } = await withTimeout(
+      supabase.auth.getSession(),
+      5000
+    )
 
     if (error || !session) {
       console.log('No valid session found')
@@ -36,7 +50,12 @@ export async function ensureValidSession(): Promise<boolean> {
 
     if (Date.now() >= expiresAt - twoMinutes) {
       console.log('Token expiring soon, refreshing...')
-      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+
+      // Refresh with 5s timeout
+      const { data: refreshData, error: refreshError } = await withTimeout(
+        supabase.auth.refreshSession(),
+        5000
+      )
 
       if (refreshError || !refreshData.session) {
         console.error('Failed to refresh session:', refreshError)
