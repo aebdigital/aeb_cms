@@ -775,7 +775,7 @@ export default function Vozidla() {
           <div className="flex items-start justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={closeAddModal} />
 
-            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-[90vw] lg:max-w-6xl sm:w-full max-h-[90vh] overflow-y-auto">
+            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-[95vw] xl:max-w-7xl sm:w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
                 <h2 className="text-2xl font-bold text-gray-900">
                   {isEditMode ? 'Upraviť vozidlo' : 'Pridať nové vozidlo'}
@@ -790,7 +790,7 @@ export default function Vozidla() {
 
               <form onSubmit={handleSubmitCar} className="p-6 space-y-6">
                 {/* Basic Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">Značka *</label>
                     <input
@@ -968,7 +968,7 @@ export default function Vozidla() {
                           </span>
                         </button>
                         {expandedCategories.includes(category.name) && (
-                          <div className="p-4 bg-white grid grid-cols-2 md:grid-cols-3 gap-2">
+                          <div className="p-4 bg-white grid grid-cols-2 md:grid-cols-4 gap-2">
                             {category.options.map((option) => (
                               <label key={option} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                                 <input
@@ -1007,7 +1007,7 @@ export default function Vozidla() {
                       <p className="text-sm font-medium text-gray-700 mb-2">
                         Všetky obrázky (presuňte pre zmenu poradia):
                       </p>
-                      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                      <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                         {carForm.allImages.map((item, index) => (
                           <div
                             key={`image-${index}-${item.type}`}
