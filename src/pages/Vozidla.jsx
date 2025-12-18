@@ -301,17 +301,12 @@ export default function Vozidla() {
     }
 
     setSubmitting(true)
-    setUploadProgress('Overujem prihlásenie...')
+    setUploadProgress('')
 
     try {
-      // Ensure session is valid before making API calls (fixes stale session after tab switch)
-      const isSessionValid = await ensureValidSession()
-      if (!isSessionValid) {
-        alert('Vaše prihlásenie vypršalo. Prosím prihláste sa znovu.')
-        setSubmitting(false)
-        setUploadProgress('')
-        return
-      }
+      // Try to refresh session if needed (non-blocking, best effort)
+      await ensureValidSession()
+
       let carId = editingCar?.id
       const siteSlug = currentSite.slug
 
