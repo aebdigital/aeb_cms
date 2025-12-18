@@ -464,20 +464,20 @@ export default function Vozidla() {
         <title>${car.brand} ${car.model}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; }
+          body { font-family: Arial, sans-serif; padding: 50px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; }
           .header { text-align: center; border: 2px solid #000; padding: 20px; margin-bottom: 20px; }
           .title { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
           .subtitle { font-size: 18px; color: #666; }
-          .info-box { border: 2px solid #000; padding: 25px 30px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px 40px; }
-          .info-row { font-size: 18px; }
-          .info-label { font-weight: bold; }
-          .info-value { font-weight: bold; color: #000; font-size: 18px; }
+          .info-box { border: 2px solid #000; padding: 25px 30px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 40px; }
+          .info-row { font-size: 20px; }
+          .info-label { font-weight: normal; }
+          .info-value { font-weight: bold; color: #000; font-size: 20px; }
           .section-title { font-weight: bold; margin: 20px 0 10px 0; font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; }
           .features-section { margin-bottom: 15px; }
           .features-category { font-weight: bold; margin-bottom: 5px; }
           .features-list { display: flex; flex-wrap: wrap; gap: 5px; }
           .feature-item { background: #f3f4f6; padding: 2px 8px; font-size: 12px; }
-          .description { margin: 20px 0; padding: 15px; background: #f9fafb; border: 1px solid #e5e7eb; }
+          .description { margin: 20px 0; }
           .description-title { font-weight: bold; margin-bottom: 10px; }
           .price-box { text-align: right; border: 2px solid #000; padding: 20px; margin-top: 20px; }
           .price { font-size: 56px; font-weight: bold; }
@@ -486,18 +486,13 @@ export default function Vozidla() {
           .footer-left { line-height: 1.6; }
           .footer-right { text-align: right; line-height: 1.6; }
           .footer-bold { font-weight: bold; }
-          @page { size: auto; margin: 0mm; }
+          @page { size: auto; margin: 15mm; }
           @media print {
-            html, body {
-              height: 100%; 
-              margin: 0 !important; 
-              padding: 0 !important;
+            body {
+              padding: 0;
               -webkit-print-color-adjust: exact;
             }
             .no-print {
-              display: none !important;
-            }
-            header, footer {
               display: none !important;
             }
           }
