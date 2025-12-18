@@ -461,14 +461,14 @@ export default function Vozidla() {
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>${car.brand} ${car.model}</title>
+        <title> </title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 50px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; }
-          .header { text-align: center; border: 2px solid #000; padding: 20px; margin-bottom: 20px; }
-          .title { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+          .header { text-align: center; border: 2px solid #000; padding: 10px 15px; margin-bottom: 15px; }
+          .title { font-size: 40px; font-weight: bold; }
           .subtitle { font-size: 18px; color: #666; }
-          .info-box { border: 2px solid #000; padding: 25px 30px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 40px; }
+          .info-box { border: 2px solid #000; padding: 15px 20px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
           .info-row { font-size: 20px; }
           .info-label { font-weight: normal; }
           .info-value { font-weight: bold; color: #000; font-size: 20px; }
@@ -479,9 +479,9 @@ export default function Vozidla() {
           .feature-item { background: #f3f4f6; padding: 2px 8px; font-size: 12px; }
           .description { margin: 20px 0; }
           .description-title { font-weight: bold; margin-bottom: 10px; }
-          .price-box { text-align: right; border: 2px solid #000; padding: 20px; margin-top: 20px; }
-          .price { font-size: 56px; font-weight: bold; }
-          .price-note { font-size: 14px; color: #666; margin-top: 8px; }
+          .price-box { text-align: right; border: 2px solid #000; padding: 10px 15px; margin-top: 15px; }
+          .price { font-size: 78px; font-weight: bold; }
+          .price-note { font-size: 14px; color: #666; margin-top: 5px; }
           .footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #000; font-size: 12px; display: flex; justify-content: space-between; }
           .footer-left { line-height: 1.6; }
           .footer-right { text-align: right; line-height: 1.6; }
@@ -495,6 +495,7 @@ export default function Vozidla() {
             .no-print {
               display: none !important;
             }
+            title { display: none; }
           }
         </style>
       </head>
