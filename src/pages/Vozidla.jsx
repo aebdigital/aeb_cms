@@ -486,16 +486,15 @@ export default function Vozidla() {
           .footer-left { line-height: 1.6; }
           .footer-right { text-align: right; line-height: 1.6; }
           .footer-bold { font-weight: bold; }
-          @page { size: auto; margin: 15mm; }
+          @page { size: auto; margin: 0; }
           @media print {
             body {
-              padding: 0;
+              padding: 15mm;
               -webkit-print-color-adjust: exact;
             }
             .no-print {
               display: none !important;
             }
-            title { display: none; }
           }
         </style>
       </head>
