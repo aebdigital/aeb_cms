@@ -42,7 +42,7 @@ export default function Vozidla() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [editingCar, setEditingCar] = useState(null)
-  const [expandedCategory, setExpandedCategory] = useState(null)
+  const [expandedCategories, setExpandedCategories] = useState([])
   const [carForm, setCarForm] = useState(initialCarForm)
   const [submitting, setSubmitting] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
@@ -224,7 +224,7 @@ export default function Vozidla() {
     setCarForm(initialCarForm)
     setIsEditMode(false)
     setEditingCar(null)
-    setExpandedCategory(null)
+    setExpandedCategories([])
     setShowAddModal(true)
   }
 
@@ -263,7 +263,7 @@ export default function Vozidla() {
     })
     setIsEditMode(true)
     setEditingCar(car)
-    setExpandedCategory(null)
+    setExpandedCategories([])
     setSelectedCar(null)
     setShowAddModal(true)
   }
@@ -273,7 +273,7 @@ export default function Vozidla() {
     setCarForm(initialCarForm)
     setIsEditMode(false)
     setEditingCar(null)
-    setExpandedCategory(null)
+    setExpandedCategories([])
     setUploadProgress('')
   }
 
@@ -775,7 +775,7 @@ export default function Vozidla() {
           <div className="flex items-start justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={closeAddModal} />
 
-            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
+            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-[90vw] lg:max-w-6xl sm:w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
                 <h2 className="text-2xl font-bold text-gray-900">
                   {isEditMode ? 'Upraviť vozidlo' : 'Pridať nové vozidlo'}
@@ -955,15 +955,19 @@ export default function Vozidla() {
                       <div key={category.name} className="border border-gray-300 rounded-lg overflow-hidden">
                         <button
                           type="button"
-                          onClick={() => setExpandedCategory(expandedCategory === category.name ? null : category.name)}
+                          onClick={() => setExpandedCategories(prev =>
+                            prev.includes(category.name)
+                              ? prev.filter(c => c !== category.name)
+                              : [...prev, category.name]
+                          )}
                           className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 text-left font-semibold flex items-center justify-between"
                         >
                           <span>{category.name}</span>
                           <span className="text-sm text-gray-600">
-                            {carForm.features.filter(f => category.options.includes(f)).length}/{category.options.length} {expandedCategory === category.name ? '▲' : '▼'}
+                            {carForm.features.filter(f => category.options.includes(f)).length}/{category.options.length} {expandedCategories.includes(category.name) ? '▲' : '▼'}
                           </span>
                         </button>
-                        {expandedCategory === category.name && (
+                        {expandedCategories.includes(category.name) && (
                           <div className="p-4 bg-white grid grid-cols-2 md:grid-cols-3 gap-2">
                             {category.options.map((option) => (
                               <label key={option} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">

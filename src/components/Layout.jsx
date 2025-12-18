@@ -10,7 +10,6 @@ import {
   CogIcon,
   Bars3Icon,
   XMarkIcon,
-  BellIcon,
   UserCircleIcon,
   TruckIcon,
   HomeIcon,
@@ -180,8 +179,8 @@ export default function Layout() {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:pl-4 md:pt-4 md:pb-4">
-        <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl border border-white/10 rounded-xl mx-2 my-2">
+      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+        <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-6 py-4">
               <div className="flex items-center space-x-3">
@@ -266,9 +265,6 @@ export default function Layout() {
               </button>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-                <BellIcon className="h-6 w-6" />
-              </button>
               <div className="flex items-center space-x-3">
                 <div className="hidden md:block text-right">
                   <p className="text-sm font-medium text-gray-900">

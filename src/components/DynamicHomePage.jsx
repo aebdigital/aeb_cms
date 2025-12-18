@@ -42,7 +42,7 @@ export default function DynamicHomePage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Nacitavam...</p>
+          <p className="text-gray-600">Načítavam...</p>
         </div>
       </div>
     )
