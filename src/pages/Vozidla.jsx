@@ -895,10 +895,9 @@ export default function Vozidla() {
       {/* Add/Edit Car Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-start justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={closeAddModal} />
-
-            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-[90vw] max-w-[1600px] max-h-[90vh] flex flex-col">
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={closeAddModal} />
+          <div className="flex items-center justify-center min-h-screen p-4">
+            <div className="relative bg-white rounded-xl text-left overflow-hidden shadow-xl w-[90vw] max-w-[1600px] max-h-[90vh] flex flex-col">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10 flex-shrink-0">
                 <h2 className="text-2xl font-bold text-gray-900">
                   {isEditMode ? 'Upraviť vozidlo' : 'Pridať nové vozidlo'}
