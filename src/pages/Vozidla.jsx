@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, XMarkIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, XMarkIcon, PencilIcon, TrashIcon, PrinterIcon } from '@heroicons/react/24/outline'
 import CarCard from '../components/CarCard'
 import { equipmentCategories } from '../data/equipmentOptions'
 import { useAuth } from '../contexts/AuthContext'
@@ -445,6 +445,122 @@ export default function Vozidla() {
     }
   }
 
+  // Print car details as PDF
+  const handlePrintCar = (car) => {
+    // Group features by category
+    const featuresByCategory = {}
+    equipmentCategories.forEach(category => {
+      const categoryFeatures = car.features?.filter(f => category.options.includes(f)) || []
+      if (categoryFeatures.length > 0) {
+        featuresByCategory[category.name] = categoryFeatures
+      }
+    })
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${car.brand} ${car.model}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          .header { text-align: center; border: 2px solid #000; padding: 20px; margin-bottom: 20px; }
+          .title { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+          .subtitle { font-size: 18px; color: #666; }
+          .info-box { border: 1px solid #000; padding: 15px; margin-bottom: 20px; }
+          .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+          .info-label { font-weight: normal; }
+          .info-value { font-weight: bold; color: #e11d48; }
+          .section-title { font-weight: bold; margin: 20px 0 10px 0; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 5px; }
+          .features-section { margin-bottom: 15px; }
+          .features-category { font-weight: bold; margin-bottom: 5px; }
+          .features-list { display: flex; flex-wrap: wrap; gap: 5px; }
+          .feature-item { background: #f3f4f6; padding: 2px 8px; font-size: 12px; }
+          .description { margin: 20px 0; padding: 15px; background: #f9fafb; border: 1px solid #e5e7eb; }
+          .description-title { font-weight: bold; margin-bottom: 10px; }
+          .price-box { text-align: center; border: 2px solid #000; padding: 20px; margin-top: 20px; }
+          .price { font-size: 48px; font-weight: bold; }
+          .price-note { font-size: 12px; color: #666; margin-top: 5px; }
+          .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 11px; }
+          .footer-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+          @media print {
+            body { padding: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">${car.brand} ${car.model}</div>
+          ${car.engine ? `<div class="subtitle">${car.engine}</div>` : ''}
+        </div>
+
+        <div class="info-box">
+          <div class="info-row">
+            <span class="info-label">Rok výroby:</span>
+            <span class="info-value">${car.year}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Počet km:</span>
+            <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Palivo:</span>
+            <span class="info-value">${car.fuel || 'N/A'}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Prevodovka:</span>
+            <span class="info-value">${car.transmission || 'N/A'}</span>
+          </div>
+          ${car.power ? `<div class="info-row"><span class="info-label">Výkon:</span><span class="info-value">${car.power}</span></div>` : ''}
+          ${car.bodyType ? `<div class="info-row"><span class="info-label">Karoséria:</span><span class="info-value">${car.bodyType}</span></div>` : ''}
+          ${car.drivetrain ? `<div class="info-row"><span class="info-label">Pohon:</span><span class="info-value">${car.drivetrain}</span></div>` : ''}
+          ${car.vin ? `<div class="info-row"><span class="info-label">VIN:</span><span class="info-value">${car.vin}</span></div>` : ''}
+        </div>
+
+        ${Object.keys(featuresByCategory).length > 0 ? `
+          <div class="section-title">Výbava</div>
+          ${Object.entries(featuresByCategory).map(([category, features]) => `
+            <div class="features-section">
+              <div class="features-category">${category}</div>
+              <div class="features-list">
+                ${features.map(f => `<span class="feature-item">${f}</span>`).join('')}
+              </div>
+            </div>
+          `).join('')}
+        ` : ''}
+
+        ${car.description ? `
+          <div class="description">
+            <div class="description-title">Ďalšia výbava / Popis:</div>
+            <div>${car.description}</div>
+          </div>
+        ` : ''}
+
+        <div class="price-box">
+          <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
+          <div class="price-note">Možný leasing, Možný úver</div>
+        </div>
+
+        <div class="footer">
+          <div class="footer-row">
+            <span>${currentSite?.name || ''}</span>
+            <span>Vytlačené: ${new Date().toLocaleDateString('sk-SK')}</span>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+
+    const printWindow = window.open('', '_blank')
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+    }, 250)
+  }
+
   // Show loading only on initial load, not on refetches
   if (initialLoad || authLoading) {
     return (
@@ -647,6 +763,13 @@ export default function Vozidla() {
             <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
               <div className="absolute top-4 right-4 z-10 flex gap-2">
                 <button
+                  onClick={() => handlePrintCar(selectedCar)}
+                  className="bg-white rounded-full p-2 shadow-lg hover:bg-green-50"
+                  title="Tlačiť PDF"
+                >
+                  <PrinterIcon className="h-6 w-6 text-green-600" />
+                </button>
+                <button
                   onClick={() => openEditModal(selectedCar)}
                   className="bg-white rounded-full p-2 shadow-lg hover:bg-blue-50"
                   title="Upraviť"
@@ -775,12 +898,13 @@ export default function Vozidla() {
           <div className="flex items-start justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={closeAddModal} />
 
-            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-[95vw] xl:max-w-7xl sm:w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-[98vw] max-w-[1800px] max-h-[90vh] flex flex-col">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10 flex-shrink-0">
                 <h2 className="text-2xl font-bold text-gray-900">
                   {isEditMode ? 'Upraviť vozidlo' : 'Pridať nové vozidlo'}
                 </h2>
                 <button
+                  type="button"
                   onClick={closeAddModal}
                   className="bg-gray-100 rounded-full p-2 hover:bg-gray-200"
                 >
@@ -788,7 +912,7 @@ export default function Vozidla() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmitCar} className="p-6 space-y-6">
+              <form id="carForm" onSubmit={handleSubmitCar} className="p-6 space-y-6 overflow-y-auto flex-1">
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
@@ -941,7 +1065,7 @@ export default function Vozidla() {
                   <textarea
                     value={carForm.description}
                     onChange={(e) => handleCarFormChange('description', e.target.value)}
-                    rows={4}
+                    rows={8}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     placeholder="Detailný popis vozidla..."
                   />
@@ -1089,9 +1213,11 @@ export default function Vozidla() {
                     </div>
                   </div>
                 )}
+              </form>
 
-                {/* Submit Button */}
-                <div className="flex gap-4 pt-4 border-t border-gray-200">
+              {/* Fixed Footer with Buttons */}
+              <div className="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4">
+                <div className="flex gap-4">
                   <button
                     type="button"
                     onClick={closeAddModal}
@@ -1102,6 +1228,7 @@ export default function Vozidla() {
                   </button>
                   <button
                     type="submit"
+                    form="carForm"
                     disabled={submitting}
                     className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 px-6 rounded-lg font-bold text-lg transition-colors disabled:opacity-50"
                   >
@@ -1118,7 +1245,7 @@ export default function Vozidla() {
                     )}
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>
