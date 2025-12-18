@@ -476,9 +476,9 @@ export default function Vozidla() {
           .info-value { font-weight: bold; color: #000; font-size: 26px; }
           .section-title { font-weight: bold; margin: 20px 0 10px 0; font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; }
           .features-section { margin-bottom: 15px; }
-          .features-category { font-weight: bold; margin-bottom: 5px; }
-          .features-list { display: flex; flex-wrap: wrap; gap: 5px; }
-          .feature-item { background: #f3f4f6; padding: 2px 8px; font-size: 12px; }
+          .features-category { font-weight: bold; margin-bottom: 5px; font-size: 15px; }
+          .features-list { display: flex; flex-wrap: wrap; gap: 6px; }
+          .feature-item { background: #f3f4f6; padding: 3px 10px; font-size: 14px; }
           .description { margin: 20px 0; }
           .description-title { font-weight: bold; margin-bottom: 10px; }
           .price-box { text-align: right; border: 2px solid #000; padding: 10px 15px; margin-top: auto; }
