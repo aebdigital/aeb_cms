@@ -464,12 +464,12 @@ export default function Vozidla() {
         <title>${car.brand} ${car.model}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; -webkit-print-color-adjust: exact; }
           .header { text-align: center; border: 2px solid #000; padding: 20px; margin-bottom: 20px; }
           .title { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
           .subtitle { font-size: 18px; color: #666; }
-          .info-box { border: 1px solid #000; padding: 15px; margin-bottom: 20px; }
-          .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+          .info-box { border: 1px solid #000; padding: 15px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+          .info-row { display: flex; justify-content: space-between; }
           .info-label { font-weight: normal; }
           .info-value { font-weight: bold; color: #e11d48; }
           .section-title { font-weight: bold; margin: 20px 0 10px 0; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 5px; }
@@ -484,15 +484,26 @@ export default function Vozidla() {
           .price-note { font-size: 12px; color: #666; margin-top: 5px; }
           .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 11px; }
           .footer-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+          @page { size: auto; margin: 0mm; }
           @media print {
-            body { padding: 20px; }
+            html, body {
+              height: 100%; 
+              margin: 0 !important; 
+              padding: 0 !important;
+              -webkit-print-color-adjust: exact;
+            }
+            .no-print {
+              display: none !important;
+            }
+            header, footer {
+              display: none !important;
+            }
           }
         </style>
       </head>
       <body>
         <div class="header">
           <div class="title">${car.brand} ${car.model}</div>
-          ${car.engine ? `<div class="subtitle">${car.engine}</div>` : ''}
         </div>
 
         <div class="info-box">
@@ -532,16 +543,13 @@ export default function Vozidla() {
 
         ${car.description ? `
           <div class="description">
-            <div class="description-title">Ďalšia výbava / Popis:</div>
             <div>${car.description}</div>
           </div>
         ` : ''}
 
-        <div class="price-box">
-          <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
-          <div class="price-note">Možný leasing, Možný úver</div>
-        </div>
-
+                  <div class="price-box">
+                    <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
+                  </div>
         <div class="footer">
           <div class="footer-row">
             <span>${currentSite?.name || ''}</span>
