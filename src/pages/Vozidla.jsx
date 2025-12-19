@@ -1175,18 +1175,6 @@ export default function Vozidla() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Počet airbagov</label>
-                    <input
-                      type="number"
-                      value={carForm.airbagCount}
-                      onChange={(e) => handleCarFormChange('airbagCount', e.target.value)}
-                      placeholder="napr. 6"
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                  </div>
-
                 </div>
 
                 {/* Description */}
@@ -1223,6 +1211,22 @@ export default function Vozidla() {
                         </button>
                         {expandedCategories.includes(category.name) && (
                           <div className="p-4 bg-white">
+                            {/* Special dropdown for Bezpečnosť category */}
+                            {category.name === 'Bezpečnosť' && (
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
+                                <div>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Počet airbagov</label>
+                                  <input
+                                    type="number"
+                                    value={carForm.airbagCount}
+                                    onChange={(e) => handleCarFormChange('airbagCount', e.target.value)}
+                                    placeholder="napr. 6"
+                                    min="0"
+                                    className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
+                                  />
+                                </div>
+                              </div>
+                            )}
                             {/* Special dropdowns for Komfort category */}
                             {category.name === 'Komfort' && (
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
