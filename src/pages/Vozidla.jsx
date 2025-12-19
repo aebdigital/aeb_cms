@@ -1437,18 +1437,6 @@ export default function Vozidla() {
                   )}
                 </div>
 
-                {/* Reservation Date */}
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Rezervované do</label>
-                  <input
-                    type="date"
-                    value={carForm.reservedUntil}
-                    onChange={(e) => handleCarFormChange('reservedUntil', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">Ak je vozidlo rezervované, vyberte dátum do kedy</p>
-                </div>
-
                 {/* Show on Homepage */}
                 <div className="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-200">
                   <input
