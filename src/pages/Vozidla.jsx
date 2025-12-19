@@ -1034,6 +1034,18 @@ export default function Vozidla() {
                     />
                   </div>
 
+                  <div className="flex items-end">
+                    <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded h-[42px]">
+                      <input
+                        type="checkbox"
+                        checked={carForm.vatDeductible}
+                        onChange={(e) => handleCarFormChange('vatDeductible', e.target.checked)}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-semibold">Odpočet DPH</span>
+                    </label>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold mb-2">Najazdené (km)</label>
                     <input
@@ -1288,6 +1300,41 @@ export default function Vozidla() {
                                     <option value="rear">Zadné</option>
                                     <option value="front_rear">Predné + Zadné</option>
                                   </select>
+                                </div>
+                              </div>
+                            )}
+                            {/* Audio section for Komfort category */}
+                            {category.name === 'Komfort' && (
+                              <div className="mb-4 pb-4 border-b border-gray-200">
+                                <label className="block text-xs font-semibold mb-2 text-purple-700">Audio a zábava</label>
+                                <div className="flex flex-wrap gap-4">
+                                  <label className="flex items-center space-x-2 cursor-pointer hover:bg-purple-50 p-1 rounded">
+                                    <input
+                                      type="checkbox"
+                                      checked={carForm.radioCd}
+                                      onChange={(e) => handleCarFormChange('radioCd', e.target.checked)}
+                                      className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-2 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm">Autorádio CD</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer hover:bg-purple-50 p-1 rounded">
+                                    <input
+                                      type="checkbox"
+                                      checked={carForm.radioCdMp3}
+                                      onChange={(e) => handleCarFormChange('radioCdMp3', e.target.checked)}
+                                      className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-2 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm">Autorádio CD/MP3</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer hover:bg-purple-50 p-1 rounded">
+                                    <input
+                                      type="checkbox"
+                                      checked={carForm.androidAuto}
+                                      onChange={(e) => handleCarFormChange('androidAuto', e.target.checked)}
+                                      className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-2 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm">Android Auto</span>
+                                  </label>
                                 </div>
                               </div>
                             )}
