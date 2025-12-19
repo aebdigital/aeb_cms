@@ -1187,63 +1187,6 @@ export default function Vozidla() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Klimatizácia</label>
-                    <select
-                      value={carForm.acType}
-                      onChange={(e) => handleCarFormChange('acType', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="">Vyberte typ</option>
-                      <option value="manual">Manuálna</option>
-                      <option value="automatic">Automatická</option>
-                      <option value="dual_zone">Dvojzónová</option>
-                      <option value="triple_zone">Trojzónová</option>
-                      <option value="quad_zone">Štvorzonová</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Parkovacie senzory</label>
-                    <select
-                      value={carForm.parkingSensors}
-                      onChange={(e) => handleCarFormChange('parkingSensors', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="">Žiadne</option>
-                      <option value="front">Predné</option>
-                      <option value="rear">Zadné</option>
-                      <option value="front_rear">Predné + Zadné</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Elektrické okná</label>
-                    <select
-                      value={carForm.electricWindows}
-                      onChange={(e) => handleCarFormChange('electricWindows', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="">Žiadne</option>
-                      <option value="0">0</option>
-                      <option value="2">2x (predné)</option>
-                      <option value="4">4x (všetky)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Vyhrievané sedadlá</label>
-                    <select
-                      value={carForm.heatedSeats}
-                      onChange={(e) => handleCarFormChange('heatedSeats', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="">Žiadne</option>
-                      <option value="front">Predné</option>
-                      <option value="rear">Zadné</option>
-                      <option value="front_rear">Predné + Zadné</option>
-                    </select>
-                  </div>
                 </div>
 
                 {/* Description */}
@@ -1279,18 +1222,78 @@ export default function Vozidla() {
                           </span>
                         </button>
                         {expandedCategories.includes(category.name) && (
-                          <div className="p-4 bg-white grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {category.options.map((option) => (
-                              <label key={option} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                                <input
-                                  type="checkbox"
-                                  checked={carForm.features.includes(option)}
-                                  onChange={() => toggleFeature(option)}
-                                  className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
-                                />
-                                <span className="text-sm">{option}</span>
-                              </label>
-                            ))}
+                          <div className="p-4 bg-white">
+                            {/* Special dropdowns for Komfort category */}
+                            {category.name === 'Komfort' && (
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
+                                <div>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Klimatizácia</label>
+                                  <select
+                                    value={carForm.acType}
+                                    onChange={(e) => handleCarFormChange('acType', e.target.value)}
+                                    className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
+                                  >
+                                    <option value="">Vyberte typ</option>
+                                    <option value="manual">Manuálna</option>
+                                    <option value="automatic">Automatická</option>
+                                    <option value="dual_zone">Dvojzónová</option>
+                                    <option value="triple_zone">Trojzónová</option>
+                                    <option value="quad_zone">Štvorzonová</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Parkovacie senzory</label>
+                                  <select
+                                    value={carForm.parkingSensors}
+                                    onChange={(e) => handleCarFormChange('parkingSensors', e.target.value)}
+                                    className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
+                                  >
+                                    <option value="">Žiadne</option>
+                                    <option value="front">Predné</option>
+                                    <option value="rear">Zadné</option>
+                                    <option value="front_rear">Predné + Zadné</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Elektrické okná</label>
+                                  <select
+                                    value={carForm.electricWindows}
+                                    onChange={(e) => handleCarFormChange('electricWindows', e.target.value)}
+                                    className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
+                                  >
+                                    <option value="">Žiadne</option>
+                                    <option value="2">2x (predné)</option>
+                                    <option value="4">4x (všetky)</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Vyhrievané sedadlá</label>
+                                  <select
+                                    value={carForm.heatedSeats}
+                                    onChange={(e) => handleCarFormChange('heatedSeats', e.target.value)}
+                                    className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
+                                  >
+                                    <option value="">Žiadne</option>
+                                    <option value="front">Predné</option>
+                                    <option value="rear">Zadné</option>
+                                    <option value="front_rear">Predné + Zadné</option>
+                                  </select>
+                                </div>
+                              </div>
+                            )}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              {category.options.map((option) => (
+                                <label key={option} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                  <input
+                                    type="checkbox"
+                                    checked={carForm.features.includes(option)}
+                                    onChange={() => toggleFeature(option)}
+                                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
+                                  />
+                                  <span className="text-sm">{option}</span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
