@@ -1350,7 +1350,7 @@ export default function Vozidla() {
                                 </div>
                               </div>
                             )}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div className="grid grid-flow-col grid-rows-[repeat(auto-fill,minmax(0,1fr))] md:grid-rows-7 gap-2" style={{ gridTemplateRows: `repeat(${Math.ceil(category.options.length / 4)}, minmax(0, 1fr))` }}>
                               {category.options.map((option) => (
                                 <label key={option} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                                   <input
