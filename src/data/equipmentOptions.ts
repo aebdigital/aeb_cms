@@ -54,7 +54,6 @@ export const equipmentCategories: EquipmentCategory[] = [
       'Adaptívny podvozok',
       'Bluetooth handsfree',
       'Elektrické sedadlá',
-      'Klimatizácia',
       'Lakťová opierka',
       'Navigačný systém',
       'Pamäťové sedáky',
