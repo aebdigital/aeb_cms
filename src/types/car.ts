@@ -32,7 +32,8 @@ export interface Car {
   radioCd?: boolean;
   radioCdMp3?: boolean;
   androidAuto?: boolean;
-  acType?: string; // 'manual' | 'automatic' | 'dual_zone' | 'triple_zone' | 'quad_zone'
+  acType?: string; // 'manual' | 'automatic'
+  acZones?: string; // 'single' | 'dual' | 'triple' | 'quad'
   parkingSensors?: string; // 'front' | 'rear' | 'front_rear'
   electricWindows?: string; // '0' | '2' | '4'
   heatedSeats?: string; // 'front' | 'rear' | 'front_rear'
@@ -77,6 +78,7 @@ export interface CarRow {
   radio_cd_mp3: boolean | null;
   android_auto: boolean | null;
   ac_type: string | null;
+  ac_zones: string | null;
   parking_sensors: string | null;
   electric_windows: string | null;
   heated_seats: string | null;
@@ -119,6 +121,7 @@ export function mapCarRow(row: CarRow): Car {
     radioCdMp3: row.radio_cd_mp3 ?? false,
     androidAuto: row.android_auto ?? false,
     acType: row.ac_type ?? undefined,
+    acZones: row.ac_zones ?? undefined,
     parkingSensors: row.parking_sensors ?? undefined,
     electricWindows: row.electric_windows ?? undefined,
     heatedSeats: row.heated_seats ?? undefined,
@@ -161,6 +164,7 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
     radio_cd_mp3: car.radioCdMp3,
     android_auto: car.androidAuto,
     ac_type: car.acType,
+    ac_zones: car.acZones,
     parking_sensors: car.parkingSensors,
     electric_windows: car.electricWindows,
     heated_seats: car.heatedSeats,

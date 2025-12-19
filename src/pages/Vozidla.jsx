@@ -43,6 +43,7 @@ const initialCarForm = {
   radioCdMp3: false,
   androidAuto: false,
   acType: '',
+  acZones: '',
   parkingSensors: '',
   electricWindows: '',
   heatedSeats: ''
@@ -292,6 +293,7 @@ export default function Vozidla() {
       radioCdMp3: car.radioCdMp3 || false,
       androidAuto: car.androidAuto || false,
       acType: car.acType || '',
+      acZones: car.acZones || '',
       parkingSensors: car.parkingSensors || '',
       electricWindows: car.electricWindows || '',
       heatedSeats: car.heatedSeats || ''
@@ -384,6 +386,7 @@ export default function Vozidla() {
         radioCdMp3: carForm.radioCdMp3,
         androidAuto: carForm.androidAuto,
         acType: carForm.acType || undefined,
+        acZones: carForm.acZones || undefined,
         parkingSensors: carForm.parkingSensors || undefined,
         electricWindows: carForm.electricWindows || undefined,
         heatedSeats: carForm.heatedSeats || undefined,
@@ -998,6 +1001,29 @@ export default function Vozidla() {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-semibold mb-2">Mesiac výroby</label>
+                    <select
+                      value={carForm.month}
+                      onChange={(e) => handleCarFormChange('month', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Vyberte mesiac</option>
+                      <option value="1">Január</option>
+                      <option value="2">Február</option>
+                      <option value="3">Marec</option>
+                      <option value="4">Apríl</option>
+                      <option value="5">Máj</option>
+                      <option value="6">Jún</option>
+                      <option value="7">Júl</option>
+                      <option value="8">August</option>
+                      <option value="9">September</option>
+                      <option value="10">Október</option>
+                      <option value="11">November</option>
+                      <option value="12">December</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-semibold mb-2">Cena (EUR)</label>
                     <input
                       type="number"
@@ -1034,21 +1060,6 @@ export default function Vozidla() {
                       <option value="Elektro">Elektro</option>
                       <option value="LPG">LPG</option>
                       <option value="CNG">CNG</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Prevodovka *</label>
-                    <select
-                      value={carForm.transmission}
-                      onChange={(e) => handleCarFormChange('transmission', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      required
-                    >
-                      <option value="">Vyberte prevodovku</option>
-                      <option value="Manualna">Manuálna</option>
-                      <option value="Automaticka">Automatická</option>
-                      <option value="Poloautomaticka">Poloautomatická</option>
                     </select>
                   </div>
 
@@ -1129,29 +1140,6 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Mesiac výroby</label>
-                    <select
-                      value={carForm.month}
-                      onChange={(e) => handleCarFormChange('month', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="">Vyberte mesiac</option>
-                      <option value="1">Január</option>
-                      <option value="2">Február</option>
-                      <option value="3">Marec</option>
-                      <option value="4">Apríl</option>
-                      <option value="5">Máj</option>
-                      <option value="6">Jún</option>
-                      <option value="7">Júl</option>
-                      <option value="8">August</option>
-                      <option value="9">September</option>
-                      <option value="10">Október</option>
-                      <option value="11">November</option>
-                      <option value="12">December</option>
-                    </select>
-                  </div>
-
-                  <div>
                     <label className="block text-sm font-semibold mb-2">Typ prevodovky</label>
                     <select
                       value={carForm.transmissionType}
@@ -1229,22 +1217,40 @@ export default function Vozidla() {
                             )}
                             {/* Special dropdowns for Komfort category */}
                             {category.name === 'Komfort' && (
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
+                              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 pb-4 border-b border-gray-200">
                                 <div>
                                   <label className="block text-xs font-semibold mb-1 text-purple-700">Klimatizácia</label>
                                   <select
                                     value={carForm.acType}
-                                    onChange={(e) => handleCarFormChange('acType', e.target.value)}
+                                    onChange={(e) => {
+                                      handleCarFormChange('acType', e.target.value);
+                                      if (e.target.value !== 'automatic') {
+                                        handleCarFormChange('acZones', '');
+                                      }
+                                    }}
                                     className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
                                   >
-                                    <option value="">Vyberte typ</option>
+                                    <option value="">Žiadna</option>
                                     <option value="manual">Manuálna</option>
                                     <option value="automatic">Automatická</option>
-                                    <option value="dual_zone">Dvojzónová</option>
-                                    <option value="triple_zone">Trojzónová</option>
-                                    <option value="quad_zone">Štvorzonová</option>
                                   </select>
                                 </div>
+                                {carForm.acType === 'automatic' && (
+                                  <div>
+                                    <label className="block text-xs font-semibold mb-1 text-purple-700">Počet zón</label>
+                                    <select
+                                      value={carForm.acZones}
+                                      onChange={(e) => handleCarFormChange('acZones', e.target.value)}
+                                      className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
+                                    >
+                                      <option value="">Vyberte</option>
+                                      <option value="single">Jednozónová</option>
+                                      <option value="dual">Dvojzónová</option>
+                                      <option value="triple">Trojzónová</option>
+                                      <option value="quad">Štvorzonová</option>
+                                    </select>
+                                  </div>
+                                )}
                                 <div>
                                   <label className="block text-xs font-semibold mb-1 text-purple-700">Parkovacie senzory</label>
                                   <select

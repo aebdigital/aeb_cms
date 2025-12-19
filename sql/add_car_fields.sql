@@ -24,8 +24,10 @@ ALTER TABLE cars ADD COLUMN IF NOT EXISTS radio_cd_mp3 boolean DEFAULT false;
 ALTER TABLE cars ADD COLUMN IF NOT EXISTS android_auto boolean DEFAULT false;
 
 -- Climate control
--- Options: 'manual', 'automatic', 'dual_zone', 'triple_zone', 'quad_zone'
+-- ac_type options: 'manual', 'automatic'
+-- ac_zones options: 'single', 'dual', 'triple', 'quad' (only when ac_type is 'automatic')
 ALTER TABLE cars ADD COLUMN IF NOT EXISTS ac_type text;
+ALTER TABLE cars ADD COLUMN IF NOT EXISTS ac_zones text;
 
 -- Parking sensors
 -- Options: 'front', 'rear', 'front_rear'
