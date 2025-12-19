@@ -378,7 +378,7 @@ export default function Vozidla() {
         reserved: carForm.reserved,
         month: carForm.month ? parseInt(carForm.month) : undefined,
         vatDeductible: carForm.vatDeductible,
-        priceWithoutVat: carForm.vatDeductible && carForm.priceWithoutVat ? carForm.priceWithoutVat : undefined,
+        priceWithoutVat: carForm.vatDeductible && carForm.price ? Math.round(carForm.price * 0.77) : undefined,
         transmissionType: carForm.transmissionType || undefined,
         transmissionGears: carForm.transmissionGears || undefined,
         airbagCount: carForm.airbagCount ? parseInt(carForm.airbagCount) : undefined,
@@ -1051,11 +1051,9 @@ export default function Vozidla() {
                       <label className="block text-sm font-semibold mb-2">Cena bez DPH (EUR)</label>
                       <input
                         type="number"
-                        value={carForm.priceWithoutVat}
-                        onChange={(e) => handleCarFormChange('priceWithoutVat', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-50"
-                        min="0"
-                        placeholder={carForm.price ? Math.round(carForm.price / 1.2) : ''}
+                        value={carForm.price ? Math.round(carForm.price * 0.77) : ''}
+                        readOnly
+                        className="w-full px-3 py-2 border border-green-300 rounded-lg bg-green-50 text-green-700 font-semibold cursor-not-allowed"
                       />
                     </div>
                   )}
