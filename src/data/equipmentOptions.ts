@@ -8,7 +8,6 @@ export const equipmentCategories: EquipmentCategory[] = [
     name: 'Bezpečnosť',
     options: [
       'ABS',
-      'Airbagy – počet',
       'Centrálne zamykanie',
       'EBV',
       'Mechanické zabezpečenie',
