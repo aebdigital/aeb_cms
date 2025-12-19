@@ -28,7 +28,24 @@ const initialCarForm = {
   // Unified image list: [{type: 'existing', data: 'path'}, {type: 'pending', data: File}]
   allImages: [],
   reservedUntil: '',
-  showOnHomepage: false
+  showOnHomepage: false,
+  // New fields
+  doors: '',
+  color: '',
+  reserved: false,
+  month: '',
+  vatDeductible: false,
+  priceWithoutVat: 0,
+  transmissionType: '',
+  transmissionGears: '',
+  airbagCount: '',
+  radioCd: false,
+  radioCdMp3: false,
+  androidAuto: false,
+  acType: '',
+  parkingSensors: '',
+  electricWindows: '',
+  heatedSeats: ''
 }
 
 export default function Vozidla() {
@@ -260,7 +277,24 @@ export default function Vozidla() {
       features: car.features || [],
       allImages,
       reservedUntil: car.reservedUntil || '',
-      showOnHomepage: car.showOnHomepage || false
+      showOnHomepage: car.showOnHomepage || false,
+      // New fields
+      doors: car.doors || '',
+      color: car.color || '',
+      reserved: car.reserved || false,
+      month: car.month || '',
+      vatDeductible: car.vatDeductible || false,
+      priceWithoutVat: car.priceWithoutVat || 0,
+      transmissionType: car.transmissionType || '',
+      transmissionGears: car.transmissionGears || '',
+      airbagCount: car.airbagCount || '',
+      radioCd: car.radioCd || false,
+      radioCdMp3: car.radioCdMp3 || false,
+      androidAuto: car.androidAuto || false,
+      acType: car.acType || '',
+      parkingSensors: car.parkingSensors || '',
+      electricWindows: car.electricWindows || '',
+      heatedSeats: car.heatedSeats || ''
     })
     setIsEditMode(true)
     setEditingCar(car)
@@ -336,6 +370,23 @@ export default function Vozidla() {
         reservedUntil: carForm.reservedUntil || undefined,
         showOnHomepage: carForm.showOnHomepage,
         source: 'admin',
+        // New fields
+        doors: carForm.doors || undefined,
+        color: carForm.color || undefined,
+        reserved: carForm.reserved,
+        month: carForm.month ? parseInt(carForm.month) : undefined,
+        vatDeductible: carForm.vatDeductible,
+        priceWithoutVat: carForm.vatDeductible ? Math.round(carForm.price * 0.77 * 100) / 100 : undefined,
+        transmissionType: carForm.transmissionType || undefined,
+        transmissionGears: carForm.transmissionGears || undefined,
+        airbagCount: carForm.airbagCount ? parseInt(carForm.airbagCount) : undefined,
+        radioCd: carForm.radioCd,
+        radioCdMp3: carForm.radioCdMp3,
+        androidAuto: carForm.androidAuto,
+        acType: carForm.acType || undefined,
+        parkingSensors: carForm.parkingSensors || undefined,
+        electricWindows: carForm.electricWindows || undefined,
+        heatedSeats: carForm.heatedSeats || undefined,
       }
 
       if (isEditMode && editingCar) {
@@ -1054,6 +1105,145 @@ export default function Vozidla() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Dvere</label>
+                    <input
+                      type="text"
+                      value={carForm.doors}
+                      onChange={(e) => handleCarFormChange('doors', e.target.value)}
+                      placeholder="napr. 5"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Farba</label>
+                    <input
+                      type="text"
+                      value={carForm.color}
+                      onChange={(e) => handleCarFormChange('color', e.target.value)}
+                      placeholder="napr. Čierna metalíza"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Mesiac výroby</label>
+                    <select
+                      value={carForm.month}
+                      onChange={(e) => handleCarFormChange('month', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Vyberte mesiac</option>
+                      <option value="1">Január</option>
+                      <option value="2">Február</option>
+                      <option value="3">Marec</option>
+                      <option value="4">Apríl</option>
+                      <option value="5">Máj</option>
+                      <option value="6">Jún</option>
+                      <option value="7">Júl</option>
+                      <option value="8">August</option>
+                      <option value="9">September</option>
+                      <option value="10">Október</option>
+                      <option value="11">November</option>
+                      <option value="12">December</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Typ prevodovky</label>
+                    <select
+                      value={carForm.transmissionType}
+                      onChange={(e) => handleCarFormChange('transmissionType', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Vyberte typ</option>
+                      <option value="manual">Manuálna</option>
+                      <option value="automatic">Automatická</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Počet stupňov</label>
+                    <input
+                      type="text"
+                      value={carForm.transmissionGears}
+                      onChange={(e) => handleCarFormChange('transmissionGears', e.target.value)}
+                      placeholder="napr. 6"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Počet airbagov</label>
+                    <input
+                      type="number"
+                      value={carForm.airbagCount}
+                      onChange={(e) => handleCarFormChange('airbagCount', e.target.value)}
+                      placeholder="napr. 6"
+                      min="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Klimatizácia</label>
+                    <select
+                      value={carForm.acType}
+                      onChange={(e) => handleCarFormChange('acType', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Vyberte typ</option>
+                      <option value="manual">Manuálna</option>
+                      <option value="automatic">Automatická</option>
+                      <option value="dual_zone">Dvojzónová</option>
+                      <option value="triple_zone">Trojzónová</option>
+                      <option value="quad_zone">Štvorzonová</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Parkovacie senzory</label>
+                    <select
+                      value={carForm.parkingSensors}
+                      onChange={(e) => handleCarFormChange('parkingSensors', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Žiadne</option>
+                      <option value="front">Predné</option>
+                      <option value="rear">Zadné</option>
+                      <option value="front_rear">Predné + Zadné</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Elektrické okná</label>
+                    <select
+                      value={carForm.electricWindows}
+                      onChange={(e) => handleCarFormChange('electricWindows', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Žiadne</option>
+                      <option value="0">0</option>
+                      <option value="2">2x (predné)</option>
+                      <option value="4">4x (všetky)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Vyhrievané sedadlá</label>
+                    <select
+                      value={carForm.heatedSeats}
+                      onChange={(e) => handleCarFormChange('heatedSeats', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Žiadne</option>
+                      <option value="front">Predné</option>
+                      <option value="rear">Zadné</option>
+                      <option value="front_rear">Predné + Zadné</option>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Description */}
@@ -1199,6 +1389,77 @@ export default function Vozidla() {
                   <label htmlFor="showOnHomepage" className="ml-3 text-sm font-semibold text-purple-900">
                     Zobraziť na domovskej stránke v sekcii "Najnovšie vozidlá"
                   </label>
+                </div>
+
+                {/* Reserved toggle */}
+                <div className="flex items-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <input
+                    type="checkbox"
+                    id="reserved"
+                    checked={carForm.reserved}
+                    onChange={(e) => handleCarFormChange('reserved', e.target.checked)}
+                    className="w-5 h-5 text-orange-600 rounded focus:ring-2 focus:ring-orange-500"
+                  />
+                  <label htmlFor="reserved" className="ml-3 text-sm font-semibold text-orange-900">
+                    Rezervované
+                  </label>
+                </div>
+
+                {/* VAT Deductible with calculated price */}
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="vatDeductible"
+                      checked={carForm.vatDeductible}
+                      onChange={(e) => handleCarFormChange('vatDeductible', e.target.checked)}
+                      className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                    />
+                    <label htmlFor="vatDeductible" className="ml-3 text-sm font-semibold text-green-900">
+                      Odpočet DPH
+                    </label>
+                  </div>
+                  {carForm.vatDeductible && carForm.price > 0 && (
+                    <div className="mt-3 pl-8">
+                      <p className="text-sm text-green-700">
+                        Cena bez DPH (-23%): <span className="font-bold">{Math.round(carForm.price * 0.77).toLocaleString()} EUR</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Audio/Entertainment checkboxes */}
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm font-semibold text-blue-900 mb-3">Audio a zábava</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={carForm.radioCd}
+                        onChange={(e) => handleCarFormChange('radioCd', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-sm">Autorádio CD</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={carForm.radioCdMp3}
+                        onChange={(e) => handleCarFormChange('radioCdMp3', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-sm">Autorádio CD/MP3</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={carForm.androidAuto}
+                        onChange={(e) => handleCarFormChange('androidAuto', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-sm">Android Auto</span>
+                    </label>
+                  </div>
                 </div>
 
                 {/* Upload Progress */}
