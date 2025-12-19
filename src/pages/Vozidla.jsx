@@ -378,7 +378,7 @@ export default function Vozidla() {
         reserved: carForm.reserved,
         month: carForm.month ? parseInt(carForm.month) : undefined,
         vatDeductible: carForm.vatDeductible,
-        priceWithoutVat: carForm.vatDeductible ? Math.round(carForm.price * 0.77 * 100) / 100 : undefined,
+        priceWithoutVat: carForm.vatDeductible && carForm.priceWithoutVat ? carForm.priceWithoutVat : undefined,
         transmissionType: carForm.transmissionType || undefined,
         transmissionGears: carForm.transmissionGears || undefined,
         airbagCount: carForm.airbagCount ? parseInt(carForm.airbagCount) : undefined,
@@ -1045,6 +1045,20 @@ export default function Vozidla() {
                       <span className="text-sm font-semibold">Odpočet DPH</span>
                     </label>
                   </div>
+
+                  {carForm.vatDeductible && (
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Cena bez DPH (EUR)</label>
+                      <input
+                        type="number"
+                        value={carForm.priceWithoutVat}
+                        onChange={(e) => handleCarFormChange('priceWithoutVat', parseFloat(e.target.value))}
+                        className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-50"
+                        min="0"
+                        placeholder={carForm.price ? Math.round(carForm.price / 1.2) : ''}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-semibold mb-2">Najazdené (km)</label>
