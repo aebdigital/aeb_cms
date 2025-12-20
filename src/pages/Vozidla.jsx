@@ -1051,7 +1051,7 @@ export default function Vozidla() {
                       <label className="block text-sm font-semibold mb-2">Cena bez DPH (EUR)</label>
                       <input
                         type="number"
-                        value={carForm.price ? Math.round(carForm.price * 0.77) : ''}
+                        value={carForm.price ? Math.round(carForm.price / 1.23) : ''}
                         readOnly
                         className="w-full px-3 py-2 border border-green-300 rounded-lg bg-green-50 text-green-700 font-semibold cursor-not-allowed"
                       />
