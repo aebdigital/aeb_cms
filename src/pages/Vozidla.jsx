@@ -1088,6 +1088,20 @@ export default function Vozidla() {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-semibold mb-2">Prevodovka *</label>
+                    <select
+                      value={carForm.transmission}
+                      onChange={(e) => handleCarFormChange('transmission', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                    >
+                      <option value="">Vyberte prevodovku</option>
+                      <option value="Manualna">Manuálna</option>
+                      <option value="Automaticka">Automatická</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-semibold mb-2">Motor</label>
                     <input
                       type="text"
