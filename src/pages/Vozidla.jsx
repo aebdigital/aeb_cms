@@ -3,6 +3,7 @@ import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, XMarkIcon, PencilIcon, Trash
 import CarCard from '../components/CarCard'
 import { equipmentCategories } from '../data/equipmentOptions'
 import { useAuth } from '../contexts/AuthContext'
+import { useTranslation } from '../i18n'
 import { getCarsForSite, createCar, updateCar, deleteCar as deleteCarApi } from '../api/cars'
 import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets } from '../api/carsImages'
 import { getPublicUrl } from '../api/storage'
@@ -51,6 +52,7 @@ const initialCarForm = {
 
 export default function Vozidla() {
   const { currentSite, loading: authLoading } = useAuth()
+  const { t } = useTranslation()
   const [cars, setCars] = useState([])
   const [loading, setLoading] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
@@ -328,12 +330,12 @@ export default function Vozidla() {
     e.preventDefault()
 
     if (!carForm.brand || !carForm.model || !carForm.fuel || !carForm.transmission) {
-      alert('Prosím vyplňte všetky povinné polia (Značka, Model, Palivo, Prevodovka)')
+      alert(t('prosimVyplnte'))
       return
     }
 
     if (!currentSite?.id) {
-      alert('Chyba: Nie je vybratá žiadna stránka.')
+      alert(t('chybaNieJeStranka'))
       return
     }
 
@@ -395,10 +397,10 @@ export default function Vozidla() {
       if (isEditMode && editingCar) {
         // Update existing car with basic data first
         await withTimeout(updateCar(editingCar.id, carData, currentSite.id), 30000, 'Updating car')
-        setUploadProgress('Vozidlo aktualizované...')
+        setUploadProgress(t('vozidloAktualizovane'))
       } else {
         // Create new car first to get the ID
-        setUploadProgress('Vytváram vozidlo...')
+        setUploadProgress(t('vytvaramVozidlo'))
         const newCar = await withTimeout(createCar(currentSite.id, carData), 30000, 'Creating car')
         carId = newCar.id
       }
@@ -410,7 +412,7 @@ export default function Vozidla() {
 
         for (let i = 0; i < pendingFiles.length; i++) {
           const file = pendingFiles[i]
-          setUploadProgress(`Komprimujem obrázok ${i + 1}/${totalFiles}...`)
+          setUploadProgress(`${t('komprimujemObrazok')} ${i + 1}/${totalFiles}...`)
 
           // Compress image to max 500KB before upload
           let fileToUpload = file
@@ -420,7 +422,7 @@ export default function Vozidla() {
             console.warn('Compression failed, uploading original:', compressErr)
           }
 
-          setUploadProgress(`Nahrávam obrázok ${i + 1}/${totalFiles}...`)
+          setUploadProgress(`${t('nahravamObrazok')} ${i + 1}/${totalFiles}...`)
 
           // Upload image only (we'll set the order later)
           // Add 3 min timeout for images as they can be large
@@ -449,7 +451,7 @@ export default function Vozidla() {
 
       // Update car with final image order
       if (finalImagePaths.length > 0) {
-        setUploadProgress('Ukladám poradie obrázkov...')
+        setUploadProgress(t('ukladamPoradieObrazkov'))
         await withTimeout(updateCar(carId, {
           image: finalImagePaths[0], // First image is main
           images: finalImagePaths.slice(1) // Rest are gallery
@@ -463,12 +465,12 @@ export default function Vozidla() {
       }
 
       setUploadProgress('')
-      alert(isEditMode ? 'Vozidlo bolo úspešne upravené!' : 'Vozidlo bolo úspešne pridané!')
+      alert(isEditMode ? t('vozidloUspesneUpravene') : t('vozidloUspesnePridane'))
       closeAddModal()
       await loadCars()
     } catch (err) {
       console.error('Error saving car:', err)
-      alert('Chyba pri ukladaní vozidla: ' + err.message)
+      alert(t('chybaPriUkladani') + err.message)
     } finally {
       setSubmitting(false)
       setUploadProgress('')
@@ -476,7 +478,7 @@ export default function Vozidla() {
   }
 
   const handleDeleteCar = async (carId) => {
-    if (window.confirm('Ste si istí, že chcete odstrániť toto vozidlo?')) {
+    if (window.confirm(t('steIsti'))) {
       try {
         const car = cars.find(c => c.id === carId)
 
@@ -495,7 +497,7 @@ export default function Vozidla() {
         await loadCars()
       } catch (err) {
         console.error('Error deleting car:', err)
-        alert('Chyba pri mazaní vozidla: ' + err.message)
+        alert(t('chybaPriMazani') + err.message)
       }
     }
   }
@@ -619,7 +621,7 @@ export default function Vozidla() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Načítavam vozidlá...</p>
+          <p className="text-gray-600">{t('nacitavamVozidla')}</p>
         </div>
       </div>
     )
@@ -628,7 +630,7 @@ export default function Vozidla() {
   if (!currentSite) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Vyberte stránku pre zobrazenie vozidiel</p>
+        <p className="text-gray-500">{t('vyberteStrankuPre')}</p>
       </div>
     )
   }
@@ -636,12 +638,12 @@ export default function Vozidla() {
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-        <p className="text-red-600 mb-4">Chyba pri načítavaní vozidiel: {error}</p>
+        <p className="text-red-600 mb-4">{t('chybaPriNacitavani')}{error}</p>
         <button
           onClick={loadCars}
           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
-          Skúsiť znova
+          {t('skusitZnova')}
         </button>
       </div>
     )
@@ -652,9 +654,9 @@ export default function Vozidla() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vozidlá</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('vozidla')}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Spravujte ponuku vozidiel
+            {t('spravujtePonuku')}
           </p>
         </div>
         <button
@@ -662,7 +664,7 @@ export default function Vozidla() {
           className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-          Pridať vozidlo
+          {t('pridatVozidlo')}
         </button>
       </div>
 
@@ -674,7 +676,7 @@ export default function Vozidla() {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Hľadať vozidlo..."
+              placeholder={t('hladatVozidlo')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -691,7 +693,7 @@ export default function Vozidla() {
             }`}
           >
             <FunnelIcon className="h-5 w-5 mr-2" />
-            Filtre
+            {t('filtre')}
           </button>
         </div>
 
@@ -700,39 +702,39 @@ export default function Vozidla() {
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Palivo</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('palivo')}</label>
                 <select
                   value={filters.fuel}
                   onChange={(e) => setFilters({...filters, fuel: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="">Všetky</option>
-                  <option value="Benzin">Benzín</option>
-                  <option value="Diesel">Diesel</option>
-                  <option value="Hybrid">Hybrid</option>
-                  <option value="Elektro">Elektro</option>
-                  <option value="LPG">LPG</option>
+                  <option value="">{t('vsetky')}</option>
+                  <option value="Benzin">{t('benzin')}</option>
+                  <option value="Diesel">{t('diesel')}</option>
+                  <option value="Hybrid">{t('hybrid')}</option>
+                  <option value="Elektro">{t('elektro')}</option>
+                  <option value="LPG">{t('lpg')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prevodovka</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('prevodovka')}</label>
                 <select
                   value={filters.transmission}
                   onChange={(e) => setFilters({...filters, transmission: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="">Všetky</option>
-                  <option value="Manualna">Manuálna</option>
-                  <option value="Automaticka">Automatická</option>
+                  <option value="">{t('vsetky')}</option>
+                  <option value="Manualna">{t('manualna')}</option>
+                  <option value="Automaticka">{t('automaticka')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cena od</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('cenaOd')}</label>
                 <input
                   type="number"
-                  placeholder="Min EUR"
+                  placeholder={t('minEur')}
                   value={filters.priceMin}
                   onChange={(e) => setFilters({...filters, priceMin: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
@@ -740,10 +742,10 @@ export default function Vozidla() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cena do</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('cenaDo')}</label>
                 <input
                   type="number"
-                  placeholder="Max EUR"
+                  placeholder={t('maxEur')}
                   value={filters.priceMax}
                   onChange={(e) => setFilters({...filters, priceMax: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
@@ -751,10 +753,10 @@ export default function Vozidla() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rok od</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('rokOd')}</label>
                 <input
                   type="number"
-                  placeholder="Min rok"
+                  placeholder={t('minRok')}
                   value={filters.yearMin}
                   onChange={(e) => setFilters({...filters, yearMin: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
@@ -762,10 +764,10 @@ export default function Vozidla() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rok do</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('rokDo')}</label>
                 <input
                   type="number"
-                  placeholder="Max rok"
+                  placeholder={t('maxRok')}
                   value={filters.yearMax}
                   onChange={(e) => setFilters({...filters, yearMax: e.target.value})}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
@@ -778,7 +780,7 @@ export default function Vozidla() {
                 onClick={clearFilters}
                 className="text-sm text-gray-600 hover:text-gray-900"
               >
-                Vymazať filtre
+                {t('vymazatFiltre')}
               </button>
             </div>
           </div>
@@ -787,7 +789,7 @@ export default function Vozidla() {
 
       {/* Results count */}
       <div className="text-sm text-gray-600">
-        Zobrazujem {filteredCars.length} z {cars.length} vozidiel
+        {t('zobrazujem')} {filteredCars.length} {t('z')} {cars.length} {t('vozidiel')}
       </div>
 
       {/* Cars Grid */}
@@ -801,8 +803,8 @@ export default function Vozidla() {
       {filteredCars.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-400 text-5xl mb-4">🚗</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Žiadne vozidlá</h3>
-          <p className="text-gray-500">Skúste zmeniť filtre alebo vyhľadávanie</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('ziadneVozidla')}</h3>
+          <p className="text-gray-500">{t('skusteZmenit')}</p>
         </div>
       )}
 
@@ -817,21 +819,21 @@ export default function Vozidla() {
                 <button
                   onClick={() => handlePrintCar(selectedCar)}
                   className="bg-white rounded-full p-2 shadow-lg hover:bg-green-50"
-                  title="Tlačiť PDF"
+                  title={t('tlacitPdf')}
                 >
                   <PrinterIcon className="h-6 w-6 text-green-600" />
                 </button>
                 <button
                   onClick={() => openEditModal(selectedCar)}
                   className="bg-white rounded-full p-2 shadow-lg hover:bg-blue-50"
-                  title="Upraviť"
+                  title={t('upravit')}
                 >
                   <PencilIcon className="h-6 w-6 text-blue-600" />
                 </button>
                 <button
                   onClick={() => handleDeleteCar(selectedCar.id)}
                   className="bg-white rounded-full p-2 shadow-lg hover:bg-red-50"
-                  title="Odstrániť"
+                  title={t('odstranit')}
                 >
                   <TrashIcon className="h-6 w-6 text-red-600" />
                 </button>
@@ -866,35 +868,35 @@ export default function Vozidla() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Rok</p>
+                    <p className="text-sm text-gray-500">{t('rok')}</p>
                     <p className="font-semibold">{selectedCar.year}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Kilometre</p>
+                    <p className="text-sm text-gray-500">{t('kilometre')}</p>
                     <p className="font-semibold">{selectedCar.mileage.toLocaleString()} km</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Palivo</p>
+                    <p className="text-sm text-gray-500">{t('palivo')}</p>
                     <p className="font-semibold">{selectedCar.fuel}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Prevodovka</p>
+                    <p className="text-sm text-gray-500">{t('prevodovka')}</p>
                     <p className="font-semibold">{selectedCar.transmission}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Motor</p>
+                    <p className="text-sm text-gray-500">{t('motor')}</p>
                     <p className="font-semibold">{selectedCar.engine || 'N/A'}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Výkon</p>
+                    <p className="text-sm text-gray-500">{t('vykon')}</p>
                     <p className="font-semibold">{selectedCar.power || 'N/A'}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Karoséria</p>
+                    <p className="text-sm text-gray-500">{t('karoseria')}</p>
                     <p className="font-semibold">{selectedCar.bodyType || 'N/A'}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-500">Pohon</p>
+                    <p className="text-sm text-gray-500">{t('pohon')}</p>
                     <p className="font-semibold">{selectedCar.drivetrain || 'N/A'}</p>
                   </div>
                 </div>
@@ -902,7 +904,7 @@ export default function Vozidla() {
                 {/* Gallery Images */}
                 {selectedCar.images && selectedCar.images.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-3">Galéria</h3>
+                    <h3 className="text-lg font-semibold mb-3">{t('galeria')}</h3>
                     <div className="grid grid-cols-4 gap-2">
                       {selectedCar.images.map((img, index) => (
                         <img
@@ -918,14 +920,14 @@ export default function Vozidla() {
 
                 {selectedCar.description && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Popis</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t('popis')}</h3>
                     <p className="text-gray-600">{selectedCar.description}</p>
                   </div>
                 )}
 
                 {selectedCar.features && selectedCar.features.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">Výbava</h3>
+                    <h3 className="text-lg font-semibold mb-3">{t('vybava')}</h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedCar.features.map((feature, index) => (
                         <span
@@ -952,7 +954,7 @@ export default function Vozidla() {
             <div className="relative bg-white rounded-xl text-left overflow-hidden shadow-xl w-[90vw] max-w-[1600px] max-h-[90vh] flex flex-col">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10 flex-shrink-0">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {isEditMode ? 'Upraviť vozidlo' : 'Pridať nové vozidlo'}
+                  {isEditMode ? t('upravitVozidlo') : t('pridatNoveVozidlo')}
                 </h2>
                 <button
                   type="button"
@@ -967,7 +969,7 @@ export default function Vozidla() {
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Značka *</label>
+                    <label className="block text-sm font-semibold mb-2">{t('znacka')} *</label>
                     <input
                       type="text"
                       value={carForm.brand}
@@ -978,7 +980,7 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Model *</label>
+                    <label className="block text-sm font-semibold mb-2">{t('model')} *</label>
                     <input
                       type="text"
                       value={carForm.model}
@@ -989,7 +991,7 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Rok</label>
+                    <label className="block text-sm font-semibold mb-2">{t('rok')}</label>
                     <input
                       type="number"
                       value={carForm.year}
@@ -1001,30 +1003,30 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Mesiac výroby</label>
+                    <label className="block text-sm font-semibold mb-2">{t('mesiacVyroby')}</label>
                     <select
                       value={carForm.month}
                       onChange={(e) => handleCarFormChange('month', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                      <option value="">Vyberte mesiac</option>
-                      <option value="1">Január</option>
-                      <option value="2">Február</option>
-                      <option value="3">Marec</option>
-                      <option value="4">Apríl</option>
-                      <option value="5">Máj</option>
-                      <option value="6">Jún</option>
-                      <option value="7">Júl</option>
-                      <option value="8">August</option>
-                      <option value="9">September</option>
-                      <option value="10">Október</option>
-                      <option value="11">November</option>
-                      <option value="12">December</option>
+                      <option value="">{t('vyberteMessiac')}</option>
+                      <option value="1">{t('januar')}</option>
+                      <option value="2">{t('februar')}</option>
+                      <option value="3">{t('marec')}</option>
+                      <option value="4">{t('april')}</option>
+                      <option value="5">{t('maj')}</option>
+                      <option value="6">{t('jun')}</option>
+                      <option value="7">{t('jul')}</option>
+                      <option value="8">{t('august')}</option>
+                      <option value="9">{t('september')}</option>
+                      <option value="10">{t('oktober')}</option>
+                      <option value="11">{t('november')}</option>
+                      <option value="12">{t('december')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Cena (EUR)</label>
+                    <label className="block text-sm font-semibold mb-2">{t('cenaEur')}</label>
                     <input
                       type="number"
                       value={carForm.price}
@@ -1042,13 +1044,13 @@ export default function Vozidla() {
                         onChange={(e) => handleCarFormChange('vatDeductible', e.target.checked)}
                         className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
                       />
-                      <span className="text-sm font-semibold">Odpočet DPH</span>
+                      <span className="text-sm font-semibold">{t('odpocetDph')}</span>
                     </label>
                   </div>
 
                   {carForm.vatDeductible && (
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Cena bez DPH (EUR)</label>
+                      <label className="block text-sm font-semibold mb-2">{t('cenaBezDph')}</label>
                       <input
                         type="number"
                         value={carForm.price ? Math.round(carForm.price / 1.23) : ''}
@@ -1059,7 +1061,7 @@ export default function Vozidla() {
                   )}
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Najazdené (km)</label>
+                    <label className="block text-sm font-semibold mb-2">{t('najazdenekm')}</label>
                     <input
                       type="number"
                       value={carForm.mileage}
@@ -1070,83 +1072,83 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Palivo *</label>
+                    <label className="block text-sm font-semibold mb-2">{t('palivo')} *</label>
                     <select
                       value={carForm.fuel}
                       onChange={(e) => handleCarFormChange('fuel', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                       required
                     >
-                      <option value="">Vyberte palivo</option>
-                      <option value="Benzin">Benzín</option>
-                      <option value="Diesel">Diesel</option>
-                      <option value="Hybrid">Hybrid</option>
-                      <option value="Elektro">Elektro</option>
-                      <option value="LPG">LPG</option>
-                      <option value="CNG">CNG</option>
+                      <option value="">{t('vybertePalivo')}</option>
+                      <option value="Benzin">{t('benzin')}</option>
+                      <option value="Diesel">{t('diesel')}</option>
+                      <option value="Hybrid">{t('hybrid')}</option>
+                      <option value="Elektro">{t('elektro')}</option>
+                      <option value="LPG">{t('lpg')}</option>
+                      <option value="CNG">{t('cng')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Prevodovka *</label>
+                    <label className="block text-sm font-semibold mb-2">{t('prevodovka')} *</label>
                     <select
                       value={carForm.transmission}
                       onChange={(e) => handleCarFormChange('transmission', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                       required
                     >
-                      <option value="">Vyberte prevodovku</option>
-                      <option value="Manualna">Manuálna</option>
-                      <option value="Automaticka">Automatická</option>
+                      <option value="">{t('vybertePrevodovku')}</option>
+                      <option value="Manualna">{t('manualna')}</option>
+                      <option value="Automaticka">{t('automaticka')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Motor</label>
+                    <label className="block text-sm font-semibold mb-2">{t('motor')}</label>
                     <input
                       type="text"
                       value={carForm.engine}
                       onChange={(e) => handleCarFormChange('engine', e.target.value)}
-                      placeholder="napr. 2.0 TDI"
+                      placeholder={t('napr20TDI')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Výkon</label>
+                    <label className="block text-sm font-semibold mb-2">{t('vykon')}</label>
                     <input
                       type="text"
                       value={carForm.power}
                       onChange={(e) => handleCarFormChange('power', e.target.value)}
-                      placeholder="napr. 150 kW"
+                      placeholder={t('napr150kW')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Karoséria</label>
+                    <label className="block text-sm font-semibold mb-2">{t('karoseria')}</label>
                     <input
                       type="text"
                       value={carForm.bodyType}
                       onChange={(e) => handleCarFormChange('bodyType', e.target.value)}
-                      placeholder="napr. Hatchback"
+                      placeholder={t('naprHatchback')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Pohon</label>
+                    <label className="block text-sm font-semibold mb-2">{t('pohon')}</label>
                     <input
                       type="text"
                       value={carForm.drivetrain}
                       onChange={(e) => handleCarFormChange('drivetrain', e.target.value)}
-                      placeholder="napr. Predny"
+                      placeholder={t('naprPredny')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">VIN</label>
+                    <label className="block text-sm font-semibold mb-2">{t('vin')}</label>
                     <input
                       type="text"
                       value={carForm.vin}
@@ -1156,47 +1158,47 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Dvere</label>
+                    <label className="block text-sm font-semibold mb-2">{t('dvere')}</label>
                     <input
                       type="text"
                       value={carForm.doors}
                       onChange={(e) => handleCarFormChange('doors', e.target.value)}
-                      placeholder="napr. 5"
+                      placeholder={t('napr5')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Farba</label>
+                    <label className="block text-sm font-semibold mb-2">{t('farba')}</label>
                     <input
                       type="text"
                       value={carForm.color}
                       onChange={(e) => handleCarFormChange('color', e.target.value)}
-                      placeholder="napr. Čierna metalíza"
+                      placeholder={t('naprCiernaMetaliza')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Typ prevodovky</label>
+                    <label className="block text-sm font-semibold mb-2">{t('typPrevodovky')}</label>
                     <select
                       value={carForm.transmissionType}
                       onChange={(e) => handleCarFormChange('transmissionType', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                      <option value="">Vyberte typ</option>
-                      <option value="manual">Manuálna</option>
-                      <option value="automatic">Automatická</option>
+                      <option value="">{t('vyberteTyp')}</option>
+                      <option value="manual">{t('manualna')}</option>
+                      <option value="automatic">{t('automaticka')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Počet stupňov</label>
+                    <label className="block text-sm font-semibold mb-2">{t('pocetStupnov')}</label>
                     <input
                       type="text"
                       value={carForm.transmissionGears}
                       onChange={(e) => handleCarFormChange('transmissionGears', e.target.value)}
-                      placeholder="napr. 6"
+                      placeholder={t('napr6')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
@@ -1205,19 +1207,19 @@ export default function Vozidla() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Popis</label>
+                  <label className="block text-sm font-semibold mb-2">{t('popis')}</label>
                   <textarea
                     value={carForm.description}
                     onChange={(e) => handleCarFormChange('description', e.target.value)}
                     rows={8}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Detailný popis vozidla..."
+                    placeholder={t('detailnyPopisVozidla')}
                   />
                 </div>
 
                 {/* Features - Equipment Categories */}
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Výbava</label>
+                  <label className="block text-sm font-semibold mb-2">{t('vybava')}</label>
                   <div className="space-y-2">
                     {equipmentCategories.map((category) => (
                       <div key={category.name} className="border border-gray-300 rounded-lg overflow-hidden">
@@ -1241,12 +1243,12 @@ export default function Vozidla() {
                             {category.name === 'Bezpečnosť' && (
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
                                 <div>
-                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Počet airbagov</label>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">{t('pocetAirbagov')}</label>
                                   <input
                                     type="number"
                                     value={carForm.airbagCount}
                                     onChange={(e) => handleCarFormChange('airbagCount', e.target.value)}
-                                    placeholder="napr. 6"
+                                    placeholder={t('napr6')}
                                     min="0"
                                     className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
                                   />
@@ -1257,7 +1259,7 @@ export default function Vozidla() {
                             {category.name === 'Komfort' && (
                               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 pb-4 border-b border-gray-200">
                                 <div>
-                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Klimatizácia</label>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">{t('klimatizacia')}</label>
                                   <select
                                     value={carForm.acType}
                                     onChange={(e) => {
@@ -1268,63 +1270,63 @@ export default function Vozidla() {
                                     }}
                                     className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
                                   >
-                                    <option value="">Žiadna</option>
-                                    <option value="manual">Manuálna</option>
-                                    <option value="automatic">Automatická</option>
+                                    <option value="">{t('ziadna')}</option>
+                                    <option value="manual">{t('manualnaKlima')}</option>
+                                    <option value="automatic">{t('automatickaKlima')}</option>
                                   </select>
                                 </div>
                                 {carForm.acType === 'automatic' && (
                                   <div>
-                                    <label className="block text-xs font-semibold mb-1 text-purple-700">Počet zón</label>
+                                    <label className="block text-xs font-semibold mb-1 text-purple-700">{t('pocetZon')}</label>
                                     <select
                                       value={carForm.acZones}
                                       onChange={(e) => handleCarFormChange('acZones', e.target.value)}
                                       className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
                                     >
-                                      <option value="">Vyberte</option>
-                                      <option value="single">Jednozónová</option>
-                                      <option value="dual">Dvojzónová</option>
-                                      <option value="triple">Trojzónová</option>
-                                      <option value="quad">Štvorzonová</option>
+                                      <option value="">{t('vyberte')}</option>
+                                      <option value="single">{t('jednozonova')}</option>
+                                      <option value="dual">{t('dvojzonova')}</option>
+                                      <option value="triple">{t('trojzonova')}</option>
+                                      <option value="quad">{t('stvorzonova')}</option>
                                     </select>
                                   </div>
                                 )}
                                 <div>
-                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Parkovacie senzory</label>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">{t('parkovacieSenzory')}</label>
                                   <select
                                     value={carForm.parkingSensors}
                                     onChange={(e) => handleCarFormChange('parkingSensors', e.target.value)}
                                     className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
                                   >
-                                    <option value="">Žiadne</option>
-                                    <option value="front">Predné</option>
-                                    <option value="rear">Zadné</option>
-                                    <option value="front_rear">Predné + Zadné</option>
+                                    <option value="">{t('ziadne')}</option>
+                                    <option value="front">{t('predne')}</option>
+                                    <option value="rear">{t('zadne')}</option>
+                                    <option value="front_rear">{t('predneZadne')}</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Elektrické okná</label>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">{t('elektrickeOkna')}</label>
                                   <select
                                     value={carForm.electricWindows}
                                     onChange={(e) => handleCarFormChange('electricWindows', e.target.value)}
                                     className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
                                   >
-                                    <option value="">Žiadne</option>
-                                    <option value="2">2x (predné)</option>
-                                    <option value="4">4x (všetky)</option>
+                                    <option value="">{t('ziadne')}</option>
+                                    <option value="2">{t('dvaXPredne')}</option>
+                                    <option value="4">{t('styriXVsetky')}</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-semibold mb-1 text-purple-700">Vyhrievané sedadlá</label>
+                                  <label className="block text-xs font-semibold mb-1 text-purple-700">{t('vyhrievaneSedadla')}</label>
                                   <select
                                     value={carForm.heatedSeats}
                                     onChange={(e) => handleCarFormChange('heatedSeats', e.target.value)}
                                     className="w-full px-2 py-1.5 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50"
                                   >
-                                    <option value="">Žiadne</option>
-                                    <option value="front">Predné</option>
-                                    <option value="rear">Zadné</option>
-                                    <option value="front_rear">Predné + Zadné</option>
+                                    <option value="">{t('ziadne')}</option>
+                                    <option value="front">{t('predne')}</option>
+                                    <option value="rear">{t('zadne')}</option>
+                                    <option value="front_rear">{t('predneZadne')}</option>
                                   </select>
                                 </div>
                               </div>
@@ -1332,7 +1334,7 @@ export default function Vozidla() {
                             {/* Audio section for Komfort category */}
                             {category.name === 'Komfort' && (
                               <div className="mb-4 pb-4 border-b border-gray-200">
-                                <label className="block text-xs font-semibold mb-2 text-purple-700">Audio a zábava</label>
+                                <label className="block text-xs font-semibold mb-2 text-purple-700">{t('audioAZabava')}</label>
                                 <div className="flex flex-wrap gap-4">
                                   <label className="flex items-center space-x-2 cursor-pointer hover:bg-purple-50 p-1 rounded">
                                     <input
@@ -1341,7 +1343,7 @@ export default function Vozidla() {
                                       onChange={(e) => handleCarFormChange('radioCd', e.target.checked)}
                                       className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-2 focus:ring-purple-500"
                                     />
-                                    <span className="text-sm">Autorádio CD</span>
+                                    <span className="text-sm">{t('autoradioCd')}</span>
                                   </label>
                                   <label className="flex items-center space-x-2 cursor-pointer hover:bg-purple-50 p-1 rounded">
                                     <input
@@ -1350,7 +1352,7 @@ export default function Vozidla() {
                                       onChange={(e) => handleCarFormChange('radioCdMp3', e.target.checked)}
                                       className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-2 focus:ring-purple-500"
                                     />
-                                    <span className="text-sm">Autorádio CD/MP3</span>
+                                    <span className="text-sm">{t('autoradioCdMp3')}</span>
                                   </label>
                                   <label className="flex items-center space-x-2 cursor-pointer hover:bg-purple-50 p-1 rounded">
                                     <input
@@ -1359,7 +1361,7 @@ export default function Vozidla() {
                                       onChange={(e) => handleCarFormChange('androidAuto', e.target.checked)}
                                       className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-2 focus:ring-purple-500"
                                     />
-                                    <span className="text-sm">Android Auto</span>
+                                    <span className="text-sm">{t('androidAuto')}</span>
                                   </label>
                                 </div>
                               </div>
@@ -1386,7 +1388,7 @@ export default function Vozidla() {
 
                 {/* Images */}
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Fotografie</label>
+                  <label className="block text-sm font-semibold mb-2">{t('fotografie')}</label>
                   <div className="mb-4">
                     <input
                       type="file"
@@ -1395,14 +1397,14 @@ export default function Vozidla() {
                       onChange={handleImageUpload}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                     />
-                    <p className="text-sm text-gray-500 mt-2">Vyberte jeden alebo viacero obrázkov (JPG, PNG, GIF). Obrázky sa nahrajú do Supabase Storage.</p>
+                    <p className="text-sm text-gray-500 mt-2">{t('vyberteObrazky')}</p>
                   </div>
 
                   {/* Unified Image Grid (existing + pending) */}
                   {carForm.allImages.length > 0 && (
                     <div>
                       <p className="text-sm font-medium text-gray-700 mb-2">
-                        Všetky obrázky (presuňte pre zmenu poradia):
+                        {t('vsetkyObrazky')}
                       </p>
                       <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                         {carForm.allImages.map((item, index) => (
@@ -1433,7 +1435,7 @@ export default function Vozidla() {
                             </button>
                             {index === 0 && (
                               <span className="absolute bottom-1 left-1 bg-purple-600 text-white text-xs px-1 rounded">
-                                Hlavná
+                                {t('hlavna')}
                               </span>
                             )}
                             <span className="absolute top-1 left-1 bg-gray-800 bg-opacity-60 text-white text-xs px-1 rounded">
@@ -1441,7 +1443,7 @@ export default function Vozidla() {
                             </span>
                             {item.type === 'pending' && (
                               <span className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-1 rounded">
-                                Nové
+                                {t('nove')}
                               </span>
                             )}
                           </div>
@@ -1461,7 +1463,7 @@ export default function Vozidla() {
                     className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
                   />
                   <label htmlFor="showOnHomepage" className="ml-3 text-sm font-semibold text-purple-900">
-                    Zobraziť na domovskej stránke v sekcii "Najnovšie vozidlá"
+                    {t('zobrazitNaDomovskej')}
                   </label>
                 </div>
 
@@ -1475,7 +1477,7 @@ export default function Vozidla() {
                     className="w-5 h-5 text-orange-600 rounded focus:ring-2 focus:ring-orange-500"
                   />
                   <label htmlFor="reserved" className="ml-3 text-sm font-semibold text-orange-900">
-                    Rezervované
+                    {t('rezervovane')}
                   </label>
                 </div>
 
@@ -1499,7 +1501,7 @@ export default function Vozidla() {
                     className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                     disabled={submitting}
                   >
-                    Zrušiť
+                    {t('zrusit')}
                   </button>
                   <button
                     type="submit"
@@ -1513,10 +1515,10 @@ export default function Vozidla() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Ukladám...
+                        {t('ukladam')}
                       </span>
                     ) : (
-                      isEditMode ? 'Upraviť vozidlo' : 'Pridať vozidlo'
+                      isEditMode ? t('upravitVozidlo') : t('pridatVozidlo')
                     )}
                   </button>
                 </div>
