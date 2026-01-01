@@ -1,2 +1,2 @@
-export { translations, t, type Lang, type TranslationKey } from './translations'
+export { translations, t, tCategory, tEquipment, type Lang, type TranslationKey } from './translations'
 export { useTranslation } from './useTranslation'

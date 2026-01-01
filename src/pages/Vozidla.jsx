@@ -52,7 +52,7 @@ const initialCarForm = {
 
 export default function Vozidla() {
   const { currentSite, loading: authLoading } = useAuth()
-  const { t } = useTranslation()
+  const { t, tCategory, tEquipment } = useTranslation()
   const [cars, setCars] = useState([])
   const [loading, setLoading] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
@@ -1232,7 +1232,7 @@ export default function Vozidla() {
                           )}
                           className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 text-left font-semibold flex items-center justify-between"
                         >
-                          <span>{category.name}</span>
+                          <span>{tCategory(category.name)}</span>
                           <span className="text-sm text-gray-600">
                             {carForm.features.filter(f => category.options.includes(f)).length}/{category.options.length} {expandedCategories.includes(category.name) ? '▲' : '▼'}
                           </span>
@@ -1375,7 +1375,7 @@ export default function Vozidla() {
                                     onChange={() => toggleFeature(option)}
                                     className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
                                   />
-                                  <span className="text-sm">{option}</span>
+                                  <span className="text-sm">{tEquipment(option)}</span>
                                 </label>
                               ))}
                             </div>

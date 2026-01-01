@@ -178,10 +178,149 @@ export const translations = {
   rokVyroby: { sk: 'Rok výroby', cs: 'Rok výroby' },
   pocetKm: { sk: 'Počet km', cs: 'Počet km' },
   moznyLeasing: { sk: 'Možný leasing, Možný úver', cs: 'Možný leasing, Možný úvěr' },
+
+  // Equipment category names
+  'cat_Bezpečnosť': { sk: 'Bezpečnosť', cs: 'Bezpečnost' },
+  'cat_Komfort': { sk: 'Komfort', cs: 'Komfort' },
+  'cat_Ďalšia výbava': { sk: 'Ďalšia výbava', cs: 'Další výbava' },
+  'cat_Doplňujúce údaje': { sk: 'Doplňujúce údaje', cs: 'Doplňující údaje' },
+
+  // Bezpečnosť options
+  'eq_ABS': { sk: 'ABS', cs: 'ABS' },
+  'eq_Centrálne zamykanie': { sk: 'Centrálne zamykanie', cs: 'Centrální zamykání' },
+  'eq_EBV': { sk: 'EBV', cs: 'EBV' },
+  'eq_Mechanické zabezpečenie': { sk: 'Mechanické zabezpečenie', cs: 'Mechanické zabezpečení' },
+  'eq_Asistent rozoznávania dopravných značiek (ISLW/ISLA)': { sk: 'Asistent rozoznávania dopravných značiek (ISLW/ISLA)', cs: 'Asistent rozpoznávání dopravních značek (ISLW/ISLA)' },
+  'eq_Systém tiesňového volania (e-Call)': { sk: 'Systém tiesňového volania (e-Call)', cs: 'Systém tísňového volání (e-Call)' },
+  'eq_Adaptívny tempomat': { sk: 'Adaptívny tempomat', cs: 'Adaptivní tempomat' },
+  'eq_Alarm': { sk: 'Alarm', cs: 'Alarm' },
+  'eq_Deaktivácia airbagov': { sk: 'Deaktivácia airbagov', cs: 'Deaktivace airbagů' },
+  'eq_ESP': { sk: 'ESP', cs: 'ESP' },
+  'eq_Natáčacie svetlomety': { sk: 'Natáčacie svetlomety', cs: 'Natáčecí světlomety' },
+  'eq_Varovanie o vzdialenosti (BAS Plus)': { sk: 'Varovanie o vzdialenosti (BAS Plus)', cs: 'Varování o vzdálenosti (BAS Plus)' },
+  'eq_Upozornenie premávky za vozidlom (RCTA)': { sk: 'Upozornenie premávky za vozidlom (RCTA)', cs: 'Upozornění provozu za vozidlem (RCTA)' },
+  'eq_ADS': { sk: 'ADS', cs: 'ADS' },
+  'eq_ASR': { sk: 'ASR', cs: 'ASR' },
+  'eq_DSC': { sk: 'DSC', cs: 'DSC' },
+  'eq_Imobilizér': { sk: 'Imobilizér', cs: 'Imobilizér' },
+  'eq_Parkovacia kamera': { sk: 'Parkovacia kamera', cs: 'Parkovací kamera' },
+  'eq_Systém rozoznania únavy vodiča (DAW)': { sk: 'Systém rozoznania únavy vodiča (DAW)', cs: 'Systém rozpoznání únavy řidiče (DAW)' },
+  'eq_Asistent diaľkových svetiel (HBA)': { sk: 'Asistent diaľkových svetiel (HBA)', cs: 'Asistent dálkových světel (HBA)' },
+  'eq_Airbagy': { sk: 'Airbagy', cs: 'Airbagy' },
+  'eq_Brzdový asistent': { sk: 'Brzdový asistent', cs: 'Brzdový asistent' },
+  'eq_EBD': { sk: 'EBD', cs: 'EBD' },
+  'eq_Isofix': { sk: 'Isofix', cs: 'Isofix' },
+  'eq_Systém kontroly tlaku v pneumatikách (TPMS)': { sk: 'Systém kontroly tlaku v pneumatikách (TPMS)', cs: 'Systém kontroly tlaku v pneumatikách (TPMS)' },
+  'eq_360° kamera': { sk: '360° kamera', cs: '360° kamera' },
+
+  // Komfort options
+  'eq_Autorádio': { sk: 'Autorádio', cs: 'Autorádio' },
+  'eq_Bezkľúčové štartovanie': { sk: 'Bezkľúčové štartovanie', cs: 'Bezklíčové startování' },
+  'eq_Elektrické okná': { sk: 'Elektrické okná', cs: 'Elektrická okna' },
+  'eq_Fólie': { sk: 'Fólie', cs: 'Fólie' },
+  'eq_Kožený paket': { sk: 'Kožený paket', cs: 'Kožený paket' },
+  'eq_Multifunkčný volant': { sk: 'Multifunkčný volant', cs: 'Multifunkční volant' },
+  'eq_Palubný počítač': { sk: 'Palubný počítač', cs: 'Palubní počítač' },
+  'eq_Sedadlá s masážnou funkciou': { sk: 'Sedadlá s masážnou funkciou', cs: 'Sedadla s masážní funkcí' },
+  'eq_Vyhrievané zrkadlá': { sk: 'Vyhrievané zrkadlá', cs: 'Vyhřívaná zrcátka' },
+  'eq_Elektrický šíber': { sk: 'Elektrický šíber', cs: 'Elektrický šíbr' },
+  'eq_Welcome light': { sk: 'Welcome light', cs: 'Welcome light' },
+  'eq_Matrix svetlá': { sk: 'Matrix svetlá', cs: 'Matrix světla' },
+  'eq_Adaptívny podvozok': { sk: 'Adaptívny podvozok', cs: 'Adaptivní podvozek' },
+  'eq_Bluetooth handsfree': { sk: 'Bluetooth handsfree', cs: 'Bluetooth handsfree' },
+  'eq_Elektrické sedadlá': { sk: 'Elektrické sedadlá', cs: 'Elektrická sedadla' },
+  'eq_Lakťová opierka': { sk: 'Lakťová opierka', cs: 'Loketní opěrka' },
+  'eq_Navigačný systém': { sk: 'Navigačný systém', cs: 'Navigační systém' },
+  'eq_Pamäťové sedáky': { sk: 'Pamäťové sedáky', cs: 'Paměťová sedadla' },
+  'eq_Tempomat': { sk: 'Tempomat', cs: 'Tempomat' },
+  'eq_Vyhrievaný volant': { sk: 'Vyhrievaný volant', cs: 'Vyhřívaný volant' },
+  'eq_Xenónové svetlomety': { sk: 'Xenónové svetlomety', cs: 'Xenonové světlomety' },
+  'eq_WLAN / WiFi Hotspot': { sk: 'WLAN / WiFi Hotspot', cs: 'WLAN / WiFi Hotspot' },
+  'eq_Atermické čelné sklo': { sk: 'Atermické čelné sklo', cs: 'Atermické čelní sklo' },
+  'eq_Bezdotykové otváranie kufra': { sk: 'Bezdotykové otváranie kufra', cs: 'Bezdotykové otevírání kufru' },
+  'eq_Diaľkové ovládanie zamykania': { sk: 'Diaľkové ovládanie zamykania', cs: 'Dálkové ovládání zamykání' },
+  'eq_Elektrické zrkadlá': { sk: 'Elektrické zrkadlá', cs: 'Elektrická zrcátka' },
+  'eq_Klimatizovaná priehradka': { sk: 'Klimatizovaná priehradka', cs: 'Klimatizovaná přihrádka' },
+  'eq_LED svetlomety': { sk: 'LED svetlomety', cs: 'LED světlomety' },
+  'eq_Nezávislé kúrenie': { sk: 'Nezávislé kúrenie', cs: 'Nezávislé topení' },
+  'eq_Parkovacie senzory': { sk: 'Parkovacie senzory', cs: 'Parkovací senzory' },
+  'eq_Vyhrievané predné sklo': { sk: 'Vyhrievané predné sklo', cs: 'Vyhřívané přední sklo' },
+  'eq_Vzduchové odpruženie podvozku': { sk: 'Vzduchové odpruženie podvozku', cs: 'Vzduchové odpružení podvozku' },
+  'eq_Apple CarPlay': { sk: 'Apple CarPlay', cs: 'Apple CarPlay' },
+  'eq_Virtuálny kokpit': { sk: 'Virtuálny kokpit', cs: 'Virtuální kokpit' },
+  'eq_Bezdrotové nabíjanie pre smartphony': { sk: 'Bezdrotové nabíjanie pre smartphony', cs: 'Bezdrátové nabíjení pro smartphony' },
+  'eq_Bezkľúčové otváranie dverí': { sk: 'Bezkľúčové otváranie dverí', cs: 'Bezklíčové otevírání dveří' },
+  'eq_Dotykový displej': { sk: 'Dotykový displej', cs: 'Dotykový displej' },
+  'eq_Elektrické ovládanie kufra': { sk: 'Elektrické ovládanie kufra', cs: 'Elektrické ovládání kufru' },
+  'eq_Kožený interiér': { sk: 'Kožený interiér', cs: 'Kožený interiér' },
+  'eq_LED osvetlenie': { sk: 'LED osvetlenie', cs: 'LED osvětlení' },
+  'eq_Odvetrávané sedadlá': { sk: 'Odvetrávané sedadlá', cs: 'Odvětrávána sedadla' },
+  'eq_Parkovací asistent': { sk: 'Parkovací asistent', cs: 'Parkovací asistent' },
+  'eq_Vyhrievané sedadlá': { sk: 'Vyhrievané sedadlá', cs: 'Vyhřívaná sedadla' },
+  'eq_Vonkajší teplomer': { sk: 'Vonkajší teplomer', cs: 'Venkovní teploměr' },
+  'eq_Android Auto': { sk: 'Android Auto', cs: 'Android Auto' },
+  'eq_Radenie pod volantom': { sk: 'Radenie pod volantom', cs: 'Řazení pod volantem' },
+  'eq_Ambientné osvetlenie': { sk: 'Ambientné osvetlenie', cs: 'Ambientní osvětlení' },
+
+  // Ďalšia výbava options
+  'eq_Asistent jazdných pruhov': { sk: 'Asistent jazdných pruhov', cs: 'Asistent jízdních pruhů' },
+  'eq_Doťahovanie dverí': { sk: 'Doťahovanie dverí', cs: 'Dotahování dveří' },
+  'eq_Kontrola mŕtveho uhla': { sk: 'Kontrola mŕtveho uhla', cs: 'Kontrola mrtvého úhlu' },
+  'eq_Sezónne prezutie': { sk: 'Sezónne prezutie', cs: 'Sezónní přezutí' },
+  'eq_Svetelný senzor': { sk: 'Svetelný senzor', cs: 'Světelný senzor' },
+  'eq_Asistent rozjazdu do kopca': { sk: 'Asistent rozjazdu do kopca', cs: 'Asistent rozjezdu do kopce' },
+  'eq_Head-up display': { sk: 'Head-up display', cs: 'Head-up display' },
+  'eq_Nočné videnie': { sk: 'Nočné videnie', cs: 'Noční vidění' },
+  'eq_Stop&start systém': { sk: 'Stop&start systém', cs: 'Stop&start systém' },
+  'eq_Tážne zariadenie': { sk: 'Tážne zariadenie', cs: 'Tažné zařízení' },
+  'eq_Dažďový senzor': { sk: 'Dažďový senzor', cs: 'Dešťový senzor' },
+  'eq_Hliníkové disky': { sk: 'Hliníkové disky', cs: 'Hliníkové disky' },
+  'eq_Ostrekovače svetlometov': { sk: 'Ostrekovače svetlometov', cs: 'Ostřikovače světlometů' },
+  'eq_Strešné okno': { sk: 'Strešné okno', cs: 'Střešní okno' },
+  'eq_Deliaca mreža': { sk: 'Deliaca mreža', cs: 'Dělící mřížka' },
+  'eq_Hmlovky': { sk: 'Hmlovky', cs: 'Mlhovky' },
+  'eq_Panoramatická strecha': { sk: 'Panoramatická strecha', cs: 'Panoramatická střecha' },
+  'eq_Strešný nosič': { sk: 'Strešný nosič', cs: 'Střešní nosič' },
+
+  // Doplňujúce údaje options
+  'eq_1. majiteľ': { sk: '1. majiteľ', cs: '1. majitel' },
+  'eq_Garážované': { sk: 'Garážované', cs: 'Garážované' },
+  'eq_Na dovoz': { sk: 'Na dovoz', cs: 'Na dovoz' },
+  'eq_Servisná knižka': { sk: 'Servisná knižka', cs: 'Servisní knížka' },
+  'eq_Úplná servisná história': { sk: 'Úplná servisná história', cs: 'Úplná servisní historie' },
+  'eq_Možný leasing': { sk: 'Možný leasing', cs: 'Možný leasing' },
+  'eq_Defektný motor alebo prevodovka': { sk: 'Defektný motor alebo prevodovka', cs: 'Vadný motor nebo převodovka' },
+  'eq_Kontrola originality': { sk: 'Kontrola originality', cs: 'Kontrola originality' },
+  'eq_Nehavarované': { sk: 'Nehavarované', cs: 'Nebourané' },
+  'eq_STK': { sk: 'STK', cs: 'STK' },
+  'eq_Úžitková verzia N1': { sk: 'Úžitková verzia N1', cs: 'Užitková verze N1' },
+  'eq_Možný úver': { sk: 'Možný úver', cs: 'Možný úvěr' },
+  'eq_Dovezené': { sk: 'Dovezené', cs: 'Dovezené' },
+  'eq_Ako nové kúpené v SR': { sk: 'Ako nové kúpené v SR', cs: 'Jako nové koupené v SR' },
+  'eq_ODO-Pass': { sk: 'ODO-Pass', cs: 'ODO-Pass' },
+  'eq_Top stav!': { sk: 'Top stav!', cs: 'Top stav!' },
+  'eq_Veterán': { sk: 'Veterán', cs: 'Veterán' },
+  'eq_EK': { sk: 'EK', cs: 'EK' },
+  'eq_Možná výmena': { sk: 'Možná výmena', cs: 'Možná výměna' },
+  'eq_Pravostranné riadenie': { sk: 'Pravostranné riadenie', cs: 'Pravostranné řízení' },
+  'eq_Tuning': { sk: 'Tuning', cs: 'Tuning' },
+  'eq_Vozidlo je v záruke': { sk: 'Vozidlo je v záruke', cs: 'Vozidlo je v záruce' },
 } as const
 
 export type TranslationKey = keyof typeof translations
 
 export function t(key: TranslationKey, lang: Lang = 'sk'): string {
   return translations[key]?.[lang] || translations[key]?.['sk'] || key
+}
+
+// Helper to translate equipment category names
+export function tCategory(categoryName: string, lang: Lang = 'sk'): string {
+  const key = `cat_${categoryName}` as TranslationKey
+  return translations[key]?.[lang] || translations[key]?.['sk'] || categoryName
+}
+
+// Helper to translate equipment option names
+export function tEquipment(optionName: string, lang: Lang = 'sk'): string {
+  const key = `eq_${optionName}` as TranslationKey
+  return translations[key]?.[lang] || translations[key]?.['sk'] || optionName
 }
