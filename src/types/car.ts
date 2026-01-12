@@ -37,6 +37,7 @@ export interface Car {
   parkingSensors?: string; // 'front' | 'rear' | 'front_rear'
   electricWindows?: string; // '0' | '2' | '4'
   heatedSeats?: string; // 'front' | 'rear' | 'front_rear'
+  deletedAt?: string; // Soft delete timestamp
 }
 
 // Database row type (snake_case from Supabase)
@@ -82,6 +83,7 @@ export interface CarRow {
   parking_sensors: string | null;
   electric_windows: string | null;
   heated_seats: string | null;
+  deleted_at: string | null;
 }
 
 // Map DB row to frontend Car interface
@@ -125,6 +127,7 @@ export function mapCarRow(row: CarRow): Car {
     parkingSensors: row.parking_sensors ?? undefined,
     electricWindows: row.electric_windows ?? undefined,
     heatedSeats: row.heated_seats ?? undefined,
+    deletedAt: row.deleted_at ?? undefined,
   };
 }
 

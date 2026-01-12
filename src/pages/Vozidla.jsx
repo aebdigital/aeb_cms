@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, XMarkIcon, PencilIcon, TrashIcon, PrinterIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, XMarkIcon, PencilIcon, TrashIcon, PrinterIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import CarCard from '../components/CarCard'
 import { equipmentCategories } from '../data/equipmentOptions'
 import { useAuth } from '../contexts/AuthContext'
 import { useTranslation } from '../i18n'
-import { getCarsForSite, createCar, updateCar, deleteCar as deleteCarApi } from '../api/cars'
+import { getCarsForSite, createCar, updateCar, deleteCar as deleteCarApi, getAllCarsForSite, restoreCar, permanentlyDeleteCar } from '../api/cars'
 import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets } from '../api/carsImages'
 import { getPublicUrl } from '../api/storage'
 import { ensureValidSession } from '../lib/supabaseClient'
@@ -54,6 +54,8 @@ export default function Vozidla() {
   const { currentSite, loading: authLoading } = useAuth()
   const { t, tCategory, tEquipment } = useTranslation()
   const [cars, setCars] = useState([])
+  const [archivedCars, setArchivedCars] = useState([])
+  const [activeTab, setActiveTab] = useState('ponuka') // 'ponuka' or 'archiv'
   const [loading, setLoading] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState(null)
@@ -76,7 +78,7 @@ export default function Vozidla() {
     yearMax: ''
   })
 
-  // Load cars from Supabase
+  // Load cars from Supabase (both active and archived)
   useEffect(() => {
     // Don't load if auth is still loading or no site selected
     if (authLoading || !currentSite?.id) {
@@ -92,9 +94,12 @@ export default function Vozidla() {
       try {
         setLoading(true)
         setError(null)
-        const data = await getCarsForSite(currentSite.id)
+        // Load all cars including deleted
+        const allData = await getAllCarsForSite(currentSite.id, true)
         if (!cancelled) {
-          setCars(data)
+          // Split into active and archived
+          setCars(allData.filter(c => !c.deletedAt))
+          setArchivedCars(allData.filter(c => c.deletedAt))
         }
       } catch (err) {
         console.error('Error loading cars:', err)
@@ -121,8 +126,9 @@ export default function Vozidla() {
 
     try {
       setError(null)
-      const data = await getCarsForSite(currentSite.id)
-      setCars(data)
+      const allData = await getAllCarsForSite(currentSite.id, true)
+      setCars(allData.filter(c => !c.deletedAt))
+      setArchivedCars(allData.filter(c => c.deletedAt))
     } catch (err) {
       console.error('Error loading cars:', err)
       setError(err.message)
@@ -140,8 +146,11 @@ export default function Vozidla() {
     return getPublicUrl(imagePath)
   }
 
+  // Get current cars based on active tab
+  const currentCars = activeTab === 'ponuka' ? cars : archivedCars
+
   // Filter cars based on search and filters
-  const filteredCars = cars.filter(car => {
+  const filteredCars = currentCars.filter(car => {
     const matchesSearch =
       car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       car.model.toLowerCase().includes(searchTerm.toLowerCase())
@@ -480,7 +489,36 @@ export default function Vozidla() {
   const handleDeleteCar = async (carId) => {
     if (window.confirm(t('steIsti'))) {
       try {
-        const car = cars.find(c => c.id === carId)
+        // Soft delete - just marks deleted_at, doesn't remove images
+        await deleteCarApi(carId)
+        setSelectedCar(null)
+        await loadCars()
+      } catch (err) {
+        console.error('Error deleting car:', err)
+        alert(t('chybaPriMazani') + err.message)
+      }
+    }
+  }
+
+  // Restore a soft-deleted car
+  const handleRestoreCar = async (carId) => {
+    if (window.confirm('Chcete obnoviť toto vozidlo?')) {
+      try {
+        await restoreCar(carId)
+        setSelectedCar(null)
+        await loadCars()
+      } catch (err) {
+        console.error('Error restoring car:', err)
+        alert('Chyba pri obnovovaní vozidla: ' + err.message)
+      }
+    }
+  }
+
+  // Permanently delete a car (from archive)
+  const handlePermanentDelete = async (carId) => {
+    if (window.confirm('Ste si istí, že chcete NATRVALO odstrániť toto vozidlo? Táto akcia je nevratná!')) {
+      try {
+        const car = archivedCars.find(c => c.id === carId)
 
         // Delete all images from storage and media_assets
         if (car && currentSite?.slug) {
@@ -491,13 +529,13 @@ export default function Vozidla() {
           })
         }
 
-        // Delete the car record
-        await deleteCarApi(carId)
+        // Permanently delete the car record
+        await permanentlyDeleteCar(carId)
         setSelectedCar(null)
         await loadCars()
       } catch (err) {
-        console.error('Error deleting car:', err)
-        alert(t('chybaPriMazani') + err.message)
+        console.error('Error permanently deleting car:', err)
+        alert('Chyba pri mazaní vozidla: ' + err.message)
       }
     }
   }
@@ -709,11 +747,13 @@ export default function Vozidla() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">{t('vsetky')}</option>
-                  <option value="Benzin">{t('benzin')}</option>
+                  <option value="Benzín">{t('benzin')}</option>
                   <option value="Diesel">{t('diesel')}</option>
                   <option value="Hybrid">{t('hybrid')}</option>
                   <option value="Elektro">{t('elektro')}</option>
                   <option value="LPG">{t('lpg')}</option>
+                  <option value="LPG + benzín">LPG + benzín</option>
+                  <option value="CNG">{t('cng')}</option>
                 </select>
               </div>
 
@@ -725,8 +765,8 @@ export default function Vozidla() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">{t('vsetky')}</option>
-                  <option value="Manualna">{t('manualna')}</option>
-                  <option value="Automaticka">{t('automaticka')}</option>
+                  <option value="Manuálna">{t('manualna')}</option>
+                  <option value="Automatická">{t('automaticka')}</option>
                 </select>
               </div>
 
@@ -787,15 +827,62 @@ export default function Vozidla() {
         )}
       </div>
 
-      {/* Results count */}
-      <div className="text-sm text-gray-600">
-        {t('zobrazujem')} {filteredCars.length} {t('z')} {cars.length} {t('vozidiel')}
+      {/* Tabs and Results count */}
+      <div className="flex items-center justify-between">
+        {/* Tabs */}
+        <div className="flex items-end">
+          <button
+            onClick={() => setActiveTab('ponuka')}
+            className={`relative px-6 py-2 text-sm font-semibold transition-all ${
+              activeTab === 'ponuka'
+                ? 'bg-white text-purple-700 rounded-t-lg shadow-sm z-10'
+                : 'bg-gray-100 text-gray-500 hover:text-gray-700 rounded-t-lg -mr-1 translate-y-0.5'
+            }`}
+            style={activeTab === 'ponuka' ? { boxShadow: '0 -2px 4px rgba(0,0,0,0.05)' } : {}}
+          >
+            Ponuka
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+              activeTab === 'ponuka' ? 'bg-purple-100 text-purple-700' : 'bg-gray-200 text-gray-600'
+            }`}>
+              {cars.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('archiv')}
+            className={`relative px-6 py-2 text-sm font-semibold transition-all ${
+              activeTab === 'archiv'
+                ? 'bg-white text-red-700 rounded-t-lg shadow-sm z-10'
+                : 'bg-gray-100 text-gray-500 hover:text-gray-700 rounded-t-lg -ml-1 translate-y-0.5'
+            }`}
+            style={activeTab === 'archiv' ? { boxShadow: '0 -2px 4px rgba(0,0,0,0.05)' } : {}}
+          >
+            Archív
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+              activeTab === 'archiv' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'
+            }`}>
+              {archivedCars.length}
+            </span>
+          </button>
+        </div>
+        {/* Results count */}
+        <div className="text-sm text-gray-600">
+          {t('zobrazujem')} {filteredCars.length} {t('z')} {currentCars.length} {t('vozidiel')}
+        </div>
       </div>
 
       {/* Cars Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${activeTab === 'archiv' ? 'bg-gray-50 p-4 rounded-lg -mt-2 pt-6' : ''}`}>
         {filteredCars.map((car) => (
-          <CarCard key={car.id} car={car} onClick={() => handleCarClick(car)} getImageUrl={getImageUrl} />
+          <div key={car.id} className="relative">
+            {activeTab === 'archiv' && (
+              <div className="absolute top-2 left-2 z-10 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-bold">
+                VYMAZANÉ
+              </div>
+            )}
+            <div className={activeTab === 'archiv' ? 'opacity-75' : ''}>
+              <CarCard car={car} onClick={() => handleCarClick(car)} getImageUrl={getImageUrl} />
+            </div>
+          </div>
         ))}
       </div>
 
@@ -816,27 +903,48 @@ export default function Vozidla() {
 
             <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
               <div className="absolute top-4 right-4 z-10 flex gap-2">
-                <button
-                  onClick={() => handlePrintCar(selectedCar)}
-                  className="bg-white rounded-full p-2 shadow-lg hover:bg-green-50"
-                  title={t('tlacitPdf')}
-                >
-                  <PrinterIcon className="h-6 w-6 text-green-600" />
-                </button>
-                <button
-                  onClick={() => openEditModal(selectedCar)}
-                  className="bg-white rounded-full p-2 shadow-lg hover:bg-blue-50"
-                  title={t('upravit')}
-                >
-                  <PencilIcon className="h-6 w-6 text-blue-600" />
-                </button>
-                <button
-                  onClick={() => handleDeleteCar(selectedCar.id)}
-                  className="bg-white rounded-full p-2 shadow-lg hover:bg-red-50"
-                  title={t('odstranit')}
-                >
-                  <TrashIcon className="h-6 w-6 text-red-600" />
-                </button>
+                {selectedCar.deletedAt ? (
+                  <>
+                    <button
+                      onClick={() => handleRestoreCar(selectedCar.id)}
+                      className="bg-white rounded-full p-2 shadow-lg hover:bg-green-50"
+                      title="Obnoviť"
+                    >
+                      <ArrowPathIcon className="h-6 w-6 text-green-600" />
+                    </button>
+                    <button
+                      onClick={() => handlePermanentDelete(selectedCar.id)}
+                      className="bg-white rounded-full p-2 shadow-lg hover:bg-red-50"
+                      title="Natrvalo odstrániť"
+                    >
+                      <TrashIcon className="h-6 w-6 text-red-600" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handlePrintCar(selectedCar)}
+                      className="bg-white rounded-full p-2 shadow-lg hover:bg-green-50"
+                      title={t('tlacitPdf')}
+                    >
+                      <PrinterIcon className="h-6 w-6 text-green-600" />
+                    </button>
+                    <button
+                      onClick={() => openEditModal(selectedCar)}
+                      className="bg-white rounded-full p-2 shadow-lg hover:bg-blue-50"
+                      title={t('upravit')}
+                    >
+                      <PencilIcon className="h-6 w-6 text-blue-600" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCar(selectedCar.id)}
+                      className="bg-white rounded-full p-2 shadow-lg hover:bg-red-50"
+                      title={t('odstranit')}
+                    >
+                      <TrashIcon className="h-6 w-6 text-red-600" />
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={() => setSelectedCar(null)}
                   className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100"
@@ -845,16 +953,22 @@ export default function Vozidla() {
                 </button>
               </div>
 
+              {selectedCar.deletedAt && (
+                <div className="bg-red-600 text-white text-center py-2 font-bold">
+                  VYMAZANÉ - {new Date(selectedCar.deletedAt).toLocaleDateString('sk-SK')}
+                </div>
+              )}
+
               <div className="relative h-64 sm:h-80">
                 <img
                   src={getImageUrl(selectedCar.image)}
                   alt={`${selectedCar.brand} ${selectedCar.model}`}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${selectedCar.deletedAt ? 'grayscale' : ''}`}
                 />
                 <div className="absolute bottom-4 left-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg text-xl font-bold">
-                  {selectedCar.price.toLocaleString()} EUR
+                  {selectedCar.price?.toLocaleString()} EUR
                 </div>
-                {selectedCar.source === 'admin' && (
+                {selectedCar.source === 'admin' && !selectedCar.deletedAt && (
                   <div className="absolute top-4 left-4 bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                     ADMIN
                   </div>
@@ -1080,11 +1194,12 @@ export default function Vozidla() {
                       required
                     >
                       <option value="">{t('vybertePalivo')}</option>
-                      <option value="Benzin">{t('benzin')}</option>
+                      <option value="Benzín">{t('benzin')}</option>
                       <option value="Diesel">{t('diesel')}</option>
                       <option value="Hybrid">{t('hybrid')}</option>
                       <option value="Elektro">{t('elektro')}</option>
                       <option value="LPG">{t('lpg')}</option>
+                      <option value="LPG + benzín">LPG + benzín</option>
                       <option value="CNG">{t('cng')}</option>
                     </select>
                   </div>
@@ -1098,8 +1213,8 @@ export default function Vozidla() {
                       required
                     >
                       <option value="">{t('vybertePrevodovku')}</option>
-                      <option value="Manualna">{t('manualna')}</option>
-                      <option value="Automaticka">{t('automaticka')}</option>
+                      <option value="Manuálna">{t('manualna')}</option>
+                      <option value="Automatická">{t('automaticka')}</option>
                     </select>
                   </div>
 

@@ -21,6 +21,7 @@ export async function getCarsForSite(siteId: string, opts?: CarFilterOptions): P
     .from('cars')
     .select('*')
     .eq('site_id', siteId)
+    .is('deleted_at', null) // Only get non-deleted cars
 
   if (opts?.featuredOnly) {
     query = query.eq('show_on_homepage', true)
@@ -110,12 +111,55 @@ export async function updateCar(carId: string, updates: Partial<Car>, siteId: st
 }
 
 export async function deleteCar(carId: string): Promise<void> {
+  // Soft delete - set deleted_at timestamp
+  const { error } = await supabase
+    .from('cars')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', carId)
+
+  if (error) throw error
+}
+
+// Permanently delete a car (hard delete)
+export async function permanentlyDeleteCar(carId: string): Promise<void> {
   const { error } = await supabase
     .from('cars')
     .delete()
     .eq('id', carId)
 
   if (error) throw error
+}
+
+// Restore a soft-deleted car
+export async function restoreCar(carId: string): Promise<Car> {
+  const { data, error } = await supabase
+    .from('cars')
+    .update({ deleted_at: null })
+    .eq('id', carId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return mapCarRow(data as CarRow)
+}
+
+// Get all cars including deleted ones (for archive)
+export async function getAllCarsForSite(siteId: string, includeDeleted: boolean = true): Promise<Car[]> {
+  let query = supabase
+    .from('cars')
+    .select('*')
+    .eq('site_id', siteId)
+
+  if (!includeDeleted) {
+    query = query.is('deleted_at', null)
+  }
+
+  query = query.order('deleted_at', { ascending: true, nullsFirst: true })
+    .order('created_at', { ascending: false })
+
+  const { data, error } = await query
+  if (error) throw error
+  return (data as CarRow[]).map(mapCarRow)
 }
 
 export async function toggleCarFeatured(carId: string, isFeatured: boolean, siteId: string): Promise<Car> {
