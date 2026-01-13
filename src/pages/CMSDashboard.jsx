@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import SiteSelector from '../components/SiteSelector'
 import PageList from '../components/PageList'
 import PageEditor from '../components/PageEditor'
+import { useTranslation } from '../i18n'
 import {
   ArrowRightOnRectangleIcon,
   DocumentIcon,
@@ -12,6 +13,7 @@ import {
 
 export default function CMSDashboard() {
   const { user, profile, currentSite, logout, loading } = useAuth()
+  const { t } = useTranslation()
   const [selectedPage, setSelectedPage] = useState(null)
   const [activeSection, setActiveSection] = useState('pages')
 
@@ -49,7 +51,7 @@ export default function CMSDashboard() {
             onClick={handleLogout}
             className="text-purple-600 hover:text-purple-700"
           >
-            Odhlásiť sa
+            {t('odhlasitSa')}
           </button>
         </div>
       </div>
@@ -87,7 +89,7 @@ export default function CMSDashboard() {
               <button
                 onClick={handleLogout}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                title="Odhlásiť sa"
+                title={t('odhlasitSa')}
               >
                 <ArrowRightOnRectangleIcon className="h-5 w-5" />
               </button>

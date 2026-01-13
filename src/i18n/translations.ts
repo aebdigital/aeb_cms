@@ -35,6 +35,8 @@ export const translations = {
   vin: { sk: 'VIN', cs: 'VIN' },
   dvere: { sk: 'Dvere', cs: 'Dveře' },
   farba: { sk: 'Farba', cs: 'Barva' },
+  krajinaPovodu: { sk: 'Krajina pôvodu', cs: 'Země původu' },
+  vyberteKrajinu: { sk: 'Vyberte krajinu', cs: 'Vyberte zemi' },
   typPrevodovky: { sk: 'Typ prevodovky', cs: 'Typ převodovky' },
   pocetStupnov: { sk: 'Počet stupňov', cs: 'Počet stupňů' },
   popis: { sk: 'Popis', cs: 'Popis' },
@@ -156,6 +158,10 @@ export const translations = {
   // Empty state
   ziadneVozidla: { sk: 'Žiadne vozidlá', cs: 'Žádná vozidla' },
   skusteZmenit: { sk: 'Skúste zmeniť filtre alebo vyhľadávanie', cs: 'Zkuste změnit filtry nebo vyhledávání' },
+
+  // Layout / Navigation
+  aktualnaStranka: { sk: 'Aktuálna stránka', cs: 'Aktuální stránka' },
+  odhlasitSa: { sk: 'Odhlásiť sa', cs: 'Odhlásit se' },
 
   // Detail modal
   galeria: { sk: 'Galéria', cs: 'Galerie' },

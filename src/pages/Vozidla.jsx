@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTranslation } from '../i18n'
 import { getCarsForSite, createCar, updateCar, deleteCar as deleteCarApi, getAllCarsForSite, restoreCar, permanentlyDeleteCar } from '../api/cars'
 import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets } from '../api/carsImages'
-import { getPublicUrl } from '../api/storage'
+import { getPublicUrl, uploadCarPdf } from '../api/storage'
 import { ensureValidSession } from '../lib/supabaseClient'
 import { compressImage } from '../lib/fileUtils'
 import logo from '../logo.png'
@@ -33,11 +33,11 @@ const initialCarForm = {
   // New fields
   doors: '',
   color: '',
+  countryOfOrigin: '',
   reserved: false,
   month: '',
   vatDeductible: false,
   priceWithoutVat: 0,
-  transmissionType: '',
   transmissionGears: '',
   airbagCount: '',
   radioCd: false,
@@ -47,7 +47,12 @@ const initialCarForm = {
   acZones: '',
   parkingSensors: '',
   electricWindows: '',
-  heatedSeats: ''
+  heatedSeats: '',
+  // PDF documents
+  serviceBookPdf: null, // existing path or null
+  cebiaProtocolPdf: null, // existing path or null
+  pendingServiceBookPdf: null, // File object for new upload
+  pendingCebiaProtocolPdf: null // File object for new upload
 }
 
 export default function Vozidla() {
@@ -293,11 +298,11 @@ export default function Vozidla() {
       // New fields
       doors: car.doors || '',
       color: car.color || '',
+      countryOfOrigin: car.countryOfOrigin || '',
       reserved: car.reserved || false,
       month: car.month || '',
       vatDeductible: car.vatDeductible || false,
       priceWithoutVat: car.priceWithoutVat || 0,
-      transmissionType: car.transmissionType || '',
       transmissionGears: car.transmissionGears || '',
       airbagCount: car.airbagCount || '',
       radioCd: car.radioCd || false,
@@ -307,7 +312,12 @@ export default function Vozidla() {
       acZones: car.acZones || '',
       parkingSensors: car.parkingSensors || '',
       electricWindows: car.electricWindows || '',
-      heatedSeats: car.heatedSeats || ''
+      heatedSeats: car.heatedSeats || '',
+      // PDF documents
+      serviceBookPdf: car.serviceBookPdf || null,
+      cebiaProtocolPdf: car.cebiaProtocolPdf || null,
+      pendingServiceBookPdf: null,
+      pendingCebiaProtocolPdf: null
     })
     setIsEditMode(true)
     setEditingCar(car)
@@ -386,11 +396,11 @@ export default function Vozidla() {
         // New fields
         doors: carForm.doors || undefined,
         color: carForm.color || undefined,
+        countryOfOrigin: carForm.countryOfOrigin || undefined,
         reserved: carForm.reserved,
         month: carForm.month ? parseInt(carForm.month) : undefined,
         vatDeductible: carForm.vatDeductible,
         priceWithoutVat: carForm.vatDeductible && carForm.price ? Math.round(carForm.price / 1.23) : undefined,
-        transmissionType: carForm.transmissionType || undefined,
         transmissionGears: carForm.transmissionGears || undefined,
         airbagCount: carForm.airbagCount ? parseInt(carForm.airbagCount) : undefined,
         radioCd: carForm.radioCd,
@@ -458,18 +468,59 @@ export default function Vozidla() {
         }
       }).filter(Boolean) // Remove any undefined
 
-      // Update car with final image order
+      // Upload PDF files if provided
+      let serviceBookPdfPath = carForm.serviceBookPdf
+      let cebiaProtocolPdfPath = carForm.cebiaProtocolPdf
+
+      if (carForm.pendingServiceBookPdf && carId) {
+        setUploadProgress('Nahrávam servisnú knižku...')
+        const { path } = await withTimeout(
+          uploadCarPdf({
+            file: carForm.pendingServiceBookPdf,
+            siteSlug,
+            carId,
+            pdfType: 'service-book'
+          }),
+          60000,
+          'Uploading service book PDF'
+        )
+        serviceBookPdfPath = path
+      }
+
+      if (carForm.pendingCebiaProtocolPdf && carId) {
+        setUploadProgress('Nahrávam Cebia protokol...')
+        const { path } = await withTimeout(
+          uploadCarPdf({
+            file: carForm.pendingCebiaProtocolPdf,
+            siteSlug,
+            carId,
+            pdfType: 'cebia-protocol'
+          }),
+          60000,
+          'Uploading Cebia protocol PDF'
+        )
+        cebiaProtocolPdfPath = path
+      }
+
+      // Update car with final image order and PDF paths
+      const updateData = {
+        serviceBookPdf: serviceBookPdfPath,
+        cebiaProtocolPdf: cebiaProtocolPdfPath
+      }
+
       if (finalImagePaths.length > 0) {
         setUploadProgress(t('ukladamPoradieObrazkov'))
         await withTimeout(updateCar(carId, {
           image: finalImagePaths[0], // First image is main
-          images: finalImagePaths.slice(1) // Rest are gallery
+          images: finalImagePaths.slice(1), // Rest are gallery
+          ...updateData
         }, currentSite.id), 30000, 'Saving image order')
       } else {
-        // No images - clear them
+        // No images - clear them but keep PDFs
         await withTimeout(updateCar(carId, {
           image: null,
-          images: []
+          images: [],
+          ...updateData
         }, currentSite.id), 30000, 'Clearing images')
       }
 
@@ -1219,6 +1270,17 @@ export default function Vozidla() {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-semibold mb-2">{t('pocetStupnov')}</label>
+                    <input
+                      type="text"
+                      value={carForm.transmissionGears}
+                      onChange={(e) => handleCarFormChange('transmissionGears', e.target.value)}
+                      placeholder={t('napr6')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-semibold mb-2">{t('motor')}</label>
                     <input
                       type="text"
@@ -1295,27 +1357,44 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">{t('typPrevodovky')}</label>
+                    <label className="block text-sm font-semibold mb-2">{t('krajinaPovodu')}</label>
                     <select
-                      value={carForm.transmissionType}
-                      onChange={(e) => handleCarFormChange('transmissionType', e.target.value)}
+                      value={carForm.countryOfOrigin}
+                      onChange={(e) => handleCarFormChange('countryOfOrigin', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                      <option value="">{t('vyberteTyp')}</option>
-                      <option value="manual">{t('manualna')}</option>
-                      <option value="automatic">{t('automaticka')}</option>
+                      <option value="">{t('vyberteKrajinu')}</option>
+                      <option value="SK">Slovensko</option>
+                      <option value="CZ">Česko</option>
+                      <option value="DE">Nemecko</option>
+                      <option value="AT">Rakúsko</option>
+                      <option value="PL">Poľsko</option>
+                      <option value="HU">Maďarsko</option>
+                      <option value="NL">Holandsko</option>
+                      <option value="BE">Belgicko</option>
+                      <option value="FR">Francúzsko</option>
+                      <option value="IT">Taliansko</option>
+                      <option value="ES">Španielsko</option>
+                      <option value="PT">Portugalsko</option>
+                      <option value="GB">Veľká Británia</option>
+                      <option value="IE">Írsko</option>
+                      <option value="DK">Dánsko</option>
+                      <option value="SE">Švédsko</option>
+                      <option value="NO">Nórsko</option>
+                      <option value="FI">Fínsko</option>
+                      <option value="CH">Švajčiarsko</option>
+                      <option value="LU">Luxembursko</option>
+                      <option value="SI">Slovinsko</option>
+                      <option value="HR">Chorvátsko</option>
+                      <option value="RO">Rumunsko</option>
+                      <option value="BG">Bulharsko</option>
+                      <option value="GR">Grécko</option>
+                      <option value="LT">Litva</option>
+                      <option value="LV">Lotyšsko</option>
+                      <option value="EE">Estónsko</option>
+                      <option value="UA">Ukrajina</option>
+                      <option value="US">USA</option>
                     </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">{t('pocetStupnov')}</label>
-                    <input
-                      type="text"
-                      value={carForm.transmissionGears}
-                      onChange={(e) => handleCarFormChange('transmissionGears', e.target.value)}
-                      placeholder={t('napr6')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
                   </div>
 
                 </div>
@@ -1566,6 +1645,112 @@ export default function Vozidla() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* PDF Documents */}
+                <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
+                  <label className="block text-sm font-semibold mb-4 text-blue-900">PDF Dokumenty</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Service Book PDF */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-blue-800">Servisná knižka</label>
+                      {carForm.serviceBookPdf && !carForm.pendingServiceBookPdf && (
+                        <div className="flex items-center gap-2 mb-2 p-2 bg-white rounded border border-blue-200">
+                          <span className="text-green-600">✓</span>
+                          <span className="text-sm text-gray-700 truncate flex-1">Nahraté</span>
+                          <a
+                            href={getImageUrl(carForm.serviceBookPdf)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm underline"
+                          >
+                            Zobraziť
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleCarFormChange('serviceBookPdf', null)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Odstrániť
+                          </button>
+                        </div>
+                      )}
+                      {carForm.pendingServiceBookPdf && (
+                        <div className="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded border border-green-200">
+                          <span className="text-green-600">📄</span>
+                          <span className="text-sm text-gray-700 truncate flex-1">{carForm.pendingServiceBookPdf.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCarFormChange('pendingServiceBookPdf', null)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Zrušiť
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            handleCarFormChange('pendingServiceBookPdf', e.target.files[0])
+                          }
+                          e.target.value = ''
+                        }}
+                        className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 text-sm"
+                      />
+                    </div>
+
+                    {/* Cebia Protocol PDF */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-blue-800">Cebia protokol</label>
+                      {carForm.cebiaProtocolPdf && !carForm.pendingCebiaProtocolPdf && (
+                        <div className="flex items-center gap-2 mb-2 p-2 bg-white rounded border border-blue-200">
+                          <span className="text-green-600">✓</span>
+                          <span className="text-sm text-gray-700 truncate flex-1">Nahraté</span>
+                          <a
+                            href={getImageUrl(carForm.cebiaProtocolPdf)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm underline"
+                          >
+                            Zobraziť
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleCarFormChange('cebiaProtocolPdf', null)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Odstrániť
+                          </button>
+                        </div>
+                      )}
+                      {carForm.pendingCebiaProtocolPdf && (
+                        <div className="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded border border-green-200">
+                          <span className="text-green-600">📄</span>
+                          <span className="text-sm text-gray-700 truncate flex-1">{carForm.pendingCebiaProtocolPdf.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCarFormChange('pendingCebiaProtocolPdf', null)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Zrušiť
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            handleCarFormChange('pendingCebiaProtocolPdf', e.target.files[0])
+                          }
+                          e.target.value = ''
+                        }}
+                        className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Show on Homepage */}

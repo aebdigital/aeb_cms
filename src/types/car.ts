@@ -22,6 +22,7 @@ export interface Car {
   // New fields
   doors?: string;
   color?: string;
+  countryOfOrigin?: string;
   reserved?: boolean;
   month?: number;
   vatDeductible?: boolean;
@@ -38,6 +39,9 @@ export interface Car {
   electricWindows?: string; // '0' | '2' | '4'
   heatedSeats?: string; // 'front' | 'rear' | 'front_rear'
   deletedAt?: string; // Soft delete timestamp
+  // PDF documents
+  serviceBookPdf?: string; // Path to service book PDF
+  cebiaProtocolPdf?: string; // Path to Cebia protocol PDF
 }
 
 // Database row type (snake_case from Supabase)
@@ -68,6 +72,7 @@ export interface CarRow {
   // New fields
   doors: string | null;
   color: string | null;
+  country_of_origin: string | null;
   reserved: boolean | null;
   month: number | null;
   vat_deductible: boolean | null;
@@ -84,6 +89,9 @@ export interface CarRow {
   electric_windows: string | null;
   heated_seats: string | null;
   deleted_at: string | null;
+  // PDF documents
+  service_book_pdf: string | null;
+  cebia_protocol_pdf: string | null;
 }
 
 // Map DB row to frontend Car interface
@@ -112,6 +120,7 @@ export function mapCarRow(row: CarRow): Car {
     // New fields
     doors: row.doors ?? undefined,
     color: row.color ?? undefined,
+    countryOfOrigin: row.country_of_origin ?? undefined,
     reserved: row.reserved ?? false,
     month: row.month ?? undefined,
     vatDeductible: row.vat_deductible ?? false,
@@ -128,6 +137,9 @@ export function mapCarRow(row: CarRow): Car {
     electricWindows: row.electric_windows ?? undefined,
     heatedSeats: row.heated_seats ?? undefined,
     deletedAt: row.deleted_at ?? undefined,
+    // PDF documents
+    serviceBookPdf: row.service_book_pdf ?? undefined,
+    cebiaProtocolPdf: row.cebia_protocol_pdf ?? undefined,
   };
 }
 
@@ -156,6 +168,7 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
     // New fields
     doors: car.doors,
     color: car.color,
+    country_of_origin: car.countryOfOrigin,
     reserved: car.reserved,
     month: car.month,
     vat_deductible: car.vatDeductible,
@@ -171,6 +184,9 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
     parking_sensors: car.parkingSensors,
     electric_windows: car.electricWindows,
     heated_seats: car.heatedSeats,
+    // PDF documents
+    service_book_pdf: car.serviceBookPdf,
+    cebia_protocol_pdf: car.cebiaProtocolPdf,
   };
 
   // Only include image if it's defined (to avoid NOT NULL constraint issues)

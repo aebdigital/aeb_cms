@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getPagesForSite } from '../api/pages'
+import { useTranslation } from '../i18n'
 import {
   FolderIcon,
   PhotoIcon,
@@ -38,6 +39,7 @@ export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, currentSite, logout, loading: authLoading } = useAuth()
+  const { t } = useTranslation()
 
   const [navPages, setNavPages] = useState([])
   const [loadingPages, setLoadingPages] = useState(true)
@@ -123,7 +125,7 @@ export default function Layout() {
             {currentSite && (
               <div className="px-4 mt-4">
                 <div className="px-3 py-2 bg-white/10 rounded-lg">
-                  <p className="text-xs text-gray-400">Aktuálna stránka</p>
+                  <p className="text-xs text-gray-400">{t('aktualnaStranka')}</p>
                   <p className="text-sm text-white font-medium">{currentSite.name}</p>
                 </div>
               </div>
@@ -172,7 +174,7 @@ export default function Layout() {
               className="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all"
             >
               <ArrowRightOnRectangleIcon className="mr-4 h-5 w-5" />
-              Odhlásiť sa
+              {t('odhlasitSa')}
             </button>
           </div>
         </div>
@@ -197,7 +199,7 @@ export default function Layout() {
             {currentSite && (
               <div className="px-6 mb-4">
                 <div className="px-4 py-3 bg-white/10 rounded-xl">
-                  <p className="text-xs text-gray-400">Aktuálna stránka</p>
+                  <p className="text-xs text-gray-400">{t('aktualnaStranka')}</p>
                   <p className="text-sm text-white font-medium">{currentSite.name}</p>
                 </div>
               </div>
@@ -245,7 +247,7 @@ export default function Layout() {
               className="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all"
             >
               <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
-              Odhlásiť sa
+              {t('odhlasitSa')}
             </button>
           </div>
         </div>

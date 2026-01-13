@@ -49,6 +49,35 @@ export function getPublicUrl(path: string): string {
   return data.publicUrl
 }
 
+// Upload a PDF file for a car
+export interface UploadCarPdfOptions {
+  file: File
+  siteSlug: string
+  carId: string
+  pdfType: 'service-book' | 'cebia-protocol'
+}
+
+export async function uploadCarPdf(options: UploadCarPdfOptions): Promise<{ path: string }> {
+  const { file, siteSlug, carId, pdfType } = options
+
+  const fileName = `${pdfType}.pdf`
+  const path = `${siteSlug}/cars/${carId}/${fileName}`
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, {
+      upsert: true,
+      cacheControl: '3600',
+      contentType: 'application/pdf',
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return { path }
+}
+
 // Delete all images for a car (when deleting the car)
 export async function deleteAllCarImages(siteSlug: string, carId: string): Promise<void> {
   const folderPath = `${siteSlug}/cars/${carId}`
