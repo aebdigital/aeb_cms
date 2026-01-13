@@ -10,6 +10,9 @@ import Nastavenia from './pages/Nastavenia'
 import Vozidla from './pages/Vozidla'
 import Oznamy from './pages/Oznamy'
 import Dovolenka from './pages/Dovolenka'
+import LudusGaleria from './pages/LudusGaleria'
+import LudusAktuality from './pages/LudusAktuality'
+import LudusProgram from './pages/LudusProgram'
 import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
 import DynamicHomePage from './components/DynamicHomePage'
@@ -54,6 +57,10 @@ function App() {
             <Route path="ponuka" element={<Vozidla />} />
             <Route path="oznamy" element={<Oznamy />} />
             <Route path="dovolenka" element={<Dovolenka />} />
+            {/* Ludus Hub specific routes */}
+            <Route path="ludus-galeria" element={<LudusGaleria />} />
+            <Route path="ludus-aktuality" element={<LudusAktuality />} />
+            <Route path="ludus-program" element={<LudusProgram />} />
           </Route>
 
           {/* Catch all - show 404 if authenticated, otherwise redirect to login */}

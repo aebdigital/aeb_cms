@@ -15,7 +15,9 @@ import {
   TruckIcon,
   HomeIcon,
   DocumentIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  NewspaperIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline'
 
 // Map page slugs to icons
@@ -27,7 +29,10 @@ const iconMap = {
   'kontakt': EnvelopeIcon,
   'nastavenia': CogIcon,
   'home': HomeIcon,
-  'default': DocumentIcon
+  'default': DocumentIcon,
+  'ludus-galeria': PhotoIcon,
+  'ludus-aktuality': NewspaperIcon,
+  'ludus-program': CalendarDaysIcon
 }
 
 function getIconForSlug(slug) {
@@ -42,19 +47,29 @@ export default function Layout() {
   const { t } = useTranslation()
 
   const [navPages, setNavPages] = useState([])
+  const [allPages, setAllPages] = useState([])
   const [loadingPages, setLoadingPages] = useState(true)
 
-  // Load navigation pages from backend
+  // 1. Fetch pages when site changes
   useEffect(() => {
     if (currentSite?.id) {
-      loadNavPages()
+      loadPages()
     }
   }, [currentSite?.id])
 
-  async function loadNavPages() {
+  // 2. Access Control: Check permissions whenever location or pages change
+  useEffect(() => {
+    if (!loadingPages && allPages.length > 0) {
+      checkAccess()
+    }
+  }, [location.pathname, allPages, loadingPages])
+
+  async function loadPages() {
     try {
       setLoadingPages(true)
       const pages = await getPagesForSite(currentSite.id)
+      setAllPages(pages)
+
       // Filter to only show pages that should be in nav
       const navItems = pages
         .filter(p => p.show_in_nav)
@@ -66,11 +81,32 @@ export default function Layout() {
         }))
       setNavPages(navItems)
     } catch (err) {
-      console.error('Error loading nav pages:', err)
-      // Fallback to empty nav if error
+      console.error('Error loading pages:', err)
       setNavPages([])
+      setAllPages([])
     } finally {
       setLoadingPages(false)
+    }
+  }
+
+  function checkAccess() {
+    // Extract current slug from pathname (remove leading slash)
+    const currentSlug = location.pathname.substring(1);
+
+    // Always allow:
+    // - root path (handled by DynamicHomePage)
+    // - nastavenia (Settings) - assuming it's available for all
+    // - empty/dashboard
+    const alwaysAllowed = ['', 'nastavenia', 'cms'];
+
+    if (!alwaysAllowed.includes(currentSlug)) {
+      // Check if current slug corresponds to a defined page for this site
+      const isAllowed = allPages.some(p => p.slug === currentSlug);
+
+      if (!isAllowed) {
+        console.warn(`Access denied to /${currentSlug} for site ${currentSite.name}. Redirecting to home.`);
+        navigate('/', { replace: true });
+      }
     }
   }
 
@@ -114,7 +150,7 @@ export default function Layout() {
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                   </svg>
                 </div>
                 <h1 className="text-xl font-bold text-white">CMS Admin</h1>
@@ -147,11 +183,10 @@ export default function Layout() {
                     <Link
                       key={item.slug}
                       to={item.href}
-                      className={`${
-                        current
-                          ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
-                          : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                      } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200`}
+                      className={`${current
+                        ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                        : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                        } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200`}
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-5 w-5 flex-shrink-0" />
@@ -188,7 +223,7 @@ export default function Layout() {
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                   </svg>
                 </div>
                 <h1 className="text-2xl font-bold text-white">CMS Admin</h1>
@@ -219,11 +254,10 @@ export default function Layout() {
                     <Link
                       key={item.slug}
                       to={item.href}
-                      className={`${
-                        current
-                          ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
-                          : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                      } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105`}
+                      className={`${current
+                        ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                        : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                        } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105`}
                     >
                       <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
                       {item.name}

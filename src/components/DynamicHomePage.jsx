@@ -21,8 +21,9 @@ export default function DynamicHomePage() {
 
       // List of valid slugs that have routes defined in App.jsx
       const VALID_SLUGS = [
-        'projekty', 'galerie', 'blogy', 'kontakt', 'nastavenia', 
-        'vozidla', 'ponuka', 'oznamy', 'dovolenka'
+        'projekty', 'galerie', 'blogy', 'kontakt', 'nastavenia',
+        'vozidla', 'ponuka', 'oznamy', 'dovolenka',
+        'ludus-galeria', 'ludus-aktuality', 'ludus-program'
       ]
 
       const validNavPage = navPages.find(p => VALID_SLUGS.includes(p.slug))
