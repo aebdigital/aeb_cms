@@ -1,4 +1,4 @@
-const CarCard = ({ car, onClick, getImageUrl }) => {
+const CarCard = ({ car, onClick, getImageUrl, currency = 'EUR' }) => {
   const isAdminAdded = car.source === 'admin';
 
   // Check if car is reserved (reservation date is in the future)
@@ -27,7 +27,7 @@ const CarCard = ({ car, onClick, getImageUrl }) => {
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
         />
         <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-bl-xl text-lg font-bold">
-          {car.price.toLocaleString()} EUR
+          {car.price.toLocaleString()} {currency}
         </div>
         {isAdminAdded && (
           <div className="absolute top-2 left-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold">

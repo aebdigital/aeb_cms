@@ -605,17 +605,13 @@ export default function Vozidla() {
     // Check if current site is autocentrummaxi (Czech site)
     const isAutocentrumMaxi = currentSite?.slug === 'autocentrummaxi'
 
-    // EUR to CZK conversion rate (approximate)
-    const EUR_TO_CZK = 25.3
-
-    // Format price based on site
-    const formatPrice = (priceEur) => {
-      if (!priceEur) return 'N/A'
+    // Format price based on site (autocentrummaxi prices are already in CZK)
+    const formatPrice = (price) => {
+      if (!price) return 'N/A'
       if (isAutocentrumMaxi) {
-        const priceCzk = Math.round(priceEur * EUR_TO_CZK)
-        return `${priceCzk.toLocaleString('cs-CZ')} Kč`
+        return `${price.toLocaleString('cs-CZ')} Kč`
       }
-      return `${priceEur.toLocaleString()} €`
+      return `${price.toLocaleString()} €`
     }
 
     // Translate labels for Czech
@@ -972,7 +968,7 @@ export default function Vozidla() {
               </div>
             )}
             <div className={activeTab === 'archiv' ? 'opacity-75' : ''}>
-              <CarCard car={car} onClick={() => handleCarClick(car)} getImageUrl={getImageUrl} />
+              <CarCard car={car} onClick={() => handleCarClick(car)} getImageUrl={getImageUrl} currency={currentSite?.slug === 'autocentrummaxi' ? 'Kč' : 'EUR'} />
             </div>
           </div>
         ))}
@@ -1058,7 +1054,7 @@ export default function Vozidla() {
                   className={`w-full h-full object-cover ${selectedCar.deletedAt ? 'grayscale' : ''}`}
                 />
                 <div className="absolute bottom-4 left-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg text-xl font-bold">
-                  {selectedCar.price?.toLocaleString()} EUR
+                  {selectedCar.price?.toLocaleString()} {currentSite?.slug === 'autocentrummaxi' ? 'Kč' : 'EUR'}
                 </div>
                 {selectedCar.source === 'admin' && !selectedCar.deletedAt && (
                   <div className="absolute top-4 left-4 bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold">
