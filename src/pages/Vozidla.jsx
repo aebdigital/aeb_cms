@@ -602,6 +602,45 @@ export default function Vozidla() {
       }
     })
 
+    // Check if current site is autocentrummaxi (Czech site)
+    const isAutocentrumMaxi = currentSite?.slug === 'autocentrummaxi'
+
+    // EUR to CZK conversion rate (approximate)
+    const EUR_TO_CZK = 25.3
+
+    // Format price based on site
+    const formatPrice = (priceEur) => {
+      if (!priceEur) return 'N/A'
+      if (isAutocentrumMaxi) {
+        const priceCzk = Math.round(priceEur * EUR_TO_CZK)
+        return `${priceCzk.toLocaleString('cs-CZ')} Kč`
+      }
+      return `${priceEur.toLocaleString()} €`
+    }
+
+    // Translate labels for Czech
+    const labels = isAutocentrumMaxi ? {
+      rokVyroby: 'Rok výroby',
+      pocetKm: 'Počet km',
+      palivo: 'Palivo',
+      prevodovka: 'Převodovka',
+      vykon: 'Výkon',
+      karoserie: 'Karoserie',
+      pohon: 'Pohon',
+      vin: 'VIN',
+      priceNote: 'Možný leasing, Možný úvěr'
+    } : {
+      rokVyroby: 'Rok výroby',
+      pocetKm: 'Počet km',
+      palivo: 'Palivo',
+      prevodovka: 'Prevodovka',
+      vykon: 'Výkon',
+      karoserie: 'Karoséria',
+      pohon: 'Pohon',
+      vin: 'VIN',
+      priceNote: 'Možný leasing, Možný úver'
+    }
+
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -656,23 +695,25 @@ export default function Vozidla() {
         </style>
       </head>
       <body>
+        ${!isAutocentrumMaxi ? `
         <div class="logo-container">
           <img src="${logo}" alt="Logo" class="logo-img"/>
         </div>
+        ` : ''}
         <div class="content">
           <div class="header">
             <div class="title">${car.brand} ${car.model}</div>
           </div>
 
           <div class="info-box">
-            <div class="info-row"><span class="info-label">Rok výroby:</span> <span class="info-value">${car.year}</span></div>
-            <div class="info-row"><span class="info-label">Počet km:</span> <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span></div>
-            <div class="info-row"><span class="info-label">Palivo:</span> <span class="info-value">${car.fuel || 'N/A'}</span></div>
-            <div class="info-row"><span class="info-label">Prevodovka:</span> <span class="info-value">${car.transmission || 'N/A'}</span></div>
-            ${car.power ? `<div class="info-row"><span class="info-label">Výkon:</span> <span class="info-value">${car.power}</span></div>` : ''}
-            ${car.bodyType ? `<div class="info-row"><span class="info-label">Karoséria:</span> <span class="info-value">${car.bodyType}</span></div>` : ''}
-            ${car.drivetrain ? `<div class="info-row"><span class="info-label">Pohon:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
-            ${car.vin ? `<div class="info-row"><span class="info-label">VIN:</span> <span class="info-value">${car.vin}</span></div>` : ''}
+            <div class="info-row"><span class="info-label">${labels.rokVyroby}:</span> <span class="info-value">${car.year}</span></div>
+            <div class="info-row"><span class="info-label">${labels.pocetKm}:</span> <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span></div>
+            <div class="info-row"><span class="info-label">${labels.palivo}:</span> <span class="info-value">${car.fuel || 'N/A'}</span></div>
+            <div class="info-row"><span class="info-label">${labels.prevodovka}:</span> <span class="info-value">${car.transmission || 'N/A'}</span></div>
+            ${car.power ? `<div class="info-row"><span class="info-label">${labels.vykon}:</span> <span class="info-value">${car.power}</span></div>` : ''}
+            ${car.bodyType ? `<div class="info-row"><span class="info-label">${labels.karoserie}:</span> <span class="info-value">${car.bodyType}</span></div>` : ''}
+            ${car.drivetrain ? `<div class="info-row"><span class="info-label">${labels.pohon}:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
+            ${car.vin ? `<div class="info-row"><span class="info-label">${labels.vin}:</span> <span class="info-value">${car.vin}</span></div>` : ''}
           </div>
 
           ${Object.keys(featuresByCategory).length > 0 ? `
@@ -688,8 +729,8 @@ export default function Vozidla() {
         </div>
 
         <div class="price-box">
-          <div class="price">${car.price?.toLocaleString() || 'N/A'} €</div>
-          <div class="price-note">Možný leasing, Možný úver</div>
+          <div class="price">${formatPrice(car.price)}</div>
+          <div class="price-note">${labels.priceNote}</div>
         </div>
       </body>
       </html>
