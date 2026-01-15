@@ -147,47 +147,50 @@ export function mapCarRow(row: CarRow): Car {
 export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> {
   const row: Partial<CarRow> = {
     site_id: siteId,
-    brand: car.brand,
-    model: car.model,
-    year: car.year,
-    price: car.price,
-    mileage: car.mileage,
-    fuel: car.fuel,
-    transmission: car.transmission,
-    images: car.images,
-    features: car.features,
-    engine: car.engine,
-    power: car.power,
-    body_type: car.bodyType,
-    drivetrain: car.drivetrain,
-    vin: car.vin,
-    description: car.description,
-    source: car.source,
-    reserved_until: car.reservedUntil,
-    show_on_homepage: car.showOnHomepage ?? false,
-    // New fields
-    doors: car.doors,
-    color: car.color,
-    country_of_origin: car.countryOfOrigin,
-    reserved: car.reserved,
-    month: car.month,
-    vat_deductible: car.vatDeductible,
-    price_without_vat: car.priceWithoutVat,
-    transmission_type: car.transmissionType,
-    transmission_gears: car.transmissionGears,
-    airbag_count: car.airbagCount,
-    radio_cd: car.radioCd,
-    radio_cd_mp3: car.radioCdMp3,
-    android_auto: car.androidAuto,
-    ac_type: car.acType,
-    ac_zones: car.acZones,
-    parking_sensors: car.parkingSensors,
-    electric_windows: car.electricWindows,
-    heated_seats: car.heatedSeats,
-    // PDF documents
-    service_book_pdf: car.serviceBookPdf,
-    cebia_protocol_pdf: car.cebiaProtocolPdf,
   };
+
+  // Only include fields that are explicitly provided (not undefined)
+  // This prevents partial updates from overwriting existing values with defaults
+  if (car.brand !== undefined) row.brand = car.brand;
+  if (car.model !== undefined) row.model = car.model;
+  if (car.year !== undefined) row.year = car.year;
+  if (car.price !== undefined) row.price = car.price;
+  if (car.mileage !== undefined) row.mileage = car.mileage;
+  if (car.fuel !== undefined) row.fuel = car.fuel;
+  if (car.transmission !== undefined) row.transmission = car.transmission;
+  if (car.images !== undefined) row.images = car.images;
+  if (car.features !== undefined) row.features = car.features;
+  if (car.engine !== undefined) row.engine = car.engine;
+  if (car.power !== undefined) row.power = car.power;
+  if (car.bodyType !== undefined) row.body_type = car.bodyType;
+  if (car.drivetrain !== undefined) row.drivetrain = car.drivetrain;
+  if (car.vin !== undefined) row.vin = car.vin;
+  if (car.description !== undefined) row.description = car.description;
+  if (car.source !== undefined) row.source = car.source;
+  if (car.reservedUntil !== undefined) row.reserved_until = car.reservedUntil;
+  if (car.showOnHomepage !== undefined) row.show_on_homepage = car.showOnHomepage;
+  // New fields
+  if (car.doors !== undefined) row.doors = car.doors;
+  if (car.color !== undefined) row.color = car.color;
+  if (car.countryOfOrigin !== undefined) row.country_of_origin = car.countryOfOrigin;
+  if (car.reserved !== undefined) row.reserved = car.reserved;
+  if (car.month !== undefined) row.month = car.month;
+  if (car.vatDeductible !== undefined) row.vat_deductible = car.vatDeductible;
+  if (car.priceWithoutVat !== undefined) row.price_without_vat = car.priceWithoutVat;
+  if (car.transmissionType !== undefined) row.transmission_type = car.transmissionType;
+  if (car.transmissionGears !== undefined) row.transmission_gears = car.transmissionGears;
+  if (car.airbagCount !== undefined) row.airbag_count = car.airbagCount;
+  if (car.radioCd !== undefined) row.radio_cd = car.radioCd;
+  if (car.radioCdMp3 !== undefined) row.radio_cd_mp3 = car.radioCdMp3;
+  if (car.androidAuto !== undefined) row.android_auto = car.androidAuto;
+  if (car.acType !== undefined) row.ac_type = car.acType;
+  if (car.acZones !== undefined) row.ac_zones = car.acZones;
+  if (car.parkingSensors !== undefined) row.parking_sensors = car.parkingSensors;
+  if (car.electricWindows !== undefined) row.electric_windows = car.electricWindows;
+  if (car.heatedSeats !== undefined) row.heated_seats = car.heatedSeats;
+  // PDF documents
+  if (car.serviceBookPdf !== undefined) row.service_book_pdf = car.serviceBookPdf;
+  if (car.cebiaProtocolPdf !== undefined) row.cebia_protocol_pdf = car.cebiaProtocolPdf;
 
   // Only include image if it's defined (to avoid NOT NULL constraint issues)
   // Use empty string as default for new cars without images
