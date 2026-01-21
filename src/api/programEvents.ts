@@ -34,25 +34,29 @@ export interface ProgramEvent {
   team_members: TeamMember[]
   published: boolean
   display_order: number
+  has_school_reservation: boolean
+  has_ticket_reservation: boolean
+  buy_ticket_link: string | null
+  gallery_paths: string[]
   created_at: string
   updated_at: string
 }
 
 export const PROGRAM_CATEGORIES: { value: ProgramCategory; label: string }[] = [
-  { value: 'skola-ludus', label: 'Skola Ludus' },
+  { value: 'skola-ludus', label: 'Škola Ludus' },
   { value: 'ludus-academy', label: 'Ludus Academy' },
   { value: 'divadlo-ludus', label: 'Divadlo Ludus' },
 ]
 
 export const PROGRAM_STATUSES: { value: ProgramEvent['status']; label: string }[] = [
-  { value: 'available', label: 'Dostupne' },
-  { value: 'vypredane', label: 'Vypredane' },
+  { value: 'available', label: 'Dostupné' },
+  { value: 'vypredane', label: 'Vypredané' },
   { value: 'info', label: 'Info' },
 ]
 
 // Slovak day names for auto-generation from date
 const SLOVAK_DAYS = ['nedela', 'pondelok', 'utorok', 'streda', 'stvrtok', 'piatok', 'sobota']
-const SLOVAK_MONTHS = ['januar', 'februar', 'marec', 'april', 'maj', 'jun', 'jul', 'august', 'september', 'oktober', 'november', 'december']
+const SLOVAK_MONTHS = ['január', 'február', 'marec', 'apríl', 'máj', 'jún', 'júl', 'august', 'september', 'október', 'november', 'december']
 
 export function getDayNameFromDate(dateStr: string): string {
   const date = new Date(dateStr)
@@ -98,6 +102,18 @@ export async function getProgramEvents(siteId: string, category?: ProgramCategor
   }
 
   const { data, error } = await query
+  if (error) throw error
+  return data as ProgramEvent[]
+}
+
+export async function getProgramEventsbyTitle(siteId: string, title: string): Promise<ProgramEvent[]> {
+  const { data, error } = await supabase
+    .from('program_events')
+    .select('*')
+    .eq('site_id', siteId)
+    .eq('title', title)
+    .order('event_date', { ascending: true })
+
   if (error) throw error
   return data as ProgramEvent[]
 }
