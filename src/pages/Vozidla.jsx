@@ -3,7 +3,7 @@ import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, XMarkIcon, PencilIcon, Trash
 import CarCard from '../components/CarCard'
 import { equipmentCategories } from '../data/equipmentOptions'
 import { useAuth } from '../contexts/AuthContext'
-import { useTranslation } from '../i18n'
+import { useTranslation, tCategory as translateCategory, tEquipment as translateEquipment } from '../i18n'
 import { getCarsForSite, createCar, updateCar, deleteCar as deleteCarApi, getAllCarsForSite, restoreCar, permanentlyDeleteCar } from '../api/cars'
 import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets } from '../api/carsImages'
 import { getPublicUrl, uploadCarPdf } from '../api/storage'
@@ -58,6 +58,18 @@ const initialCarForm = {
 export default function Vozidla() {
   const { currentSite, loading: authLoading } = useAuth()
   const { t, tCategory, tEquipment } = useTranslation()
+  const isAutocentrumMaxi = currentSite?.slug === 'autocentrummaxi'
+
+  // Helper for translating transmission value
+  const getTranslatedTransmission = (val, langCode) => {
+    if (!val) return ''
+    if (langCode === 'cs') {
+      if (val === 'Manuálna') return 'Manuální'
+      if (val === 'Automatická') return 'Automatická'
+    }
+    return val
+  }
+
   const [cars, setCars] = useState([])
   const [archivedCars, setArchivedCars] = useState([])
   const [activeTab, setActiveTab] = useState('ponuka') // 'ponuka' or 'archiv'
@@ -168,7 +180,7 @@ export default function Vozidla() {
     const matchesYearMax = !filters.yearMax || car.year <= Number(filters.yearMax)
 
     return matchesSearch && matchesFuel && matchesTransmission &&
-           matchesPriceMin && matchesPriceMax && matchesYearMin && matchesYearMax
+      matchesPriceMin && matchesPriceMax && matchesYearMin && matchesYearMax
   })
 
   const clearFilters = () => {
@@ -339,7 +351,7 @@ export default function Vozidla() {
   const withTimeout = (promise, ms = 30000, context = 'Operation') => {
     return Promise.race([
       promise,
-      new Promise((_, reject) => 
+      new Promise((_, reject) =>
         setTimeout(() => reject(new Error(`${context} timed out after ${ms}ms`)), ms)
       )
     ])
@@ -603,7 +615,8 @@ export default function Vozidla() {
     })
 
     // Check if current site is autocentrummaxi (Czech site)
-    const isAutocentrumMaxi = currentSite?.slug === 'autocentrummaxi'
+    // const isAutocentrumMaxi = currentSite?.slug === 'autocentrummaxi' // Already defined at component level
+    const pdfLang = isAutocentrumMaxi ? 'cs' : 'sk'
 
     // Format price based on site (autocentrummaxi prices are already in CZK)
     const formatPrice = (price) => {
@@ -705,7 +718,7 @@ export default function Vozidla() {
             <div class="info-row"><span class="info-label">${labels.rokVyroby}:</span> <span class="info-value">${car.year}</span></div>
             <div class="info-row"><span class="info-label">${labels.pocetKm}:</span> <span class="info-value">${car.mileage?.toLocaleString() || 'N/A'} km</span></div>
             <div class="info-row"><span class="info-label">${labels.palivo}:</span> <span class="info-value">${car.fuel || 'N/A'}</span></div>
-            <div class="info-row"><span class="info-label">${labels.prevodovka}:</span> <span class="info-value">${car.transmission || 'N/A'}</span></div>
+            <div class="info-row"><span class="info-label">${labels.prevodovka}:</span> <span class="info-value">${getTranslatedTransmission(car.transmission, pdfLang) || 'N/A'}</span></div>
             ${car.power ? `<div class="info-row"><span class="info-label">${labels.vykon}:</span> <span class="info-value">${car.power}</span></div>` : ''}
             ${car.bodyType ? `<div class="info-row"><span class="info-label">${labels.karoserie}:</span> <span class="info-value">${car.bodyType}</span></div>` : ''}
             ${car.drivetrain ? `<div class="info-row"><span class="info-label">${labels.pohon}:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
@@ -715,9 +728,9 @@ export default function Vozidla() {
           ${Object.keys(featuresByCategory).length > 0 ? `
             ${Object.entries(featuresByCategory).map(([category, features]) => `
               <div class="features-section">
-                <div class="features-category">${category}</div>
+                <div class="features-category">${translateCategory(category, pdfLang)}</div>
                 <div class="features-list">
-                  ${features.map(f => `<span class="feature-item">${f}</span>`).join('')}
+                  ${features.map(f => `<span class="feature-item">${translateEquipment(f, pdfLang)}</span>`).join('')}
                 </div>
               </div>
             `).join('')}
@@ -812,11 +825,10 @@ export default function Vozidla() {
           {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`inline-flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-              showFilters
-                ? 'bg-purple-100 border-purple-300 text-purple-700'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+            className={`inline-flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${showFilters
+              ? 'bg-purple-100 border-purple-300 text-purple-700'
+              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
           >
             <FunnelIcon className="h-5 w-5 mr-2" />
             {t('filtre')}
@@ -831,7 +843,7 @@ export default function Vozidla() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('palivo')}</label>
                 <select
                   value={filters.fuel}
-                  onChange={(e) => setFilters({...filters, fuel: e.target.value})}
+                  onChange={(e) => setFilters({ ...filters, fuel: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">{t('vsetky')}</option>
@@ -849,7 +861,7 @@ export default function Vozidla() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('prevodovka')}</label>
                 <select
                   value={filters.transmission}
-                  onChange={(e) => setFilters({...filters, transmission: e.target.value})}
+                  onChange={(e) => setFilters({ ...filters, transmission: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">{t('vsetky')}</option>
@@ -864,7 +876,7 @@ export default function Vozidla() {
                   type="number"
                   placeholder={t('minEur')}
                   value={filters.priceMin}
-                  onChange={(e) => setFilters({...filters, priceMin: e.target.value})}
+                  onChange={(e) => setFilters({ ...filters, priceMin: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -875,7 +887,7 @@ export default function Vozidla() {
                   type="number"
                   placeholder={t('maxEur')}
                   value={filters.priceMax}
-                  onChange={(e) => setFilters({...filters, priceMax: e.target.value})}
+                  onChange={(e) => setFilters({ ...filters, priceMax: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -886,7 +898,7 @@ export default function Vozidla() {
                   type="number"
                   placeholder={t('minRok')}
                   value={filters.yearMin}
-                  onChange={(e) => setFilters({...filters, yearMin: e.target.value})}
+                  onChange={(e) => setFilters({ ...filters, yearMin: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -897,7 +909,7 @@ export default function Vozidla() {
                   type="number"
                   placeholder={t('maxRok')}
                   value={filters.yearMax}
-                  onChange={(e) => setFilters({...filters, yearMax: e.target.value})}
+                  onChange={(e) => setFilters({ ...filters, yearMax: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -921,33 +933,29 @@ export default function Vozidla() {
         <div className="flex items-end">
           <button
             onClick={() => setActiveTab('ponuka')}
-            className={`relative px-6 py-2 text-sm font-semibold transition-all ${
-              activeTab === 'ponuka'
-                ? 'bg-white text-purple-700 rounded-t-lg shadow-sm z-10'
-                : 'bg-gray-100 text-gray-500 hover:text-gray-700 rounded-t-lg -mr-1 translate-y-0.5'
-            }`}
+            className={`relative px-6 py-2 text-sm font-semibold transition-all ${activeTab === 'ponuka'
+              ? 'bg-white text-purple-700 rounded-t-lg shadow-sm z-10'
+              : 'bg-gray-100 text-gray-500 hover:text-gray-700 rounded-t-lg -mr-1 translate-y-0.5'
+              }`}
             style={activeTab === 'ponuka' ? { boxShadow: '0 -2px 4px rgba(0,0,0,0.05)' } : {}}
           >
             Ponuka
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              activeTab === 'ponuka' ? 'bg-purple-100 text-purple-700' : 'bg-gray-200 text-gray-600'
-            }`}>
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'ponuka' ? 'bg-purple-100 text-purple-700' : 'bg-gray-200 text-gray-600'
+              }`}>
               {cars.length}
             </span>
           </button>
           <button
             onClick={() => setActiveTab('archiv')}
-            className={`relative px-6 py-2 text-sm font-semibold transition-all ${
-              activeTab === 'archiv'
-                ? 'bg-white text-red-700 rounded-t-lg shadow-sm z-10'
-                : 'bg-gray-100 text-gray-500 hover:text-gray-700 rounded-t-lg -ml-1 translate-y-0.5'
-            }`}
+            className={`relative px-6 py-2 text-sm font-semibold transition-all ${activeTab === 'archiv'
+              ? 'bg-white text-red-700 rounded-t-lg shadow-sm z-10'
+              : 'bg-gray-100 text-gray-500 hover:text-gray-700 rounded-t-lg -ml-1 translate-y-0.5'
+              }`}
             style={activeTab === 'archiv' ? { boxShadow: '0 -2px 4px rgba(0,0,0,0.05)' } : {}}
           >
             Archív
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              activeTab === 'archiv' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'
-            }`}>
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'archiv' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'
+              }`}>
               {archivedCars.length}
             </span>
           </button>
@@ -1083,7 +1091,7 @@ export default function Vozidla() {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
                     <p className="text-sm text-gray-500">{t('prevodovka')}</p>
-                    <p className="font-semibold">{selectedCar.transmission}</p>
+                    <p className="font-semibold">{getTranslatedTransmission(selectedCar.transmission, isAutocentrumMaxi ? 'cs' : 'sk')}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
                     <p className="text-sm text-gray-500">{t('motor')}</p>
@@ -1641,9 +1649,8 @@ export default function Vozidla() {
                         {carForm.allImages.map((item, index) => (
                           <div
                             key={`image-${index}-${item.type}`}
-                            className={`relative cursor-grab active:cursor-grabbing ${
-                              draggedIndex === index ? 'opacity-50 scale-95' : ''
-                            }`}
+                            className={`relative cursor-grab active:cursor-grabbing ${draggedIndex === index ? 'opacity-50 scale-95' : ''
+                              }`}
                             draggable
                             onDragStart={(e) => handleDragStart(e, index)}
                             onDragOver={handleDragOver}
@@ -1653,9 +1660,8 @@ export default function Vozidla() {
                             <img
                               src={item.type === 'existing' ? getImageUrl(item.data) : URL.createObjectURL(item.data)}
                               alt={`Obrázok ${index + 1}`}
-                              className={`w-full h-24 object-cover rounded-lg ${
-                                item.type === 'pending' ? 'border-2 border-dashed border-green-400' : ''
-                              }`}
+                              className={`w-full h-24 object-cover rounded-lg ${item.type === 'pending' ? 'border-2 border-dashed border-green-400' : ''
+                                }`}
                             />
                             <button
                               type="button"
