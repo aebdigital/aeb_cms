@@ -852,7 +852,7 @@ export default function Vozidla() {
                   <option value="Hybrid">{t('hybrid')}</option>
                   <option value="Elektro">{t('elektro')}</option>
                   <option value="LPG">{t('lpg')}</option>
-                  <option value="LPG + benzín">LPG + benzín</option>
+                  <option value="Benzín + LPG">Benzín + LPG</option>
                   <option value="CNG">{t('cng')}</option>
                 </select>
               </div>
@@ -1295,7 +1295,7 @@ export default function Vozidla() {
                       <option value="Hybrid">{t('hybrid')}</option>
                       <option value="Elektro">{t('elektro')}</option>
                       <option value="LPG">{t('lpg')}</option>
-                      <option value="LPG + benzín">LPG + benzín</option>
+                      <option value="Benzín + LPG">Benzín + LPG</option>
                       <option value="CNG">{t('cng')}</option>
                     </select>
                   </div>
