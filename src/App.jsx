@@ -13,6 +13,7 @@ import Dovolenka from './pages/Dovolenka'
 import LudusGaleria from './pages/LudusGaleria'
 import LudusAktuality from './pages/LudusAktuality'
 import LudusProgram from './pages/LudusProgram'
+import LegisBlogs from './pages/LegisBlogs'
 import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
 import DynamicHomePage from './components/DynamicHomePage'
@@ -61,6 +62,7 @@ function App() {
             <Route path="ludus-galeria" element={<LudusGaleria />} />
             <Route path="ludus-aktuality" element={<LudusAktuality />} />
             <Route path="ludus-program" element={<LudusProgram />} />
+            <Route path="legis-blogy" element={<LegisBlogs />} />
           </Route>
 
           {/* Catch all - show 404 if authenticated, otherwise redirect to login */}

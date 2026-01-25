@@ -99,3 +99,32 @@ export async function deleteAllCarImages(siteSlug: string, carId: string): Promi
     if (deleteError) throw deleteError
   }
 }
+// Upload a blog image
+export interface UploadBlogImageOptions {
+  file: File
+  siteSlug: string
+  blogId?: string // Optional if we don't have it yet
+}
+
+export async function uploadBlogImage(options: UploadBlogImageOptions): Promise<{ path: string }> {
+  const { file, siteSlug, blogId } = options
+
+  const ext = getFileExtension(file)
+  const fileName = `blog-${generateUUID()}.${ext}`
+  const path = blogId
+    ? `${siteSlug}/blogs/${blogId}/${fileName}`
+    : `${siteSlug}/blogs/temp/${fileName}`
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, {
+      upsert: true,
+      cacheControl: '3600',
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return { path }
+}

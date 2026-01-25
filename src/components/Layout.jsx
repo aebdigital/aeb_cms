@@ -32,7 +32,8 @@ const iconMap = {
   'default': DocumentIcon,
   'ludus-galeria': PhotoIcon,
   'ludus-aktuality': NewspaperIcon,
-  'ludus-program': CalendarDaysIcon
+  'ludus-program': CalendarDaysIcon,
+  'legis-blogy': NewspaperIcon
 }
 
 function getIconForSlug(slug) {
@@ -73,6 +74,12 @@ export default function Layout() {
       // Filter to only show pages that should be in nav
       const navItems = pages
         .filter(p => p.show_in_nav)
+        .filter(p => {
+          if (p.slug === 'legis-blogy') {
+            return user?.email?.toLowerCase().includes('kubasky');
+          }
+          return true;
+        })
         .map(p => ({
           name: p.nav_label || p.title,
           href: `/${p.slug}`,
