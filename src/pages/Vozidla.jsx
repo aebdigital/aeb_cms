@@ -22,6 +22,7 @@ const initialCarForm = {
   engine: '',
   power: '',
   bodyType: '',
+  stkValidUntil: '',
   drivetrain: '',
   vin: '',
   description: '',
@@ -300,6 +301,7 @@ export default function Vozidla() {
       engine: car.engine || '',
       power: car.power || '',
       bodyType: car.bodyType || '',
+      stkValidUntil: car.stkValidUntil || '',
       drivetrain: car.drivetrain || '',
       vin: car.vin || '',
       description: car.description || '',
@@ -399,6 +401,7 @@ export default function Vozidla() {
         engine: carForm.engine || undefined,
         power: carForm.power || undefined,
         bodyType: carForm.bodyType || undefined,
+        stkValidUntil: carForm.stkValidUntil || undefined,
         drivetrain: carForm.drivetrain || undefined,
         vin: carForm.vin || undefined,
         description: carForm.description || undefined,
@@ -635,6 +638,7 @@ export default function Vozidla() {
       prevodovka: 'Převodovka',
       vykon: 'Výkon',
       karoserie: 'Karoserie',
+      platnostStk: 'Platnost STK',
       pohon: 'Pohon',
       vin: 'VIN',
       priceNote: 'Možný leasing, Možný úvěr'
@@ -645,10 +649,20 @@ export default function Vozidla() {
       prevodovka: 'Prevodovka',
       vykon: 'Výkon',
       karoserie: 'Karoséria',
+      platnostStk: 'Platnosť STK',
       pohon: 'Pohon',
       vin: 'VIN',
       priceNote: 'Možný leasing, Možný úver'
     }
+
+    // Helper to format date
+    const formatDate = (dateString) => {
+      if (!dateString) return 'N/A'
+      const date = new Date(dateString)
+      return date.toLocaleDateString(pdfLang === 'cs' ? 'cs-CZ' : 'sk-SK')
+    }
+
+    const isMtAutos = currentSite?.slug === 'cars'
 
     const printContent = `
       <!DOCTYPE html>
@@ -720,7 +734,10 @@ export default function Vozidla() {
             <div class="info-row"><span class="info-label">${labels.palivo}:</span> <span class="info-value">${car.fuel || 'N/A'}</span></div>
             <div class="info-row"><span class="info-label">${labels.prevodovka}:</span> <span class="info-value">${getTranslatedTransmission(car.transmission, pdfLang) || 'N/A'}</span></div>
             ${car.power ? `<div class="info-row"><span class="info-label">${labels.vykon}:</span> <span class="info-value">${car.power}</span></div>` : ''}
-            ${car.bodyType ? `<div class="info-row"><span class="info-label">${labels.karoserie}:</span> <span class="info-value">${car.bodyType}</span></div>` : ''}
+            ${isMtAutos ?
+        `<div class="info-row"><span class="info-label">${labels.platnostStk}:</span> <span class="info-value">${formatDate(car.stkValidUntil)}</span></div>` :
+        (car.bodyType ? `<div class="info-row"><span class="info-label">${labels.karoserie}:</span> <span class="info-value">${car.bodyType}</span></div>` : '')
+      }
             ${car.drivetrain ? `<div class="info-row"><span class="info-label">${labels.pohon}:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
             ${car.vin ? `<div class="info-row"><span class="info-label">${labels.vin}:</span> <span class="info-value">${car.vin}</span></div>` : ''}
           </div>
@@ -1354,6 +1371,16 @@ export default function Vozidla() {
                       value={carForm.bodyType}
                       onChange={(e) => handleCarFormChange('bodyType', e.target.value)}
                       placeholder={t('naprHatchback')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">{t('platnostSTK')}</label>
+                    <input
+                      type="date"
+                      value={carForm.stkValidUntil}
+                      onChange={(e) => handleCarFormChange('stkValidUntil', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
