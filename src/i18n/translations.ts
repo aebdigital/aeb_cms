@@ -31,7 +31,7 @@ export const translations = {
   motor: { sk: 'Motor', cs: 'Motor' },
   vykon: { sk: 'Výkon', cs: 'Výkon' },
   karoseria: { sk: 'Karoséria', cs: 'Karoserie' },
-  platnostSTK: { sk: 'Platnosť STK', cs: 'Platnost STK' },
+  platnostSTK: { sk: 'Platnosť STK/EK', cs: 'Platnost STK/EK' },
   pohon: { sk: 'Pohon', cs: 'Pohon' },
   vin: { sk: 'VIN', cs: 'VIN' },
   dvere: { sk: 'Dvere', cs: 'Dveře' },

@@ -638,7 +638,7 @@ export default function Vozidla() {
       prevodovka: 'Převodovka',
       vykon: 'Výkon',
       karoserie: 'Karoserie',
-      platnostStk: 'Platnost STK',
+      platnostStk: 'Platnost STK/EK',
       pohon: 'Pohon',
       vin: 'VIN',
       priceNote: 'Možný leasing, Možný úvěr'
@@ -649,7 +649,7 @@ export default function Vozidla() {
       prevodovka: 'Prevodovka',
       vykon: 'Výkon',
       karoserie: 'Karoséria',
-      platnostStk: 'Platnosť STK',
+      platnostStk: 'Platnosť STK/EK',
       pohon: 'Pohon',
       vin: 'VIN',
       priceNote: 'Možný leasing, Možný úver'
@@ -659,7 +659,9 @@ export default function Vozidla() {
     const formatDate = (dateString) => {
       if (!dateString) return 'N/A'
       const date = new Date(dateString)
-      return date.toLocaleDateString(pdfLang === 'cs' ? 'cs-CZ' : 'sk-SK')
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const year = date.getFullYear()
+      return `${month}/${year}`
     }
 
     const isMtAutos = currentSite?.slug === 'cars'
@@ -1376,7 +1378,19 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">{t('platnostSTK')}</label>
+                    <label className="block text-sm font-semibold mb-2 flex justify-between">
+                      <span>{t('platnostSTK')}</span>
+                      {carForm.stkValidUntil && (
+                        <span className="text-purple-600 font-bold">
+                          {(() => {
+                            const d = new Date(carForm.stkValidUntil);
+                            const m = (d.getMonth() + 1).toString().padStart(2, '0');
+                            const y = d.getFullYear();
+                            return `${m}/${y}`;
+                          })()}
+                        </span>
+                      )}
+                    </label>
                     <input
                       type="date"
                       value={carForm.stkValidUntil}
