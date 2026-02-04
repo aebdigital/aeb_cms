@@ -415,7 +415,7 @@ export default function Vozidla() {
         reserved: carForm.reserved,
         month: carForm.month ? parseInt(carForm.month) : undefined,
         vatDeductible: carForm.vatDeductible,
-        priceWithoutVat: carForm.vatDeductible && carForm.price ? Math.round(carForm.price / 1.23) : undefined,
+        priceWithoutVat: carForm.vatDeductible && carForm.price ? Math.round(carForm.price / (isAutocentrumMaxi ? 1.21 : 1.23)) : undefined,
         transmissionGears: carForm.transmissionGears || undefined,
         airbagCount: carForm.airbagCount ? parseInt(carForm.airbagCount) : undefined,
         radioCd: carForm.radioCd,
