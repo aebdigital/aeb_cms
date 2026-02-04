@@ -1255,7 +1255,7 @@ export default function Vozidla() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">{t('cenaEur')}</label>
+                    <label className="block text-sm font-semibold mb-2">{isAutocentrumMaxi ? 'Cena (Kč)' : t('cenaEur')}</label>
                     <input
                       type="number"
                       value={carForm.price}
@@ -1279,7 +1279,7 @@ export default function Vozidla() {
 
                   {carForm.vatDeductible && (
                     <div>
-                      <label className="block text-sm font-semibold mb-2">{t('cenaBezDph')}</label>
+                      <label className="block text-sm font-semibold mb-2">{isAutocentrumMaxi ? 'Cena bez DPH (Kč)' : t('cenaBezDph')}</label>
                       <input
                         type="number"
                         value={carForm.price ? Math.round(carForm.price / (isAutocentrumMaxi ? 1.21 : 1.23)) : ''}
