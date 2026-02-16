@@ -93,6 +93,10 @@ export default function DariusVozidla() {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return 'https://via.placeholder.com/400x300?text=No+Image'
     if (imagePath.startsWith('http')) return imagePath
+    if (imagePath.startsWith('/')) {
+      // For Darius local assets, prepend the website URL
+      return `https://autopozicovnamichalovce.sk${imagePath}`
+    }
     return getPublicUrl(imagePath)
   }
 
@@ -142,23 +146,24 @@ export default function DariusVozidla() {
 
   const openEditModal = (car) => {
     // Map DB fields back to form
-    const pricing = car.pricing || {}
-    const limits = car.limits || {}
+    const meta = car.metadata || {}
+    const pricing = meta.pricing || {}
+    const limits = meta.limits || {}
 
     setCarForm({
-      name: car.name || `${car.brand} ${car.model}`,
+      name: meta.name || `${car.brand} ${car.model}`,
       brand: car.brand || '',
       model: car.model || '',
-      category: car.category || '',
-      price: car.price || 0, // This might be base price
+      category: car.category || meta.category || '',
+      price: car.price || 0,
       deposit: pricing.deposit || 0,
       seats: car.seats || 5,
       transmission: car.transmission || 'Manuál',
       fuel: car.fuel || 'Benzín',
-      luggage: car.luggage || '',
+      luggage: car.luggage || meta.luggage || '',
       features: car.features || [],
       description: car.description || '',
-      shortDescription: car.shortDescription || '',
+      shortDescription: meta.shortDescription || '',
       image: car.image || '',
 
       price1day: pricing['1day'] || 0,
@@ -171,7 +176,7 @@ export default function DariusVozidla() {
       limitExcess: limits.excess || '0,10€/km',
 
       allImages: car.image ? [{ type: 'existing', data: car.image }] : [],
-      showOnHomepage: car.showOnHomepage || false
+      showOnHomepage: car.show_on_homepage || false
     })
 
     setIsEditMode(true)
