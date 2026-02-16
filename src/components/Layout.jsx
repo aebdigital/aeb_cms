@@ -33,7 +33,8 @@ const iconMap = {
   'ludus-galeria': PhotoIcon,
   'ludus-aktuality': NewspaperIcon,
   'ludus-program': CalendarDaysIcon,
-  'legis-blogy': NewspaperIcon
+  'legis-blogy': NewspaperIcon,
+  'darius-vozidla': TruckIcon
 }
 
 function getIconForSlug(slug) {

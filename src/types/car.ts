@@ -43,6 +43,7 @@ export interface Car {
   serviceBookPdf?: string; // Path to service book PDF
   cebiaProtocolPdf?: string; // Path to Cebia protocol PDF
   stkValidUntil?: string; // Date of STK validity
+  metadata?: any; // JSONB for custom site-specific data
 }
 
 // Database row type (snake_case from Supabase)
@@ -94,6 +95,7 @@ export interface CarRow {
   service_book_pdf: string | null;
   cebia_protocol_pdf: string | null;
   stk_valid_until: string | null;
+  metadata: any | null;
 }
 
 // Map DB row to frontend Car interface
@@ -143,6 +145,7 @@ export function mapCarRow(row: CarRow): Car {
     serviceBookPdf: row.service_book_pdf ?? undefined,
     cebiaProtocolPdf: row.cebia_protocol_pdf ?? undefined,
     stkValidUntil: row.stk_valid_until ?? undefined,
+    metadata: row.metadata ?? {},
   };
 }
 
@@ -195,6 +198,8 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
   if (car.serviceBookPdf !== undefined) row.service_book_pdf = car.serviceBookPdf;
   if (car.cebiaProtocolPdf !== undefined) row.cebia_protocol_pdf = car.cebiaProtocolPdf;
   if (car.stkValidUntil !== undefined) row.stk_valid_until = car.stkValidUntil;
+  if (car.metadata !== undefined) row.metadata = car.metadata;
+
 
   // Only include image if it's defined (to avoid NOT NULL constraint issues)
   // Use empty string as default for new cars without images

@@ -8,6 +8,7 @@ import Blogy from './pages/Blogy'
 import Kontakt from './pages/Kontakt'
 import Nastavenia from './pages/Nastavenia'
 import Vozidla from './pages/Vozidla'
+import DariusVozidla from './pages/DariusVozidla'
 import Oznamy from './pages/Oznamy'
 import Dovolenka from './pages/Dovolenka'
 import LudusGaleria from './pages/LudusGaleria'
@@ -58,6 +59,7 @@ function App() {
             <Route path="ponuka" element={<Vozidla />} />
             <Route path="oznamy" element={<Oznamy />} />
             <Route path="dovolenka" element={<Dovolenka />} />
+            <Route path="darius-vozidla" element={<DariusVozidla />} />
             {/* Ludus Hub specific routes */}
             <Route path="ludus-galeria" element={<LudusGaleria />} />
             <Route path="ludus-aktuality" element={<LudusAktuality />} />

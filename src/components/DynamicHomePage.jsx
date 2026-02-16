@@ -23,7 +23,8 @@ export default function DynamicHomePage() {
       const VALID_SLUGS = [
         'projekty', 'galerie', 'blogy', 'kontakt', 'nastavenia',
         'vozidla', 'ponuka', 'oznamy', 'dovolenka',
-        'ludus-galeria', 'ludus-aktuality', 'ludus-program'
+        'ludus-galeria', 'ludus-aktuality', 'ludus-program',
+        'darius-vozidla'
       ]
 
       const validNavPage = navPages.find(p => VALID_SLUGS.includes(p.slug))
