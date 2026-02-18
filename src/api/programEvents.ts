@@ -38,6 +38,7 @@ export interface ProgramEvent {
   has_ticket_reservation: boolean
   buy_ticket_link: string | null
   gallery_paths: string[]
+  description_images: string[]
   created_at: string
   updated_at: string
 }

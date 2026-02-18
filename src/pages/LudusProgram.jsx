@@ -41,7 +41,8 @@ const initialForm = {
     has_school_reservation: false,
     has_ticket_reservation: false,
     buy_ticket_link: '',
-    gallery_paths: []
+    gallery_paths: [],
+    description_images: []
 }
 
 export default function LudusProgram() {
@@ -103,7 +104,7 @@ export default function LudusProgram() {
 
     // Handlers
     const handleOpenAdd = () => {
-        setFormData(initialForm)
+        setFormData({ ...initialForm, category: activeCategory })
         setInstances([{
             _tempId: Date.now(),
             event_date: initialForm.event_date,
@@ -127,7 +128,8 @@ export default function LudusProgram() {
             // Ensure arrays are initialized
             cast_members: event.cast_members || [],
             team_members: event.team_members || [],
-            gallery_paths: event.gallery_paths || []
+            gallery_paths: event.gallery_paths || [],
+            description_images: event.description_images || []
         })
         setIsEditMode(true)
         setEditingId(event.id)
@@ -235,6 +237,46 @@ export default function LudusProgram() {
         setFormData(prev => ({
             ...prev,
             gallery_paths: prev.gallery_paths.filter((_, i) => i !== index)
+        }))
+    }
+
+    const handleDescriptionImagesUpload = async (e) => {
+        const files = Array.from(e.target.files || [])
+        if (files.length === 0) return
+
+        setUploadingImage(true)
+        setUploadProgress('Nahrávam fotky k popisu...')
+
+        try {
+            const newPaths = []
+            for (const file of files) {
+                const compressed = await compressImage(file)
+                const { path } = await uploadProgramImage({
+                    file: compressed,
+                    siteSlug: currentSite.slug,
+                    category: formData.category
+                })
+                newPaths.push(path)
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                description_images: [...(prev.description_images || []), ...newPaths]
+            }))
+        } catch (err) {
+            console.error('Description images upload error:', err)
+            alert('Chyba pri nahrávaní fotiek')
+        } finally {
+            setUploadingImage(false)
+            setUploadProgress('')
+        }
+    }
+
+    const handleRemoveDescriptionImage = (index) => {
+        if (!confirm('Odstrániť fotku?')) return
+        setFormData(prev => ({
+            ...prev,
+            description_images: prev.description_images.filter((_, i) => i !== index)
         }))
     }
 
@@ -398,6 +440,8 @@ export default function LudusProgram() {
             // Reload all
             const allData = await getProgramEvents(currentSite.id)
             setEvents(allData)
+            // Switch to the saved category tab so user sees the event
+            setActiveCategory(formData.category)
             setShowModal(false)
 
         } catch (err) {
@@ -596,6 +640,39 @@ export default function LudusProgram() {
                                                     onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
                                                     className="w-full border rounded-lg px-3 py-2"
                                                 />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Fotky k popisu</label>
+                                                <div className="grid grid-cols-4 gap-2 mb-3">
+                                                    {formData.description_images && formData.description_images.map((path, idx) => (
+                                                        <div key={idx} className="relative group aspect-square">
+                                                            <img
+                                                                src={getProgramImagePublicUrl(path)}
+                                                                alt={`Popis ${idx + 1}`}
+                                                                className="w-full h-full object-cover rounded-lg border"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveDescriptionImage(idx)}
+                                                                className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <TrashIcon className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <label className="cursor-pointer bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 flex items-center justify-center gap-2 border border-dashed border-gray-300">
+                                                    <PhotoIcon className="w-5 h-5" />
+                                                    <span>Pridať fotky k popisu</span>
+                                                    <input
+                                                        type="file"
+                                                        multiple
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={handleDescriptionImagesUpload}
+                                                    />
+                                                </label>
                                             </div>
                                         </div>
 
