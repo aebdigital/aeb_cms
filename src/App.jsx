@@ -14,6 +14,7 @@ import Dovolenka from './pages/Dovolenka'
 import LudusGaleria from './pages/LudusGaleria'
 import LudusAktuality from './pages/LudusAktuality'
 import LudusProgram from './pages/LudusProgram'
+import LudusRepertoar from './pages/LudusRepertoar'
 import LegisBlogs from './pages/LegisBlogs'
 import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
@@ -64,6 +65,7 @@ function App() {
             <Route path="ludus-galeria" element={<LudusGaleria />} />
             <Route path="ludus-aktuality" element={<LudusAktuality />} />
             <Route path="ludus-program" element={<LudusProgram />} />
+            <Route path="ludus-repertoar" element={<LudusRepertoar />} />
             <Route path="legis-blogy" element={<LegisBlogs />} />
           </Route>
 

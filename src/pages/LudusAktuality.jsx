@@ -6,6 +6,7 @@ import { getAktuality, createAktualita, updateAktualita, deleteAktualita, countH
 const initialForm = {
   title: '',
   description: '',
+  link: '',
   date: new Date().toISOString().split('T')[0],
   category: 'skola-ludus',
   show_on_homepage: false,
@@ -85,6 +86,7 @@ export default function LudusAktuality() {
     setFormData({
       title: item.title,
       description: item.description || '',
+      link: item.link || '',
       date: item.date,
       category: item.category,
       show_on_homepage: item.show_on_homepage,
@@ -259,7 +261,14 @@ export default function LudusAktuality() {
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900">{item.title}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900">{item.title}</p>
+                        {item.link && (
+                          <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-purple-500 hover:text-purple-700" title={item.link} onClick={(e) => e.stopPropagation()}>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                          </a>
+                        )}
+                      </div>
                       {item.description && (
                         <p className="text-sm text-gray-500 truncate max-w-xs">{item.description}</p>
                       )}
@@ -354,6 +363,19 @@ export default function LudusAktuality() {
                   rows={4}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Kratky popis aktuality..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Odkaz (URL)
+                </label>
+                <input
+                  type="url"
+                  value={formData.link}
+                  onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="https://..."
                 />
               </div>
 

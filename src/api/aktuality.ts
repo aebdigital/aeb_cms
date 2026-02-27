@@ -7,6 +7,7 @@ export interface Aktualita {
   site_id: string
   title: string
   description: string | null
+  link: string | null
   date: string
   category: AktualityCategory
   show_on_homepage: boolean

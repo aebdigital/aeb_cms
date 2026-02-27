@@ -33,6 +33,7 @@ const iconMap = {
   'ludus-galeria': PhotoIcon,
   'ludus-aktuality': NewspaperIcon,
   'ludus-program': CalendarDaysIcon,
+  'ludus-repertoar': DocumentTextIcon,
   'legis-blogy': NewspaperIcon,
   'darius-vozidla': TruckIcon
 }

@@ -70,6 +70,10 @@ export default function LudusProgram() {
     const [uploadingImage, setUploadingImage] = useState(false)
     const [uploadProgress, setUploadProgress] = useState('')
 
+    // Gallery drag state
+    const [dragIndex, setDragIndex] = useState(null)
+    const [dragOverIndex, setDragOverIndex] = useState(null)
+
     // Load events
     useEffect(() => {
         if (authLoading || !currentSite?.id) {
@@ -238,6 +242,18 @@ export default function LudusProgram() {
             ...prev,
             gallery_paths: prev.gallery_paths.filter((_, i) => i !== index)
         }))
+    }
+
+    const handleGalleryDrop = (fromIndex, toIndex) => {
+        if (fromIndex === toIndex) return
+        setFormData(prev => {
+            const paths = [...(prev.gallery_paths || [])]
+            const [moved] = paths.splice(fromIndex, 1)
+            paths.splice(toIndex, 0, moved)
+            return { ...prev, gallery_paths: paths }
+        })
+        setDragIndex(null)
+        setDragOverIndex(null)
     }
 
     const handleDescriptionImagesUpload = async (e) => {
@@ -880,12 +896,23 @@ export default function LudusProgram() {
                                             <div className="pt-2">
                                                 <div className="grid grid-cols-4 gap-2 mb-4">
                                                     {formData.gallery_paths && formData.gallery_paths.map((path, idx) => (
-                                                        <div key={idx} className="relative group aspect-square">
+                                                        <div
+                                                            key={path}
+                                                            draggable
+                                                            onDragStart={() => setDragIndex(idx)}
+                                                            onDragOver={e => { e.preventDefault(); setDragOverIndex(idx) }}
+                                                            onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}
+                                                            onDrop={e => { e.preventDefault(); handleGalleryDrop(dragIndex, idx) }}
+                                                            className={`relative group aspect-square cursor-grab active:cursor-grabbing transition-all ${dragIndex === idx ? 'opacity-40 scale-95' : ''} ${dragOverIndex === idx && dragIndex !== idx ? 'ring-2 ring-purple-500 ring-offset-2 rounded-lg' : ''}`}
+                                                        >
                                                             <img
                                                                 src={getProgramImagePublicUrl(path)}
                                                                 alt={`Gallery ${idx}`}
-                                                                className="w-full h-full object-cover rounded-lg border"
+                                                                className="w-full h-full object-cover rounded-lg border pointer-events-none"
                                                             />
+                                                            <div className="absolute top-1 left-1 bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                                                                {idx + 1}
+                                                            </div>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleRemoveGalleryImage(idx)}
