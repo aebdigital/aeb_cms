@@ -371,11 +371,11 @@ export default function LudusAktuality() {
                   Odkaz (URL)
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   value={formData.link}
                   onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="https://..."
+                  placeholder="/ludus-tabor#terminy alebo https://..."
                 />
               </div>
 
