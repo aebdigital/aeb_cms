@@ -302,7 +302,7 @@ export default function LudusProgram() {
         setFormData(prev => ({
             ...prev,
             title,
-            slug: !isEditMode ? generateSlug(title, prev.event_date) : prev.slug
+            slug: !isEditMode ? generateSlug(title) : prev.slug
         }))
     }
 
@@ -314,7 +314,7 @@ export default function LudusProgram() {
             day_name: getDayNameFromDate(date),
             month: getMonthFromDate(date),
             // update slug if new
-            slug: !isEditMode ? generateSlug(prev.title, date) : prev.slug
+            slug: !isEditMode ? generateSlug(prev.title) : prev.slug
         }))
     }
 
@@ -415,11 +415,6 @@ export default function LudusProgram() {
             const { id: _strippedId, ...cleanFormData } = formData;
 
             for (const instance of instances) {
-                // Unique slug if needed (append time)
-                const uniqueSlug = instance.id
-                    ? instance.slug
-                    : `${generateSlug(formData.title, instance.event_date)}-${instance.time.replace(':', '')}`;
-
                 const dataToSave = {
                     ...cleanFormData,
                     event_date: instance.event_date,
@@ -438,7 +433,7 @@ export default function LudusProgram() {
                         ? formData.gallery_paths[0]
                         : formData.image_path,
 
-                    slug: uniqueSlug
+                    slug: formData.slug
                 }
 
                 if (instance.id) {
@@ -707,15 +702,7 @@ export default function LudusProgram() {
                                                         className="w-full border rounded-lg px-3 py-2"
                                                     />
                                                 </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Premiéra</label>
-                                                    <input
-                                                        type="text"
-                                                        value={formData.premiere || ''}
-                                                        onChange={e => setFormData(p => ({ ...p, premiere: e.target.value }))}
-                                                        className="w-full border rounded-lg px-3 py-2"
-                                                    />
-                                                </div>
+
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4">
@@ -975,11 +962,23 @@ export default function LudusProgram() {
                                         {/* TEAM */}
                                         <div className="bg-gray-50 p-4 rounded-xl">
                                             <div className="flex justify-between items-center mb-4">
-                                                <label className="block font-bold text-gray-700">Inscenačný tím</label>
                                                 <button type="button" onClick={handleAddTeam} className="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 font-medium">
                                                     + Pridať člena
                                                 </button>
                                             </div>
+
+                                            {/* Premiere field moved here */}
+                                            <div className="mb-6 bg-white p-3 rounded-lg border border-purple-100 shadow-sm">
+                                                <label className="block text-sm font-bold text-purple-900 mb-2">Premiéra</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.premiere || ''}
+                                                    onChange={e => setFormData(p => ({ ...p, premiere: e.target.value }))}
+                                                    placeholder="napr. 15. marec 2024"
+                                                    className="w-full border-purple-200 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                                />
+                                            </div>
+
                                             <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                                                 {formData.team_members && formData.team_members.length > 0 ? (
                                                     formData.team_members.map((member, idx) => (

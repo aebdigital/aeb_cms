@@ -76,19 +76,13 @@ export function formatDayFromDate(dateStr: string): string {
   return `${day}. ${month}.`
 }
 
-export function generateSlug(title: string, dateStr: string): string {
-  const date = new Date(dateStr)
-  const baseSlug = title
+export function generateSlug(title: string): string {
+  return title
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
-
-  const monthName = SLOVAK_MONTHS[date.getMonth()].substring(0, 3)
-  const day = date.getDate()
-
-  return `${baseSlug}-${monthName}-${day}`
 }
 
 export async function getProgramEvents(siteId: string, category?: ProgramCategory): Promise<ProgramEvent[]> {
