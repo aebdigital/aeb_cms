@@ -21,6 +21,7 @@ export interface Car {
   showOnHomepage?: boolean;
   // New fields
   doors?: string;
+  seats?: number;
   color?: string;
   countryOfOrigin?: string;
   reserved?: boolean;
@@ -73,6 +74,7 @@ export interface CarRow {
   updated_at: string;
   // New fields
   doors: string | null;
+  seats: number | null;
   color: string | null;
   country_of_origin: string | null;
   reserved: boolean | null;
@@ -123,6 +125,7 @@ export function mapCarRow(row: CarRow): Car {
     showOnHomepage: row.show_on_homepage,
     // New fields
     doors: row.doors ?? undefined,
+    seats: row.seats ?? undefined,
     color: row.color ?? undefined,
     countryOfOrigin: row.country_of_origin ?? undefined,
     reserved: row.reserved ?? false,
@@ -177,6 +180,7 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
   if (car.showOnHomepage !== undefined) row.show_on_homepage = car.showOnHomepage;
   // New fields
   if (car.doors !== undefined) row.doors = car.doors;
+  if (car.seats !== undefined) row.seats = car.seats;
   if (car.color !== undefined) row.color = car.color;
   if (car.countryOfOrigin !== undefined) row.country_of_origin = car.countryOfOrigin;
   if (car.reserved !== undefined) row.reserved = car.reserved;

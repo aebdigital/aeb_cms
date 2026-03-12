@@ -33,6 +33,7 @@ const initialCarForm = {
   showOnHomepage: false,
   // New fields
   doors: '',
+  seats: '',
   color: '',
   countryOfOrigin: '',
   reserved: false,
@@ -60,6 +61,7 @@ export default function Vozidla() {
   const { currentSite, loading: authLoading } = useAuth()
   const { t, tCategory, tEquipment } = useTranslation()
   const isAutocentrumMaxi = currentSite?.slug === 'autocentrummaxi'
+  const isMtAutos = currentSite?.slug === 'cars'
 
   // Helper for translating transmission value
   const getTranslatedTransmission = (val, langCode) => {
@@ -311,6 +313,7 @@ export default function Vozidla() {
       showOnHomepage: car.showOnHomepage || false,
       // New fields
       doors: car.doors || '',
+      seats: car.seats || '',
       color: car.color || '',
       countryOfOrigin: car.countryOfOrigin || '',
       reserved: car.reserved || false,
@@ -410,6 +413,7 @@ export default function Vozidla() {
         source: 'admin',
         // New fields
         doors: carForm.doors || undefined,
+        seats: carForm.seats ? parseInt(carForm.seats) : undefined,
         color: carForm.color || undefined,
         countryOfOrigin: carForm.countryOfOrigin || undefined,
         reserved: carForm.reserved,
@@ -640,6 +644,7 @@ export default function Vozidla() {
       karoserie: 'Karoserie',
       platnostStk: 'Platnost STK/EK',
       pohon: 'Pohon',
+      pocetMiest: 'Počet míst',
       vin: 'VIN',
       priceNote: 'Možný leasing, Možný úvěr'
     } : {
@@ -651,6 +656,7 @@ export default function Vozidla() {
       karoserie: 'Karoséria',
       platnostStk: 'Platnosť STK/EK',
       pohon: 'Pohon',
+      pocetMiest: 'Počet miest',
       vin: 'VIN',
       priceNote: 'Možný leasing, Možný úver'
     }
@@ -742,6 +748,7 @@ export default function Vozidla() {
       }
             ${car.drivetrain ? `<div class="info-row"><span class="info-label">${labels.pohon}:</span> <span class="info-value">${car.drivetrain}</span></div>` : ''}
             ${car.vin ? `<div class="info-row"><span class="info-label">${labels.vin}:</span> <span class="info-value">${car.vin}</span></div>` : ''}
+            ${car.seats ? `<div class="info-row"><span class="info-label">${labels.pocetMiest}:</span> <span class="info-value">${car.seats}</span></div>` : ''}
           </div>
 
           ${Object.keys(featuresByCategory).length > 0 ? `
@@ -765,11 +772,29 @@ export default function Vozidla() {
     `
 
     const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      alert('Popup bol zablokovaný. Povoľte vyskakovacie okná pre túto stránku.')
+      return
+    }
     printWindow.document.write(printContent)
     printWindow.document.close()
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()
+      // Close print window and restore focus after printing
+      printWindow.onafterprint = () => {
+        printWindow.close()
+        window.focus()
+      }
+      // Fallback: restore focus when print window is closed manually
+      const checkClosed = setInterval(() => {
+        if (printWindow.closed) {
+          clearInterval(checkClosed)
+          window.focus()
+        }
+      }, 500)
+      // Stop checking after 5 minutes
+      setTimeout(() => clearInterval(checkClosed), 300000)
     }, 250)
   }
 
@@ -1430,6 +1455,19 @@ export default function Vozidla() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
+
+                  {(isAutocentrumMaxi || isMtAutos) && (
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">{t('pocetMiest')}</label>
+                      <input
+                        type="number"
+                        value={carForm.seats}
+                        onChange={(e) => handleCarFormChange('seats', e.target.value)}
+                        placeholder="napr. 5"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-semibold mb-2">{t('farba')}</label>

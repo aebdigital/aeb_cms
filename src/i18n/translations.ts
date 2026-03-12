@@ -35,6 +35,7 @@ export const translations = {
   pohon: { sk: 'Pohon', cs: 'Pohon' },
   vin: { sk: 'VIN', cs: 'VIN' },
   dvere: { sk: 'Dvere', cs: 'Dveře' },
+  pocetMiest: { sk: 'Počet miest', cs: 'Počet míst' },
   farba: { sk: 'Farba', cs: 'Barva' },
   krajinaPovodu: { sk: 'Krajina pôvodu', cs: 'Země původu' },
   vyberteKrajinu: { sk: 'Vyberte krajinu', cs: 'Vyberte zemi' },
