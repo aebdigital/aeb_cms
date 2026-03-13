@@ -19,6 +19,7 @@ export interface Car {
   source?: 'xml' | 'admin';
   reservedUntil?: string;
   showOnHomepage?: boolean;
+  sold?: boolean;
   // New fields
   doors?: string;
   seats?: number;
@@ -41,10 +42,11 @@ export interface Car {
   heatedSeats?: string; // 'front' | 'rear' | 'front_rear'
   deletedAt?: string; // Soft delete timestamp
   // PDF documents
-  serviceBookPdf?: string; // Path to service book PDF
-  cebiaProtocolPdf?: string; // Path to Cebia protocol PDF
-  stkValidUntil?: string; // Date of STK validity
-  metadata?: any; // JSONB for custom site-specific data
+  serviceBookPdf?: string;
+  cebiaProtocolPdf?: string;
+  stkValidUntil?: string;
+  metadata?: any;
+  additionalFiles?: Array<{ name: string; path: string }>;
 }
 
 // Database row type (snake_case from Supabase)
@@ -70,6 +72,7 @@ export interface CarRow {
   source: 'xml' | 'admin' | null;
   reserved_until: string | null;
   show_on_homepage: boolean;
+  sold: boolean | null;
   created_at: string;
   updated_at: string;
   // New fields
@@ -98,6 +101,7 @@ export interface CarRow {
   cebia_protocol_pdf: string | null;
   stk_valid_until: string | null;
   metadata: any | null;
+  additional_files: Array<{ name: string; path: string }> | null;
 }
 
 // Map DB row to frontend Car interface
@@ -123,6 +127,7 @@ export function mapCarRow(row: CarRow): Car {
     source: row.source ?? undefined,
     reservedUntil: row.reserved_until ?? undefined,
     showOnHomepage: row.show_on_homepage,
+    sold: row.sold ?? false,
     // New fields
     doors: row.doors ?? undefined,
     seats: row.seats ?? undefined,
@@ -149,6 +154,7 @@ export function mapCarRow(row: CarRow): Car {
     cebiaProtocolPdf: row.cebia_protocol_pdf ?? undefined,
     stkValidUntil: row.stk_valid_until ?? undefined,
     metadata: row.metadata ?? {},
+    additionalFiles: row.additional_files ?? [],
   };
 }
 
@@ -178,6 +184,7 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
   if (car.source !== undefined) row.source = car.source;
   if (car.reservedUntil !== undefined) row.reserved_until = car.reservedUntil;
   if (car.showOnHomepage !== undefined) row.show_on_homepage = car.showOnHomepage;
+  if (car.sold !== undefined) row.sold = car.sold;
   // New fields
   if (car.doors !== undefined) row.doors = car.doors;
   if (car.seats !== undefined) row.seats = car.seats;
@@ -203,6 +210,7 @@ export function mapCarToRow(car: Partial<Car>, siteId: string): Partial<CarRow> 
   if (car.cebiaProtocolPdf !== undefined) row.cebia_protocol_pdf = car.cebiaProtocolPdf;
   if (car.stkValidUntil !== undefined) row.stk_valid_until = car.stkValidUntil;
   if (car.metadata !== undefined) row.metadata = car.metadata;
+  if (car.additionalFiles !== undefined) row.additional_files = car.additionalFiles;
 
 
   // Only include image if it's defined (to avoid NOT NULL constraint issues)

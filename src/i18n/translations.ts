@@ -126,13 +126,25 @@ export const translations = {
   vsetkyObrazky: { sk: 'Všetky obrázky (presuňte pre zmenu poradia):', cs: 'Všechny obrázky (přesuňte pro změnu pořadí):' },
   hlavna: { sk: 'Hlavná', cs: 'Hlavní' },
   nove: { sk: 'Nové', cs: 'Nové' },
+  servisnaKnizka: { sk: 'Servisná knižka', cs: 'Servisní knížka' },
+  cebiaProtokol: { sk: 'Cebia protokol', cs: 'Cebia protokol' },
+  prilozeneSubory: { sk: 'Priložené súbory', cs: 'Přiložené soubory' },
+  vyberteSubory: { sk: 'Vyberte súbory (PDF, JPG, PNG).', cs: 'Vyberte soubory (PDF, JPG, PNG).' },
+  aktualneSubory: { sk: 'Aktuálne priložené súbory:', cs: 'Aktuálně přiložené soubory:' },
+  suborNahraty: { sk: 'Súbor nahratý', cs: 'Soubor nahrán' },
+  nazovSuboru: { sk: 'Názov súboru', cs: 'Název souboru' },
 
   // Checkboxes
   zobrazitNaDomovskej: { sk: 'Zobraziť na domovskej stránke v sekcii "Najnovšie vozidlá"', cs: 'Zobrazit na domovské stránce v sekci "Nejnovější vozidla"' },
   rezervovane: { sk: 'Rezervované', cs: 'Rezervováno' },
+  predane: { sk: 'Predané', cs: 'Prodáno' },
 
   // Buttons
   zrusit: { sk: 'Zrušiť', cs: 'Zrušit' },
+  nahrat: { sk: 'Nahrať', cs: 'Nahrát' },
+  ulozit: { sk: 'Uložiť', cs: 'Uložit' },
+  ulozene: { sk: 'Uložené', cs: 'Uloženo' },
+  vymazane: { sk: 'Vymazané', cs: 'Smazáno' },
   ukladam: { sk: 'Ukladám...', cs: 'Ukládám...' },
 
   // Upload progress
@@ -164,6 +176,20 @@ export const translations = {
   // Layout / Navigation
   aktualnaStranka: { sk: 'Aktuálna stránka', cs: 'Aktuální stránka' },
   odhlasitSa: { sk: 'Odhlásiť sa', cs: 'Odhlásit se' },
+
+  // Gallery
+  pridatFotky: { sk: 'Pridať fotky', cs: 'Přidat fotky' },
+  ziadneFotkyVKategorii: { sk: 'Žiadne fotky v tejto kategórii', cs: 'Žádné fotky v této kategorii' },
+  nahratPrveFotky: { sk: 'Nahrať prvé fotky', cs: 'Nahrát první fotky' },
+  upravitPopisObrazka: { sk: 'Upraviť popis obrázka', cs: 'Upravit popis obrázku' },
+  altTextPopis: { sk: 'Alt text (popis pre vyhľadávače)', cs: 'Alt text (popis pro vyhledávače)' },
+  popisObrazkaPlaceholder: { sk: 'Popis obrázka...', cs: 'Popis obrázku...' },
+  nahratFotkyDo: { sk: 'Nahrať fotky do', cs: 'Nahrát fotky do' },
+  kliknitePreVyber: { sk: 'Kliknite pre výber alebo pretiahnite fotky', cs: 'Klikněte pro výběr nebo přetáhněte fotky' },
+  fotiekNaNahratie: { sk: 'fotiek na nahratie', cs: 'fotek k nahrání' },
+  pripravujemObrazky: { sk: 'Pripravujem obrázky...', cs: 'Připravuji obrázky...' },
+  komprimujemObrazokNum: { sk: 'Komprimujem obrázok', cs: 'Komprimuji obrázek' },
+  nahravanieNum: { sk: 'Nahrávanie', cs: 'Nahrávání' },
 
   // Detail modal
   galeria: { sk: 'Galéria', cs: 'Galerie' },

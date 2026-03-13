@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 
-export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor'
+export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor' | 'holz-haus'
 
 export interface GalleryImage {
   id: string
@@ -13,12 +13,17 @@ export interface GalleryImage {
   updated_at: string
 }
 
-export const GALLERY_CATEGORIES: { value: GalleryCategory; label: string }[] = [
-  { value: 'skola-ludus', label: 'Skola Ludus' },
-  { value: 'ludus-academy', label: 'Ludus Academy' },
-  { value: 'divadlo-ludus', label: 'Divadlo Ludus' },
-  { value: 'ludus-tabor', label: 'Ludus Tabor' },
+export const GALLERY_CATEGORIES: { value: GalleryCategory; label: string; sites?: string[] }[] = [
+  { value: 'skola-ludus', label: 'Skola Ludus', sites: ['ludushub'] },
+  { value: 'ludus-academy', label: 'Ludus Academy', sites: ['ludushub'] },
+  { value: 'divadlo-ludus', label: 'Divadlo Ludus', sites: ['ludushub'] },
+  { value: 'ludus-tabor', label: 'Ludus Tabor', sites: ['ludushub'] },
+  { value: 'holz-haus', label: 'Galéria', sites: ['holz-haus'] },
 ]
+
+export function getCategoriesForSite(siteSlug: string) {
+  return GALLERY_CATEGORIES.filter(cat => !cat.sites || cat.sites.includes(siteSlug))
+}
 
 export async function getGalleryImages(siteId: string, category?: GalleryCategory): Promise<GalleryImage[]> {
   let query = supabase

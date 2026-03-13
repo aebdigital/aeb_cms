@@ -7,6 +7,7 @@ import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets 
 import { getPublicUrl } from '../api/storage'
 import { ensureValidSession } from '../lib/supabaseClient'
 import { compressImage } from '../lib/fileUtils'
+import { useNotification } from '../contexts/NotificationContext'
 
 const initialCarForm = {
   // Required matching fields for Darius
@@ -49,13 +50,13 @@ const FEATURES_OPTIONS = ['Klimatizácia', 'Tempomat', 'Navigácia', 'Bluetooth'
 
 export default function DariusVozidla() {
   const { currentSite, loading: authLoading } = useAuth()
+  const { showNotification } = useNotification()
   const { t } = useTranslation()
 
   const [cars, setCars] = useState([])
   const [activeTab, setActiveTab] = useState('ponuka')
   const [loading, setLoading] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
-  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -83,7 +84,7 @@ export default function DariusVozidla() {
       setCars(allData)
     } catch (err) {
       console.error('Error loading cars:', err)
-      setError(err.message)
+      showNotification(err.message, 'error')
     } finally {
       setLoading(false)
       setInitialLoad(false)
@@ -306,12 +307,13 @@ export default function DariusVozidla() {
       }
 
       setUploadProgress('')
+      showNotification(t('ulozene') || 'Uložené', 'success')
       setShowAddModal(false)
       loadCars()
 
     } catch (err) {
       console.error(err)
-      alert('Chyba: ' + err.message)
+      showNotification('Chyba: ' + err.message, 'error')
     } finally {
       setSubmitting(false)
       setUploadProgress('')
@@ -323,8 +325,9 @@ export default function DariusVozidla() {
     try {
       await deleteCarApi(id)
       loadCars()
+      showNotification(t('vymazane') || 'Vymazané', 'success')
     } catch (err) {
-      alert(err.message)
+      showNotification(err.message, 'error')
     }
   }
 

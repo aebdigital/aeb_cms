@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
 import Projekty from './pages/Projekty'
@@ -18,68 +19,71 @@ import LudusRepertoar from './pages/LudusRepertoar'
 import LegisBlogs from './pages/LegisBlogs'
 import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
+import GalleryManager from './pages/GalleryManager'
 import DynamicHomePage from './components/DynamicHomePage'
 import NotFound from './pages/NotFound'
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public login route */}
-          <Route path="/login" element={<Login />} />
+      <NotificationProvider>
+        <Router>
+          <Routes>
+            {/* Public login route */}
+            <Route path="/login" element={<Login />} />
 
-          {/* CMS Dashboard (Supabase-powered page editor) */}
-          <Route
-            path="/cms"
-            element={
-              <ProtectedRoute>
-                <CMSDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* CMS Dashboard (Supabase-powered page editor) */}
+            <Route
+              path="/cms"
+              element={
+                <ProtectedRoute>
+                  <CMSDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* All main routes require authentication */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            {/* Dynamic home page - redirects to first nav page */}
-            <Route index element={<DynamicHomePage />} />
-            <Route path="projekty" element={<Projekty />} />
-            <Route path="galerie" element={<Galerie />} />
-            <Route path="blogy" element={<Blogy />} />
-            <Route path="kontakt" element={<Kontakt />} />
-            <Route path="nastavenia" element={<Nastavenia />} />
-            <Route path="vozidla" element={<Vozidla />} />
-            {/* ponuka slug maps to Vozidla component */}
-            <Route path="ponuka" element={<Vozidla />} />
-            <Route path="oznamy" element={<Oznamy />} />
-            <Route path="dovolenka" element={<Dovolenka />} />
-            <Route path="darius-vozidla" element={<DariusVozidla />} />
-            {/* Ludus Hub specific routes */}
-            <Route path="ludus-galeria" element={<LudusGaleria />} />
-            <Route path="ludus-aktuality" element={<LudusAktuality />} />
-            <Route path="ludus-program" element={<LudusProgram />} />
-            <Route path="ludus-repertoar" element={<LudusRepertoar />} />
-            <Route path="legis-blogy" element={<LegisBlogs />} />
-          </Route>
+            {/* All main routes require authentication */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              {/* Dynamic home page - redirects to first nav page */}
+              <Route index element={<DynamicHomePage />} />
+              <Route path="projekty" element={<Projekty />} />
+              <Route path="galerie" element={<GalleryManager />} />
+              <Route path="blogy" element={<Blogy />} />
+              <Route path="kontakt" element={<Kontakt />} />
+              <Route path="nastavenia" element={<Nastavenia />} />
+              <Route path="vozidla" element={<Vozidla />} />
+              {/* ponuka slug maps to Vozidla component */}
+              <Route path="ponuka" element={<Vozidla />} />
+              <Route path="oznamy" element={<Oznamy />} />
+              <Route path="dovolenka" element={<Dovolenka />} />
+              <Route path="darius-vozidla" element={<DariusVozidla />} />
+              {/* Ludus Hub specific routes */}
+              <Route path="ludus-galeria" element={<LudusGaleria />} />
+              <Route path="ludus-aktuality" element={<LudusAktuality />} />
+              <Route path="ludus-program" element={<LudusProgram />} />
+              <Route path="ludus-repertoar" element={<LudusRepertoar />} />
+              <Route path="legis-blogy" element={<LegisBlogs />} />
+            </Route>
 
-          {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
-          <Route
-            path="*"
-            element={
-              <ProtectedRoute>
-                <NotFound />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+            {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
+            <Route
+              path="*"
+              element={
+                <ProtectedRoute>
+                  <NotFound />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </NotificationProvider>
     </AuthProvider>
   )
 }

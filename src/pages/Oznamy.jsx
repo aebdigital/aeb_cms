@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { getOrCreateOznamyPage, getOrCreateAnnouncementBlock, updateAnnouncementBlock } from '../api/oznamy'
+import { useNotification } from '../contexts/NotificationContext'
 
 const Oznamy = () => {
   const { currentSite, loading: authLoading } = useAuth()
+  const { showNotification } = useNotification()
   const [loading, setLoading] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
     id: '',
     pageId: '',
@@ -46,7 +47,7 @@ const Oznamy = () => {
       } catch (err) {
         console.error('Failed to load announcement:', err)
         if (!cancelled) {
-          setError(err.message || 'Chyba pri nacitavani oznamu')
+          showNotification(err.message || 'Chyba pri nacitavani oznamu', 'error')
         }
       } finally {
         if (!cancelled) {
@@ -67,7 +68,7 @@ const Oznamy = () => {
     e.preventDefault()
 
     if (!formData.title.trim()) {
-      alert('Vyplňte názov oznamu')
+      showNotification('Vyplňte názov oznamu', 'error')
       return
     }
 
@@ -76,10 +77,10 @@ const Oznamy = () => {
 
     try {
       await updateAnnouncementBlock(formData)
-      alert('Oznam uložený')
+      showNotification('Oznam uložený', 'success')
     } catch (err) {
       console.error('Failed to save announcement:', err)
-      setError(err.message || 'Chyba pri ukladaní oznamu')
+      showNotification(err.message || 'Chyba pri ukladaní oznamu', 'error')
     } finally {
       setSaving(false)
     }
@@ -106,12 +107,6 @@ const Oznamy = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Oznamy</h1>
       </div>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
-        </div>
-      )}
 
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-lg font-semibold mb-4">Oznam na webovej stránke</h2>

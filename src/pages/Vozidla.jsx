@@ -9,6 +9,7 @@ import { uploadCarImageOnly, deleteCarGalleryImage, deleteAllCarImagesAndAssets 
 import { getPublicUrl, uploadCarPdf } from '../api/storage'
 import { ensureValidSession } from '../lib/supabaseClient'
 import { compressImage } from '../lib/fileUtils'
+import { useNotification } from '../contexts/NotificationContext'
 import logo from '../logo.png'
 
 const initialCarForm = {
@@ -37,6 +38,7 @@ const initialCarForm = {
   color: '',
   countryOfOrigin: '',
   reserved: false,
+  sold: false,
   month: '',
   vatDeductible: false,
   priceWithoutVat: 0,
@@ -54,11 +56,14 @@ const initialCarForm = {
   serviceBookPdf: null, // existing path or null
   cebiaProtocolPdf: null, // existing path or null
   pendingServiceBookPdf: null, // File object for new upload
-  pendingCebiaProtocolPdf: null // File object for new upload
+  pendingCebiaProtocolPdf: null, // File object for new upload
+  additionalFiles: [], // [{ name: '', path: '', id: uuid }]
+  pendingAdditionalFiles: [] // [{ name: '', file: File }]
 }
 
 export default function Vozidla() {
   const { currentSite, loading: authLoading } = useAuth()
+  const { showNotification } = useNotification()
   const { t, tCategory, tEquipment } = useTranslation()
   const isAutocentrumMaxi = currentSite?.slug === 'autocentrummaxi'
   const isMtAutos = currentSite?.slug === 'cars'
@@ -203,7 +208,20 @@ export default function Vozidla() {
   }
 
   const handleCarFormChange = (field, value) => {
-    setCarForm(prev => ({ ...prev, [field]: value }))
+    setCarForm(prev => {
+      const next = { ...prev, [field]: value }
+      
+      // If setting reserved to true, unset sold
+      if (field === 'reserved' && value === true) {
+        next.sold = false
+      }
+      // If setting sold to true, unset reserved
+      if (field === 'sold' && value === true) {
+        next.reserved = false
+      }
+      
+      return next
+    })
   }
 
   const toggleFeature = (feature) => {
@@ -270,6 +288,35 @@ export default function Vozidla() {
     }))
   }
 
+  const handleAdditionalFileUpload = (e) => {
+    const files = Array.from(e.target.files)
+    const newFiles = files.map(file => ({
+      type: 'pending',
+      data: file,
+      name: file.name
+    }))
+    setCarForm(prev => ({
+      ...prev,
+      additionalFiles: [...prev.additionalFiles, ...newFiles]
+    }))
+  }
+
+  const handleAdditionalFileNameChange = (index, newName) => {
+    const updatedFiles = [...carForm.additionalFiles]
+    updatedFiles[index] = { ...updatedFiles[index], name: newName }
+    setCarForm(prev => ({
+      ...prev,
+      additionalFiles: updatedFiles
+    }))
+  }
+
+  const removeAdditionalFile = (index) => {
+    setCarForm(prev => ({
+      ...prev,
+      additionalFiles: prev.additionalFiles.filter((_, i) => i !== index)
+    }))
+  }
+
   const openAddModal = () => {
     setCarForm(initialCarForm)
     setIsEditMode(false)
@@ -317,6 +364,7 @@ export default function Vozidla() {
       color: car.color || '',
       countryOfOrigin: car.countryOfOrigin || '',
       reserved: car.reserved || false,
+      sold: car.sold || false,
       month: car.month || '',
       vatDeductible: car.vatDeductible || false,
       priceWithoutVat: car.priceWithoutVat || 0,
@@ -334,7 +382,9 @@ export default function Vozidla() {
       serviceBookPdf: car.serviceBookPdf || null,
       cebiaProtocolPdf: car.cebiaProtocolPdf || null,
       pendingServiceBookPdf: null,
-      pendingCebiaProtocolPdf: null
+      pendingCebiaProtocolPdf: null,
+      additionalFiles: car.additionalFiles?.map(f => ({ type: 'existing', data: f.path, name: f.name })) || [],
+      pendingAdditionalFiles: []
     })
     setIsEditMode(true)
     setEditingCar(car)
@@ -366,12 +416,12 @@ export default function Vozidla() {
     e.preventDefault()
 
     if (!carForm.brand || !carForm.model || !carForm.fuel || !carForm.transmission) {
-      alert(t('prosimVyplnte'))
+      showNotification(t('prosimVyplnte'), 'error')
       return
     }
 
     if (!currentSite?.id) {
-      alert(t('chybaNieJeStranka'))
+      showNotification(t('chybaNieJeStranka'), 'error')
       return
     }
 
@@ -417,6 +467,7 @@ export default function Vozidla() {
         color: carForm.color || undefined,
         countryOfOrigin: carForm.countryOfOrigin || undefined,
         reserved: carForm.reserved,
+        sold: carForm.sold,
         month: carForm.month ? parseInt(carForm.month) : undefined,
         vatDeductible: carForm.vatDeductible,
         priceWithoutVat: carForm.vatDeductible && carForm.price ? Math.round(carForm.price / (isAutocentrumMaxi ? 1.21 : 1.23)) : undefined,
@@ -521,6 +572,34 @@ export default function Vozidla() {
         cebiaProtocolPdfPath = path
       }
 
+      // Upload Additional Files
+      const finalAdditionalFiles = []
+      const existingAdditionalFiles = carForm.additionalFiles.filter(f => f.type === 'existing')
+      const pendingAdditionalFiles = carForm.additionalFiles.filter(f => f.type === 'pending')
+
+      if (existingAdditionalFiles.length > 0) {
+        finalAdditionalFiles.push(...existingAdditionalFiles.map(f => ({ name: f.name, path: f.data })))
+      }
+
+      if (pendingAdditionalFiles.length > 0 && carId) {
+        for (let i = 0; i < pendingAdditionalFiles.length; i++) {
+          const item = pendingAdditionalFiles[i]
+          setUploadProgress(`${t('nahravamSubor')} ${i + 1}/${pendingAdditionalFiles.length}...`)
+          
+          const { path } = await withTimeout(
+            uploadCarPdf({
+              file: item.data,
+              siteSlug,
+              carId,
+              pdfType: 'additional'
+            }),
+            60000,
+            `Uploading additional file ${i + 1}`
+          )
+          finalAdditionalFiles.push({ name: item.name, path })
+        }
+      }
+
       // Update car with final image order and PDF paths
       const updateData = {
         serviceBookPdf: serviceBookPdfPath,
@@ -532,6 +611,7 @@ export default function Vozidla() {
         await withTimeout(updateCar(carId, {
           image: finalImagePaths[0], // First image is main
           images: finalImagePaths.slice(1), // Rest are gallery
+          additionalFiles: finalAdditionalFiles,
           ...updateData
         }, currentSite.id), 30000, 'Saving image order')
       } else {
@@ -539,17 +619,18 @@ export default function Vozidla() {
         await withTimeout(updateCar(carId, {
           image: null,
           images: [],
+          additionalFiles: finalAdditionalFiles,
           ...updateData
         }, currentSite.id), 30000, 'Clearing images')
       }
 
       setUploadProgress('')
-      alert(isEditMode ? t('vozidloUspesneUpravene') : t('vozidloUspesnePridane'))
+      showNotification(isEditMode ? t('vozidloUspesneUpravene') : t('vozidloUspesnePridane'), 'success')
       closeAddModal()
       await loadCars()
     } catch (err) {
       console.error('Error saving car:', err)
-      alert(t('chybaPriUkladani') + err.message)
+      showNotification(t('chybaPriUkladani') + ': ' + err.message, 'error')
     } finally {
       setSubmitting(false)
       setUploadProgress('')
@@ -565,7 +646,7 @@ export default function Vozidla() {
         await loadCars()
       } catch (err) {
         console.error('Error deleting car:', err)
-        alert(t('chybaPriMazani') + err.message)
+        showNotification(t('chybaPriMazani') + ': ' + err.message, 'error')
       }
     }
   }
@@ -1020,7 +1101,7 @@ export default function Vozidla() {
               </div>
             )}
             <div className={activeTab === 'archiv' ? 'opacity-75' : ''}>
-              <CarCard car={car} onClick={() => handleCarClick(car)} getImageUrl={getImageUrl} currency={currentSite?.slug === 'autocentrummaxi' ? 'Kč' : 'EUR'} />
+              <CarCard car={car} onClick={() => handleCarClick(car)} getImageUrl={getImageUrl} currency={currentSite?.slug === 'autocentrummaxi' ? 'Kč' : 'EUR'} lang={isAutocentrumMaxi ? 'cs' : 'sk'} />
             </div>
           </div>
         ))}
@@ -1108,11 +1189,17 @@ export default function Vozidla() {
                 <div className="absolute bottom-4 left-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg text-xl font-bold">
                   {selectedCar.price?.toLocaleString()} {currentSite?.slug === 'autocentrummaxi' ? 'Kč' : 'EUR'}
                 </div>
-                {selectedCar.source === 'admin' && !selectedCar.deletedAt && (
-                  <div className="absolute top-4 left-4 bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    ADMIN
-                  </div>
-                )}
+                <div className="absolute top-4 right-4 flex flex-col gap-2">
+                  {selectedCar.sold ? (
+                    <div className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg uppercase">
+                      {t('predane', isAutocentrumMaxi ? 'cs' : 'sk')}
+                    </div>
+                  ) : selectedCar.reserved ? (
+                    <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg uppercase">
+                      {t('rezervovane', isAutocentrumMaxi ? 'cs' : 'sk')}
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               <div className="p-6">
@@ -1767,116 +1854,113 @@ export default function Vozidla() {
                       </div>
                     </div>
                   )}
+
+                  {/* PDF Documents */}
+                  {!isMtAutos && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">{t('servisnaKnizka')}</label>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => handleCarFormChange('pendingServiceBookPdf', e.target.files[0])}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                        />
+                        {(carForm.serviceBookPdf || carForm.pendingServiceBookPdf) && (
+                          <div className="mt-2 text-sm text-green-600 font-medium flex items-center justify-between">
+                            <span>{carForm.pendingServiceBookPdf ? carForm.pendingServiceBookPdf.name : t('suborNahraty')}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleCarFormChange('serviceBookPdf', null);
+                                handleCarFormChange('pendingServiceBookPdf', null);
+                              }}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              {t('odstranit')}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">{t('cebiaProtokol')}</label>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => handleCarFormChange('pendingCebiaProtocolPdf', e.target.files[0])}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                        />
+                        {(carForm.cebiaProtocolPdf || carForm.pendingCebiaProtocolPdf) && (
+                          <div className="mt-2 text-sm text-green-600 font-medium flex items-center justify-between">
+                            <span>{carForm.pendingCebiaProtocolPdf ? carForm.pendingCebiaProtocolPdf.name : t('suborNahraty')}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleCarFormChange('cebiaProtocolPdf', null);
+                                handleCarFormChange('pendingCebiaProtocolPdf', null);
+                              }}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              {t('odstranit')}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Files */}
+                  {!isMtAutos && (
+                    <div className="mt-6">
+                      <label className="block text-sm font-semibold mb-2">{t('prilozeneSubory')}</label>
+                      <div className="mb-4">
+                        <input
+                          type="file"
+                          multiple
+                          onChange={handleAdditionalFileUpload}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                        />
+                        <p className="text-sm text-gray-500 mt-2">{t('vyberteSubory')}</p>
+                      </div>
+                      {carForm.additionalFiles.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-2">
+                            {t('aktualneSubory')}
+                          </p>
+                          <ul className="space-y-2">
+                            {carForm.additionalFiles.map((file, index) => (
+                              <li key={`file-${index}`} className="flex flex-col gap-2 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-medium text-gray-500 truncate max-w-[200px]">
+                                    {file.type === 'existing' ? file.data.split('/').pop() : file.data.name}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeAdditionalFile(index)}
+                                    className="bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={file.name}
+                                  onChange={(e) => handleAdditionalFileNameChange(index, e.target.value)}
+                                  placeholder={t('nazovSuboru')}
+                                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* PDF Documents */}
-                <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
-                  <label className="block text-sm font-semibold mb-4 text-blue-900">PDF Dokumenty</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Service Book PDF */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-blue-800">Servisná knižka</label>
-                      {carForm.serviceBookPdf && !carForm.pendingServiceBookPdf && (
-                        <div className="flex items-center gap-2 mb-2 p-2 bg-white rounded border border-blue-200">
-                          <span className="text-green-600">✓</span>
-                          <span className="text-sm text-gray-700 truncate flex-1">Nahraté</span>
-                          <a
-                            href={getImageUrl(carForm.serviceBookPdf)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-sm underline"
-                          >
-                            Zobraziť
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleCarFormChange('serviceBookPdf', null)}
-                            className="text-red-500 hover:text-red-700 text-sm"
-                          >
-                            Odstrániť
-                          </button>
-                        </div>
-                      )}
-                      {carForm.pendingServiceBookPdf && (
-                        <div className="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded border border-green-200">
-                          <span className="text-green-600">📄</span>
-                          <span className="text-sm text-gray-700 truncate flex-1">{carForm.pendingServiceBookPdf.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleCarFormChange('pendingServiceBookPdf', null)}
-                            className="text-red-500 hover:text-red-700 text-sm"
-                          >
-                            Zrušiť
-                          </button>
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={(e) => {
-                          if (e.target.files?.[0]) {
-                            handleCarFormChange('pendingServiceBookPdf', e.target.files[0])
-                          }
-                          e.target.value = ''
-                        }}
-                        className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 text-sm"
-                      />
-                    </div>
-
-                    {/* Cebia Protocol PDF */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-blue-800">Cebia protokol</label>
-                      {carForm.cebiaProtocolPdf && !carForm.pendingCebiaProtocolPdf && (
-                        <div className="flex items-center gap-2 mb-2 p-2 bg-white rounded border border-blue-200">
-                          <span className="text-green-600">✓</span>
-                          <span className="text-sm text-gray-700 truncate flex-1">Nahraté</span>
-                          <a
-                            href={getImageUrl(carForm.cebiaProtocolPdf)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-sm underline"
-                          >
-                            Zobraziť
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleCarFormChange('cebiaProtocolPdf', null)}
-                            className="text-red-500 hover:text-red-700 text-sm"
-                          >
-                            Odstrániť
-                          </button>
-                        </div>
-                      )}
-                      {carForm.pendingCebiaProtocolPdf && (
-                        <div className="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded border border-green-200">
-                          <span className="text-green-600">📄</span>
-                          <span className="text-sm text-gray-700 truncate flex-1">{carForm.pendingCebiaProtocolPdf.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleCarFormChange('pendingCebiaProtocolPdf', null)}
-                            className="text-red-500 hover:text-red-700 text-sm"
-                          >
-                            Zrušiť
-                          </button>
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={(e) => {
-                          if (e.target.files?.[0]) {
-                            handleCarFormChange('pendingCebiaProtocolPdf', e.target.files[0])
-                          }
-                          e.target.value = ''
-                        }}
-                        className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Show on Homepage */}
-                <div className="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                {/* Show on Homepage toggle */}
+                <div className="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-200 mt-6">
                   <input
                     type="checkbox"
                     id="showOnHomepage"
@@ -1889,18 +1973,33 @@ export default function Vozidla() {
                   </label>
                 </div>
 
-                {/* Reserved toggle */}
-                <div className="flex items-center p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <input
-                    type="checkbox"
-                    id="reserved"
-                    checked={carForm.reserved}
-                    onChange={(e) => handleCarFormChange('reserved', e.target.checked)}
-                    className="w-5 h-5 text-orange-600 rounded focus:ring-2 focus:ring-orange-500"
-                  />
-                  <label htmlFor="reserved" className="ml-3 text-sm font-semibold text-orange-900">
-                    {t('rezervovane')}
-                  </label>
+                {/* Reserved and Sold toggles */}
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <input
+                      type="checkbox"
+                      id="reserved"
+                      checked={carForm.reserved}
+                      onChange={(e) => handleCarFormChange('reserved', e.target.checked)}
+                      className="w-5 h-5 text-orange-600 rounded focus:ring-2 focus:ring-orange-500"
+                    />
+                    <label htmlFor="reserved" className="ml-3 text-sm font-semibold text-orange-900">
+                      {t('rezervovane', isAutocentrumMaxi ? 'cs' : 'sk')}
+                    </label>
+                  </div>
+
+                  <div className="flex items-center p-4 bg-red-50 rounded-lg border border-red-200">
+                    <input
+                      type="checkbox"
+                      id="sold"
+                      checked={carForm.sold}
+                      onChange={(e) => handleCarFormChange('sold', e.target.checked)}
+                      className="w-5 h-5 text-red-600 rounded focus:ring-2 focus:ring-red-500"
+                    />
+                    <label htmlFor="sold" className="ml-3 text-sm font-semibold text-red-900">
+                      {t('predane', isAutocentrumMaxi ? 'cs' : 'sk')}
+                    </label>
+                  </div>
                 </div>
 
                 {/* Upload Progress */}

@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useNotification } from '../contexts/NotificationContext'
 import { supabase } from '../lib/supabaseClient'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
   const { login, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const { showNotification } = useNotification()
 
   // Get the page they were trying to visit
   const from = location.state?.from?.pathname || '/'
@@ -22,16 +23,17 @@ export default function LoginForm() {
     }
   }, [user, authLoading, navigate, from])
 
-  async function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(null)
     setLoading(true)
 
     try {
       await login(email, password)
-      navigate(from, { replace: true })
+      showNotification('Prihlásenie úspešné', 'success')
+      navigate(location.state?.from?.pathname || '/')
     } catch (err) {
-      setError(err.message)
+      console.error('Login error:', err)
+      showNotification(err.message === 'Invalid login credentials' ? 'Nesprávne meno alebo heslo' : err.message, 'error')
     } finally {
       setLoading(false)
     }
@@ -83,12 +85,6 @@ export default function LoginForm() {
             <p className="text-gray-500 mt-2">Prihláste sa do vášho účtu</p>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">

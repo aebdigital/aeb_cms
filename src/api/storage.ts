@@ -49,18 +49,24 @@ export function getPublicUrl(path: string): string {
   return data.publicUrl
 }
 
-// Upload a PDF file for a car
+// Upload a PDF/file for a car
 export interface UploadCarPdfOptions {
   file: File
   siteSlug: string
   carId: string
-  pdfType: 'service-book' | 'cebia-protocol'
+  pdfType: 'service-book' | 'cebia-protocol' | 'additional'
 }
 
 export async function uploadCarPdf(options: UploadCarPdfOptions): Promise<{ path: string }> {
   const { file, siteSlug, carId, pdfType } = options
 
-  const fileName = `${pdfType}.pdf`
+  let fileName = `${pdfType}.pdf`
+  
+  if (pdfType === 'additional') {
+    const ext = getFileExtension(file)
+    fileName = `file-${generateUUID()}.${ext}`
+  }
+
   const path = `${siteSlug}/cars/${carId}/${fileName}`
 
   const { error } = await supabase.storage
@@ -68,7 +74,6 @@ export async function uploadCarPdf(options: UploadCarPdfOptions): Promise<{ path
     .upload(path, file, {
       upsert: true,
       cacheControl: '3600',
-      contentType: 'application/pdf',
     })
 
   if (error) {
