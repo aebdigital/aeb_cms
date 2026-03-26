@@ -17,6 +17,7 @@ import LudusAktuality from './pages/LudusAktuality'
 import LudusProgram from './pages/LudusProgram'
 import LudusRepertoar from './pages/LudusRepertoar'
 import LegisBlogs from './pages/LegisBlogs'
+import ViktorijaBookings from './pages/ViktorijaBookings'
 import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
 import GalleryManager from './pages/GalleryManager'
@@ -70,6 +71,7 @@ function App() {
               <Route path="ludus-program" element={<LudusProgram />} />
               <Route path="ludus-repertoar" element={<LudusRepertoar />} />
               <Route path="legis-blogy" element={<LegisBlogs />} />
+              <Route path="viktorija" element={<ViktorijaBookings />} />
             </Route>
 
             {/* Catch all - show 404 if authenticated, otherwise redirect to login */}

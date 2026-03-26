@@ -47,7 +47,6 @@ export default function GalleryManager() {
 
     async function loadImages() {
       setLoading(true)
-      setError(null)
 
       try {
         const data = await getGalleryImages(currentSite.id, activeCategory)

@@ -8,6 +8,22 @@ export const translations = {
   upravitVozidlo: { sk: 'Upraviť vozidlo', cs: 'Upravit vozidlo' },
   pridatNoveVozidlo: { sk: 'Pridať nové vozidlo', cs: 'Přidat nové vozidlo' },
 
+  // Projects
+  projekty: { sk: 'Projekty', cs: 'Projekty' },
+  pridatProjekt: { sk: 'Pridať projekt', cs: 'Přidat projekt' },
+  upravitProjekt: { sk: 'Upraviť projekt', cs: 'Upravit projekt' },
+  novyProjekt: { sk: 'Nový projekt', cs: 'Nový projekt' },
+  nazovProjektu: { sk: 'Názov projektu', cs: 'Název projektu' },
+  kategoria: { sk: 'Kategória', cs: 'Kategorie' },
+  lokalita: { sk: 'Lokalita', cs: 'Lokalita' },
+  datum: { sk: 'Dátum', cs: 'Datum' },
+  textProjektu: { sk: 'Text projektu', cs: 'Text projektu' },
+  nahľadovaFotka: { sk: 'Náhľadová fotka', cs: 'Náhledová fotka' },
+  galeriaProjektu: { sk: 'Galéria projektu', cs: 'Galerie projektu' },
+  ziadneProjekty: { sk: 'Zatiaľ nemáte žiadne projekty.', cs: 'Zatím nemáte žádné projekty.' },
+  vymazatProjekt: { sk: 'Vymazať projekt', cs: 'Smazat projekt' },
+  steIstiProjekt: { sk: 'Naozaj chcete vymazať tento projekt?', cs: 'Opravdu chcete smazat tento projekt?' },
+
   // Search and filters
   hladatVozidlo: { sk: 'Hľadať vozidlo...', cs: 'Hledat vozidlo...' },
   filtre: { sk: 'Filtre', cs: 'Filtry' },

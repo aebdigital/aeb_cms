@@ -17,7 +17,8 @@ import {
   DocumentIcon,
   ArrowRightOnRectangleIcon,
   NewspaperIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 
 // Map page slugs to icons
@@ -106,7 +107,7 @@ export default function Layout() {
     // - root path (handled by DynamicHomePage)
     // - nastavenia (Settings) - assuming it's available for all
     // - empty/dashboard
-    const alwaysAllowed = ['', 'nastavenia', 'cms'];
+    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija'];
 
     if (!alwaysAllowed.includes(currentSlug)) {
       // Check if current slug corresponds to a defined page for this site
@@ -177,7 +178,7 @@ export default function Layout() {
             )}
 
             <nav className="mt-5 px-2 space-y-1">
-              {loadingPages ? (
+              {location.pathname === '/viktorija' ? null : loadingPages ? (
                 <div className="px-3 py-2">
                   <div className="animate-pulse space-y-2">
                     {[1, 2, 3].map(i => (
@@ -207,6 +208,20 @@ export default function Layout() {
                 <div className="px-3 py-4 text-center">
                   <p className="text-gray-400 text-sm">Žiadne stránky v navigácii</p>
                 </div>
+              )}
+              {/* Viktorija nav - only for specific user */}
+              {user?.email === 'alexander.hidveghy@gmail.com' && (
+                <Link
+                  to="/viktorija"
+                  className={`${location.pathname === '/viktorija'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <SparklesIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                  Viktória
+                </Link>
               )}
             </nav>
           </div>
@@ -250,7 +265,7 @@ export default function Layout() {
             )}
 
             <nav className="mt-2 flex-1 px-6 space-y-3">
-              {loadingPages ? (
+              {location.pathname === '/viktorija' ? null : loadingPages ? (
                 <div className="animate-pulse space-y-3">
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className="h-12 bg-white/10 rounded-xl"></div>
@@ -279,6 +294,19 @@ export default function Layout() {
                   <p className="text-gray-400 text-sm">Žiadne stránky</p>
                   <p className="text-gray-500 text-xs mt-1">Pridajte stránky v nastaveniach</p>
                 </div>
+              )}
+              {/* Viktorija nav - only for specific user */}
+              {user?.email === 'alexander.hidveghy@gmail.com' && (
+                <Link
+                  to="/viktorija"
+                  className={`${location.pathname === '/viktorija'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                >
+                  <SparklesIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  Viktória
+                </Link>
               )}
             </nav>
           </div>

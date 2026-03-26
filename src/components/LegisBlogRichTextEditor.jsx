@@ -86,81 +86,118 @@ const LegisBlogRichTextEditor = ({ value, onChange }) => {
     ];
 
     return (
-        <div className="relative w-full">
+        <div className="relative w-full flex flex-col border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5">
             <style dangerouslySetInnerHTML={{
                 __html: `
                 .visual-editor-content {
-                    --primary-color: #213753;
-                    --primary-dark: #1b3a51;
-                    --gray: #666666;
-                    --light-blue: #e8f2ff;
-                    --font-family-serif: 'Crimson Text', serif;
-                    min-height: 500px;
+                    min-height: 400px;
                     outline: none;
-                    font-size: 1.1rem;
-                    line-height: 1.8;
-                    color: var(--gray);
+                    font-size: 1.05rem;
+                    line-height: 1.7;
+                    color: #4b5563;
+                    font-family: 'Catamaran', sans-serif;
                 }
                 .visual-editor-content h2 {
-                    color: var(--primary-color);
-                    margin-top: 2rem;
-                    margin-bottom: 1.5rem;
-                    font-size: 1.8rem;
-                    border-bottom: 2px solid var(--light-blue);
-                    padding-bottom: 0.5rem;
-                    font-family: var(--font-family-serif);
-                    font-weight: 400;
-                }
-                .visual-editor-content h3 {
-                    color: var(--primary-dark);
+                    color: #421F10;
                     margin-top: 2rem;
                     margin-bottom: 1rem;
+                    font-size: 1.75rem;
+                    font-family: 'Martel', serif;
+                    font-weight: 700;
+                }
+                .visual-editor-content h3 {
+                    color: #6B3423;
+                    margin-top: 1.5rem;
+                    margin-bottom: 0.75rem;
                     font-size: 1.4rem;
-                    font-family: var(--font-family-serif);
-                    font-weight: 400;
+                    font-family: 'Martel', serif;
+                    font-weight: 600;
                 }
                 .visual-editor-content p {
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 1.25rem;
+                }
+                .visual-editor-content strong {
+                    font-weight: 700;
+                    color: #111827;
                 }
                 .visual-editor-content ul {
-                    margin: 1.5rem 0;
+                    margin: 1.25rem 0;
                     padding-left: 1.5rem;
                     list-style-type: disc;
                 }
                 .visual-editor-content li {
-                    margin-bottom: 0.75rem;
+                    margin-bottom: 0.5rem;
+                }
+                .visual-editor-content a {
+                    color: #F49C12;
+                    text-decoration: underline;
+                    text-underline-offset: 4px;
                 }
                 
                 .floating-ui {
-                    position: absolute;
+                    position: fixed;
                     z-index: 1000;
-                    transition: all 0.2s ease;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    pointer-events: auto;
+                    transform: translateY(-8px);
                 }
                 
                 .format-toolbar {
                     display: flex;
-                    gap: 2px;
+                    gap: 4px;
                     background: #1e293b;
-                    padding: 4px;
-                    border-radius: 8px;
-                    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+                    padding: 6px;
+                    border-radius: 12px;
+                    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+                    border: 1px solid rgba(255,255,255,0.1);
                 }
                 
                 .format-toolbar button {
                     color: white;
-                    width: 32px;
-                    height: 32px;
+                    min-width: 34px;
+                    height: 34px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    font-weight: bold;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    transition: all 0.2s;
                 }
                 
                 .format-toolbar button:hover {
                     background: #334155;
-                    color: #818cf8;
+                    color: #F49C12;
+                    transform: translateY(-1px);
+                }
+
+                .top-toolbar {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 4px;
+                    padding: 8px;
+                    background: #f8fafc;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+
+                .top-toolbar button {
+                    color: #475569;
+                    min-width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                    padding: 0 8px;
+                }
+
+                .top-toolbar button:hover {
+                    background: white;
+                    color: #F49C12;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
                 }
                 
                 .block-picker {
@@ -173,19 +210,32 @@ const LegisBlogRichTextEditor = ({ value, onChange }) => {
                 
                 .block-picker:hover {
                     opacity: 1;
-                    color: #6366f1;
+                    color: #F49C12;
                 }
 
                 .visual-editor-content:empty:before {
-                    content: 'Začnite písať...';
-                    color: #cbd5e1;
+                    content: 'Začnite písať popis projektu...';
+                    color: #94a3b8;
                     pointer-events: none;
                 }
             `}} />
 
+            {/* Top Toolbar */}
+            <div className="top-toolbar">
+                {tools.map((tool, i) => (
+                    <button key={i} type="button" onClick={tool.action} title={tool.label}>
+                        <span className="flex items-center gap-2">
+                            {tool.icon}
+                            <span className="text-[10px] uppercase tracking-wider hidden sm:inline">{tool.label}</span>
+                        </span>
+                    </button>
+                ))}
+            </div>
+
+            {/* Floating Selection Toolbar */}
             {toolbarPos.visible && (
                 <div
-                    className="floating-ui"
+                    className="floating-ui animate-in fade-in zoom-in duration-200"
                     style={{
                         top: toolbarPos.top,
                         left: toolbarPos.left,
@@ -202,9 +252,9 @@ const LegisBlogRichTextEditor = ({ value, onChange }) => {
                         </div>
                     ) : (
                         <div className="group relative">
-                            <PlusCircleIcon className="w-6 h-6 block-picker" />
-                            <div className="hidden group-hover:flex absolute left-8 top-0 format-toolbar">
-                                {tools.filter(t => typeof t.icon === 'string' || t.label === 'Odstavec').map((tool, i) => (
+                            <PlusCircleIcon className="w-8 h-8 block-picker shadow-sm bg-white rounded-full" />
+                            <div className="hidden group-hover:flex absolute left-10 top-0 format-toolbar">
+                                {tools.map((tool, i) => (
                                     <button key={i} type="button" onClick={tool.action} title={tool.label}>
                                         {tool.icon}
                                     </button>
@@ -219,8 +269,8 @@ const LegisBlogRichTextEditor = ({ value, onChange }) => {
                 ref={editorRef}
                 contentEditable
                 onInput={handleInput}
-                className="visual-editor-content bg-white p-12 rounded-2xl min-h-[600px] border border-gray-100"
-                placeholder="Sem napíšte obsah článku..."
+                className="visual-editor-content p-8 md:p-12 min-h-[500px]"
+                placeholder="Popíšte tento projekt..."
             />
         </div>
     );

@@ -133,3 +133,33 @@ export async function uploadBlogImage(options: UploadBlogImageOptions): Promise<
 
   return { path }
 }
+
+// Upload a project image
+export interface UploadProjectImageOptions {
+  file: File
+  siteSlug: string
+  projectId?: string
+}
+
+export async function uploadProjectImage(options: UploadProjectImageOptions): Promise<{ path: string }> {
+  const { file, siteSlug, projectId } = options
+
+  const ext = getFileExtension(file)
+  const fileName = `project-${generateUUID()}.${ext}`
+  const path = projectId
+    ? `${siteSlug}/projects/${projectId}/${fileName}`
+    : `${siteSlug}/projects/temp/${fileName}`
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, {
+      upsert: true,
+      cacheControl: '3600',
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return { path }
+}
