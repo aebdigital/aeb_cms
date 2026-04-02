@@ -176,7 +176,7 @@ export const translations = {
   vozidloUspesneUpravene: { sk: 'Vozidlo bolo úspešne upravené!', cs: 'Vozidlo bylo úspěšně upraveno!' },
   vozidloUspesnePridane: { sk: 'Vozidlo bolo úspešne pridané!', cs: 'Vozidlo bylo úspěšně přidáno!' },
   chybaPriUkladani: { sk: 'Chyba pri ukladaní vozidla: ', cs: 'Chyba při ukládání vozidla: ' },
-  steIsti: { sk: 'Ste si istí, že chcete odstrániť toto vozidlo?', cs: 'Jste si jisti, že chcete odstranit toto vozidlo?' },
+  steIsti: { sk: 'Ste si istí, že chcete odstrániť túto fotku?', cs: 'Jste si jisti, že chcete odstranit tuto fotku?' },
   chybaPriMazani: { sk: 'Chyba pri mazaní vozidla: ', cs: 'Chyba při mazání vozidla: ' },
 
   // Loading states

@@ -5,6 +5,7 @@ export interface Project {
   site_id: string
   title: string
   category?: string
+  year?: number
   location?: string
   date?: string
   description?: string

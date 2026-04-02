@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../contexts/AuthContext'
 import { getGalleryImages, createGalleryImage, updateGalleryImage, deleteGalleryImage, reorderGalleryImages, getCategoriesForSite } from '../api/galleryImages'
@@ -6,6 +6,7 @@ import { uploadGalleryImage, deleteGalleryImageFromStorage, getGalleryImagePubli
 import { compressImage } from '../lib/fileUtils'
 import { t } from '../i18n/translations'
 import { useNotification } from '../contexts/NotificationContext'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function GalleryManager() {
   const { currentSite, loading: authLoading, profile } = useAuth()
@@ -22,6 +23,7 @@ export default function GalleryManager() {
   const [pendingFiles, setPendingFiles] = useState([])
   const [editingImage, setEditingImage] = useState(null)
   const [editAltText, setEditAltText] = useState('')
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, image: null })
 
   // 1. Initialize categories when site changes
   useEffect(() => {
@@ -128,8 +130,14 @@ export default function GalleryManager() {
     }
   }
 
-  const handleDelete = async (image) => {
-    if (!confirm(t('steIsti', lang))) return
+  const handleDeleteClick = (image) => {
+    setDeleteConfirm({ open: true, image })
+  }
+
+  const handleDeleteConfirm = useCallback(async () => {
+    const image = deleteConfirm.image
+    setDeleteConfirm({ open: false, image: null })
+    if (!image) return
 
     try {
       await deleteGalleryImageFromStorage(image.image_path)
@@ -140,7 +148,11 @@ export default function GalleryManager() {
       console.error('Delete error:', err)
       showNotification(err.message || t('chybaPriMazani', lang), 'error')
     }
-  }
+  }, [deleteConfirm.image, lang, showNotification])
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteConfirm({ open: false, image: null })
+  }, [])
 
   const handleEditAltText = async () => {
     if (!editingImage) return
@@ -306,7 +318,7 @@ export default function GalleryManager() {
                   </svg>
                 </button>
                 <button
-                  onClick={() => handleDelete(image)}
+                  onClick={() => handleDeleteClick(image)}
                   className="p-2 bg-white rounded-full text-red-600 hover:bg-red-50"
                   title={t('odstranit', lang)}
                 >
@@ -445,6 +457,16 @@ export default function GalleryManager() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title={t('odstranit', lang)}
+        message={t('steIsti', lang)}
+        confirmLabel={t('odstranit', lang)}
+        cancelLabel={t('zrusit', lang)}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        danger
+      />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 
-export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor' | 'holz-haus'
+export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor' | 'holz-haus' | 'kuchynske-linky' | 'vstavane-skrine' | 'predsiene' | 'detske-izby' | 'kupelnove-skrinky' | 'rozne-projekty'
 
 export interface GalleryImage {
   id: string
@@ -19,6 +19,12 @@ export const GALLERY_CATEGORIES: { value: GalleryCategory; label: string; sites?
   { value: 'divadlo-ludus', label: 'Divadlo Ludus', sites: ['ludushub'] },
   { value: 'ludus-tabor', label: 'Ludus Tabor', sites: ['ludushub'] },
   { value: 'holz-haus', label: 'Galéria', sites: ['holz-haus'] },
+  { value: 'kuchynske-linky', label: 'Kuchynské linky', sites: ['falat'] },
+  { value: 'vstavane-skrine', label: 'Vstavané skrine', sites: ['falat'] },
+  { value: 'predsiene', label: 'Predsiene', sites: ['falat'] },
+  { value: 'detske-izby', label: 'Detské izby', sites: ['falat'] },
+  { value: 'kupelnove-skrinky', label: 'Kúpeľňové skrinky', sites: ['falat'] },
+  { value: 'rozne-projekty', label: 'Rôzne projekty', sites: ['falat'] },
 ]
 
 export function getCategoriesForSite(siteSlug: string) {
