@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 
-export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor' | 'holz-haus' | 'kuchynske-linky' | 'vstavane-skrine' | 'predsiene' | 'detske-izby' | 'kupelnove-skrinky' | 'rozne-projekty'
+export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor' | 'holz-haus' | 'kuchynske-linky' | 'vstavane-skrine' | 'predsiene' | 'detske-izby' | 'kupelnove-skrinky' | 'obyvacky' | 'rozne-projekty'
 
 export interface GalleryImage {
   id: string
@@ -23,6 +23,7 @@ export const GALLERY_CATEGORIES: { value: GalleryCategory; label: string; sites?
   { value: 'vstavane-skrine', label: 'Vstavané skrine', sites: ['falat'] },
   { value: 'predsiene', label: 'Predsiene', sites: ['falat'] },
   { value: 'detske-izby', label: 'Detské izby', sites: ['falat'] },
+  { value: 'obyvacky', label: 'Obývačky', sites: ['falat'] },
   { value: 'kupelnove-skrinky', label: 'Kúpeľňové skrinky', sites: ['falat'] },
   { value: 'rozne-projekty', label: 'Rôzne projekty', sites: ['falat'] },
 ]
