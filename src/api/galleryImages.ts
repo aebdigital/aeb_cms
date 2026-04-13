@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 
-export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor' | 'holz-haus' | 'kuchynske-linky' | 'vstavane-skrine' | 'predsiene' | 'detske-izby' | 'kupelnove-skrinky' | 'obyvacky' | 'rozne-projekty'
+export type GalleryCategory = 'skola-ludus' | 'ludus-academy' | 'divadlo-ludus' | 'ludus-tabor' | 'holz-haus' | 'kuchynske-linky' | 'vstavane-skrine' | 'predsiene' | 'detske-izby' | 'kupelnove-skrinky' | 'obyvacky' | 'rozne-projekty' | 'zateplovanie' | 'obklady-dlazby' | 'maliarske-prace' | 'sadrokarton' | 'murarske-prace' | 'kamenna-dlazba' | 'ine-prace'
 
 export interface GalleryImage {
   id: string
@@ -26,6 +26,13 @@ export const GALLERY_CATEGORIES: { value: GalleryCategory; label: string; sites?
   { value: 'obyvacky', label: 'Obývačky', sites: ['falat'] },
   { value: 'kupelnove-skrinky', label: 'Kúpeľňové skrinky', sites: ['falat'] },
   { value: 'rozne-projekty', label: 'Rôzne projekty', sites: ['falat'] },
+  { value: 'zateplovanie', label: 'Zatepľovacie systémy', sites: ['psbuilding'] },
+  { value: 'obklady-dlazby', label: 'Obklady a Dlažby', sites: ['psbuilding'] },
+  { value: 'maliarske-prace', label: 'Maliarske práce AIRLESS', sites: ['psbuilding'] },
+  { value: 'sadrokarton', label: 'Sadrokartónové systémy', sites: ['psbuilding'] },
+  { value: 'murarske-prace', label: 'Murárske práce', sites: ['psbuilding'] },
+  { value: 'kamenna-dlazba', label: 'Kamenná dlažba', sites: ['psbuilding'] },
+  { value: 'ine-prace', label: 'Iné práce', sites: ['psbuilding'] },
 ]
 
 export function getCategoriesForSite(siteSlug: string) {

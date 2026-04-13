@@ -22,6 +22,8 @@ import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
 import GalleryManager from './pages/GalleryManager'
 import DynamicHomePage from './components/DynamicHomePage'
+import EspronPageBuilder from './pages/EspronPageBuilder'
+import VisualBuilder from './pages/VisualBuilder'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -39,6 +41,26 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CMSDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Visual Builder */}
+            <Route
+              path="/visual-builder"
+              element={
+                <ProtectedRoute>
+                  <VisualBuilder />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Espron Page Builder */}
+            <Route
+              path="/espron"
+              element={
+                <ProtectedRoute>
+                  <EspronPageBuilder />
                 </ProtectedRoute>
               }
             />

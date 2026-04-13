@@ -18,7 +18,8 @@ import {
   ArrowRightOnRectangleIcon,
   NewspaperIcon,
   CalendarDaysIcon,
-  SparklesIcon
+  SparklesIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline'
 
 // Map page slugs to icons
@@ -223,6 +224,34 @@ export default function Layout() {
                   Viktória
                 </Link>
               )}
+              {/* Espron Page Builder - only for specific user */}
+              {user?.email === 'alexander.hidveghy@gmail.com' && (
+                <Link
+                  to="/espron"
+                  className={`${location.pathname === '/espron'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <GlobeAltIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                  Espron Builder
+                </Link>
+              )}
+              {/* Visual Builder - only for specific user */}
+              {user?.email === 'alexander.hidveghy@gmail.com' && (
+                <Link
+                  to="/visual-builder"
+                  className={`${location.pathname === '/visual-builder'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <SparklesIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                  Visual Builder
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -306,6 +335,32 @@ export default function Layout() {
                 >
                   <SparklesIcon className="mr-3 h-5 w-5 flex-shrink-0" />
                   Viktória
+                </Link>
+              )}
+              {/* Espron Page Builder - only for specific user */}
+              {user?.email === 'alexander.hidveghy@gmail.com' && (
+                <Link
+                  to="/espron"
+                  className={`${location.pathname === '/espron'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                >
+                  <GlobeAltIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  Espron Builder
+                </Link>
+              )}
+              {/* Visual Builder - only for specific user */}
+              {user?.email === 'alexander.hidveghy@gmail.com' && (
+                <Link
+                  to="/visual-builder"
+                  className={`${location.pathname === '/visual-builder'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                >
+                  <SparklesIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  Visual Builder
                 </Link>
               )}
             </nav>
