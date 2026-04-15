@@ -6,7 +6,7 @@ import {
   XMarkIcon, 
   PhotoIcon, 
   PencilSquareIcon,
-  ArrowLongLeftIcon,
+  Bars3Icon,
   MagnifyingGlassIcon,
   StarIcon
 } from '@heroicons/react/24/outline'
@@ -18,6 +18,7 @@ import {
   createProject, 
   updateProject, 
   deleteProject,
+  reorderProjects,
   uploadProjectImage,
   getPublicUrl
 } from '../api'
@@ -35,6 +36,9 @@ export default function Projekty() {
   const [editingProject, setEditingProject] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showSuccessAnim, setShowSuccessAnim] = useState(false)
+  const [draggedIndex, setDraggedIndex] = useState(null)
+  const [dragOverIndex, setDragOverIndex] = useState(null)
+  const [isReordering, setIsReordering] = useState(false)
 
   // Form State
   const [formData, setFormData] = useState({
@@ -202,6 +206,75 @@ export default function Projekty() {
     p.category?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const canReorderProjects = searchTerm.trim().length === 0
+
+  const handleDragStart = (e, index) => {
+    if (!canReorderProjects || loading || isReordering) {
+      e.preventDefault()
+      return
+    }
+
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e, index) => {
+    if (!canReorderProjects || loading || isReordering) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverIndex(index)
+  }
+
+  const resetDragState = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = async (e, dropIndex) => {
+    e.preventDefault()
+
+    if (
+      !canReorderProjects ||
+      draggedIndex === null ||
+      draggedIndex === dropIndex ||
+      loading ||
+      isReordering
+    ) {
+      resetDragState()
+      return
+    }
+
+    const reorderedProjects = [...projects]
+    const [draggedProject] = reorderedProjects.splice(draggedIndex, 1)
+    reorderedProjects.splice(dropIndex, 0, draggedProject)
+
+    const nextProjects = reorderedProjects.map((project, index) => ({
+      ...project,
+      display_order: index
+    }))
+
+    const previousProjects = projects
+    setProjects(nextProjects)
+    resetDragState()
+    setIsReordering(true)
+
+    try {
+      await reorderProjects(
+        nextProjects.map(project => ({
+          id: project.id,
+          display_order: project.display_order ?? 0
+        }))
+      )
+      showNotification('Poradie projektov bolo uložené', 'success')
+    } catch (err) {
+      console.error('Reorder error:', err)
+      setProjects(previousProjects)
+      showNotification('Poradie projektov sa nepodarilo uložiť', 'error')
+    } finally {
+      setIsReordering(false)
+    }
+  }
+
   if (initialLoad || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -255,6 +328,17 @@ export default function Projekty() {
         />
       </div>
 
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <Bars3Icon className="h-4 w-4 text-gray-400" />
+        <span>
+          {canReorderProjects
+            ? isReordering
+              ? 'Ukladám nové poradie projektov...'
+              : 'Projekty môžete presúvať potiahnutím kariet.'
+            : 'Pre zmenu poradia projektov vymažte text vo vyhľadávaní.'}
+        </span>
+      </div>
+
       {/* Grid */}
       {filteredProjects.length === 0 ? (
         <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center">
@@ -263,10 +347,24 @@ export default function Projekty() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
-          {filteredProjects.map((project) => (
+          {filteredProjects.map((project, index) => (
             <div 
-              key={project.id} 
-              className="group relative overflow-hidden rounded-lg aspect-[4/3] bg-white shadow-lg transform hover:-translate-y-2 transition-all duration-300 border border-[#F49C12]/20"
+              key={project.id}
+              draggable={canReorderProjects && !isReordering}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={() => {
+                if (dragOverIndex === index) {
+                  setDragOverIndex(null)
+                }
+              }}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={resetDragState}
+              className={`group relative overflow-hidden rounded-lg aspect-[4/3] bg-white shadow-lg transition-all duration-300 border border-[#F49C12]/20 ${
+                canReorderProjects ? 'cursor-grab active:cursor-grabbing' : ''
+              } ${draggedIndex === index ? 'opacity-50 scale-[0.98]' : 'hover:-translate-y-2'} ${
+                dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-[#F49C12] ring-offset-4' : ''
+              }`}
             >
               <div className="relative h-full w-full bg-gray-100">
                 {project.hero_image || project.preview_photo || project.heroImage ? (
@@ -299,6 +397,9 @@ export default function Projekty() {
 
               {/* Actions Overlay (Floating) */}
               <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
+                <div className="self-end p-2.5 bg-white/90 backdrop-blur rounded-xl text-gray-700 shadow-lg">
+                  <Bars3Icon className="w-5 h-5" />
+                </div>
                 <button
                   onClick={() => openEditModal(project)}
                   className="p-2.5 bg-white/90 backdrop-blur rounded-xl text-gray-800 hover:bg-[#F49C12] hover:text-white transition-all shadow-lg"

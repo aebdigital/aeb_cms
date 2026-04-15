@@ -5,6 +5,7 @@ export interface Project {
   site_id: string
   title: string
   category?: string
+  display_order?: number | null
   year?: number
   location?: string
   date?: string
@@ -23,6 +24,7 @@ export async function getProjects(siteId: string): Promise<Project[]> {
     .from('projects')
     .select('*')
     .eq('site_id', siteId)
+    .order('display_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -64,4 +66,15 @@ export async function deleteProject(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) throw error
+}
+
+export async function reorderProjects(projects: { id: string; display_order: number }[]): Promise<void> {
+  for (const project of projects) {
+    const { error } = await supabase
+      .from('projects')
+      .update({ display_order: project.display_order })
+      .eq('id', project.id)
+
+    if (error) throw error
+  }
 }
