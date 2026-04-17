@@ -7,15 +7,26 @@ import DroppableArea from './DroppableArea'
 function buildInlineStyle(style) {
   if (!style) return {}
   const px = (v) => (v !== undefined && v !== '' && v !== 'auto') ? `${v}px` : v === 'auto' ? 'auto' : undefined
+
+  // blockAlign: center uses margin auto on both sides; right uses auto on left only.
+  // Requires element width < 100% to be visible (we note this in UI).
+  const blockAlign = style.blockAlign
+  let effectiveMl = px(style.marginLeft)
+  let effectiveMr = px(style.marginRight)
+  if (blockAlign === 'center') { effectiveMl = 'auto'; effectiveMr = 'auto' }
+  else if (blockAlign === 'right') { effectiveMl = 'auto' }
+
   return {
     paddingTop: px(style.paddingTop),
     paddingRight: px(style.paddingRight),
     paddingBottom: px(style.paddingBottom),
     paddingLeft: px(style.paddingLeft),
     marginTop: px(style.marginTop),
-    marginRight: px(style.marginRight),
+    marginRight: effectiveMr,
     marginBottom: px(style.marginBottom),
-    marginLeft: px(style.marginLeft),
+    marginLeft: effectiveMl,
+    maxWidth: style.maxWidth || undefined,
+    boxShadow: style.boxShadow || undefined,
     fontSize: px(style.fontSize),
     fontWeight: style.fontWeight || undefined,
     color: style.color || undefined,
@@ -66,26 +77,32 @@ function ElementRenderer({ element, selectedId, draggingId, onSelect, onAddEleme
     case 'paragraph':
       return <p style={s}>{element.content || 'Text odseku...'}</p>
 
-    case 'badge':
+    case 'badge': {
+      const wrapAlign = element.style?.blockAlign === 'center' ? 'center'
+        : element.style?.blockAlign === 'right' ? 'right' : undefined
       return (
-        <div style={{ marginTop: s.marginTop, marginBottom: s.marginBottom }}>
-          <span style={{ ...s, marginTop: 0, marginBottom: 0, display: 'inline-block' }}>
+        <div style={{ marginTop: s.marginTop, marginBottom: s.marginBottom, textAlign: wrapAlign }}>
+          <span style={{ ...s, marginTop: 0, marginBottom: 0, marginLeft: 0, marginRight: 0, display: 'inline-block' }}>
             {element.content || 'Badge'}
           </span>
         </div>
       )
+    }
 
-    case 'button':
+    case 'button': {
+      const wrapAlign = element.style?.blockAlign === 'center' ? 'center'
+        : element.style?.blockAlign === 'right' ? 'right' : undefined
       return (
-        <div style={{ marginTop: s.marginTop, marginBottom: s.marginBottom }}>
+        <div style={{ marginTop: s.marginTop, marginBottom: s.marginBottom, textAlign: wrapAlign }}>
           <button
-            style={{ ...s, marginTop: 0, marginBottom: 0, cursor: 'default', display: 'inline-block' }}
+            style={{ ...s, marginTop: 0, marginBottom: 0, marginLeft: 0, marginRight: 0, cursor: 'default', display: 'inline-block' }}
             onClick={(e) => e.preventDefault()}
           >
             {element.content || 'Tlačidlo'}
           </button>
         </div>
       )
+    }
 
     case 'image':
       return (

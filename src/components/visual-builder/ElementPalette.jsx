@@ -108,7 +108,7 @@ const PALETTE_GROUPS = [
 
 import { useDrag } from './DragContext'
 
-export default function ElementPalette({ onAddElement }) {
+export default function ElementPalette({ onAddElement, orientation = 'vertical' }) {
   const drag = useDrag()
 
   function handleDragStart(e, type) {
@@ -118,6 +118,45 @@ export default function ElementPalette({ onAddElement }) {
 
   function handleDragEnd() {
     drag.current = { kind: null, elementType: null, elementId: null }
+  }
+
+  if (orientation === 'horizontal') {
+    // Flat bottom strip: all items in one scrollable row with group separators.
+    return (
+      <div
+        className="flex items-stretch gap-1 bg-gray-900 border-t border-gray-800 overflow-x-auto flex-shrink-0"
+        style={{ height: 68, padding: '8px 12px' }}
+      >
+        {PALETTE_GROUPS.map((group, gi) => (
+          <div key={group.label} className="flex items-center gap-1">
+            {gi > 0 && <span className="w-px h-8 bg-gray-800 mx-1" aria-hidden="true" />}
+            <span className="text-[9px] font-bold uppercase tracking-widest text-gray-600 pr-1 select-none whitespace-nowrap">
+              {group.label}
+            </span>
+            {group.items.map(item => (
+              <button
+                key={item.type}
+                type="button"
+                draggable
+                onDragStart={(e) => handleDragStart(e, item.type)}
+                onDragEnd={handleDragEnd}
+                onClick={() => onAddElement(item.type)}
+                title={`${item.label} — ${item.desc}`}
+                className="flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-md cursor-grab active:cursor-grabbing hover:bg-gray-800 transition-colors group border border-transparent hover:border-gray-700"
+                style={{ minWidth: 64 }}
+              >
+                <span className="text-gray-400 group-hover:text-indigo-400 transition-colors">
+                  {item.icon}
+                </span>
+                <span className="text-[10px] font-medium text-gray-400 group-hover:text-white transition-colors leading-none">
+                  {item.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+    )
   }
 
   return (

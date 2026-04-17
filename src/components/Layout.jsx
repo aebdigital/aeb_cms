@@ -19,7 +19,6 @@ import {
   NewspaperIcon,
   CalendarDaysIcon,
   SparklesIcon,
-  GlobeAltIcon,
 } from '@heroicons/react/24/outline'
 
 // Map page slugs to icons
@@ -59,6 +58,10 @@ export default function Layout() {
   useEffect(() => {
     if (currentSite?.id) {
       loadPages()
+    } else {
+      setNavPages([])
+      setAllPages([])
+      setLoadingPages(false)
     }
   }, [currentSite?.id])
 
@@ -108,7 +111,7 @@ export default function Layout() {
     // - root path (handled by DynamicHomePage)
     // - nastavenia (Settings) - assuming it's available for all
     // - empty/dashboard
-    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija'];
+    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija', 'visual-builder', 'espron-blog'];
 
     if (!alwaysAllowed.includes(currentSlug)) {
       // Check if current slug corresponds to a defined page for this site
@@ -224,22 +227,8 @@ export default function Layout() {
                   Viktória
                 </Link>
               )}
-              {/* Espron Page Builder - only for specific user */}
-              {user?.email === 'alexander.hidveghy@gmail.com' && (
-                <Link
-                  to="/espron"
-                  className={`${location.pathname === '/espron'
-                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <GlobeAltIcon className="mr-4 h-5 w-5 flex-shrink-0" />
-                  Espron Builder
-                </Link>
-              )}
-              {/* Visual Builder - only for specific user */}
-              {user?.email === 'alexander.hidveghy@gmail.com' && (
+              {/* Visual Builder - for alexander + info@espron.sk (labelled "Espron Builder" for espron) */}
+              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
                 <Link
                   to="/visual-builder"
                   className={`${location.pathname === '/visual-builder'
@@ -249,7 +238,21 @@ export default function Layout() {
                   onClick={() => setSidebarOpen(false)}
                 >
                   <SparklesIcon className="mr-4 h-5 w-5 flex-shrink-0" />
-                  Visual Builder
+                  {user?.email === 'info@espron.sk' ? 'Espron Builder' : 'Visual Builder'}
+                </Link>
+              )}
+              {/* Espron Blog - alexander + info@espron.sk */}
+              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+                <Link
+                  to="/espron-blog"
+                  className={`${location.pathname.startsWith('/espron-blog')
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <NewspaperIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                  Espron Blog
                 </Link>
               )}
             </nav>
@@ -337,21 +340,8 @@ export default function Layout() {
                   Viktória
                 </Link>
               )}
-              {/* Espron Page Builder - only for specific user */}
-              {user?.email === 'alexander.hidveghy@gmail.com' && (
-                <Link
-                  to="/espron"
-                  className={`${location.pathname === '/espron'
-                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
-                >
-                  <GlobeAltIcon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  Espron Builder
-                </Link>
-              )}
-              {/* Visual Builder - only for specific user */}
-              {user?.email === 'alexander.hidveghy@gmail.com' && (
+              {/* Visual Builder - for alexander + info@espron.sk (labelled "Espron Builder" for espron) */}
+              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
                 <Link
                   to="/visual-builder"
                   className={`${location.pathname === '/visual-builder'
@@ -360,7 +350,20 @@ export default function Layout() {
                     } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
                 >
                   <SparklesIcon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  Visual Builder
+                  {user?.email === 'info@espron.sk' ? 'Espron Builder' : 'Visual Builder'}
+                </Link>
+              )}
+              {/* Espron Blog - alexander + info@espron.sk */}
+              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+                <Link
+                  to="/espron-blog"
+                  className={`${location.pathname.startsWith('/espron-blog')
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                >
+                  <NewspaperIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  Espron Blog
                 </Link>
               )}
             </nav>

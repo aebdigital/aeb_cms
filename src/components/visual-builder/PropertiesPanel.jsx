@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { uploadBuilderImage } from '../../api/visualPages'
 
 // ─── Small shared inputs ───────────────────────────────────────────────────────
 
@@ -129,6 +130,61 @@ function SelectInput({ label, value, onChange, options }) {
           </option>
         ))}
       </select>
+    </div>
+  )
+}
+
+function ImageUploader({ src, onUploaded }) {
+  const inputRef = useRef(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function handleFile(file) {
+    if (!file) return
+    setError(null)
+    setUploading(true)
+    try {
+      const url = await uploadBuilderImage(file)
+      onUploaded(url)
+    } catch (err) {
+      setError(err.message || 'Chyba pri nahrávaní')
+    } finally {
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  return (
+    <div>
+      {src && (
+        <div style={{
+          width: '100%', aspectRatio: '16/9', borderRadius: 6, overflow: 'hidden',
+          background: '#0f1420', marginBottom: 6, border: '1px solid #1f2937',
+        }}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        style={{
+          width: '100%', background: uploading ? '#1f2937' : '#6366f1',
+          color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px',
+          fontSize: 11, fontWeight: 600, cursor: uploading ? 'wait' : 'pointer',
+        }}
+      >
+        {uploading ? 'Nahrávam…' : src ? 'Nahradiť obrázok' : 'Nahrať obrázok'}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
+      {error && <p style={{ fontSize: 10, color: '#f87171', marginTop: 4 }}>{error}</p>}
     </div>
   )
 }
@@ -275,8 +331,14 @@ export default function PropertiesPanel({ element, onUpdate, onUpdateStyle, onDe
 
             {element.type === 'image' && (
               <>
-                <Label>Zdroj obrázka</Label>
-                <TextInput value={element.src} onChange={(v) => onUpdate({ src: v })} placeholder="https://..." />
+                <Label>Obrázok</Label>
+                <ImageUploader
+                  src={element.src}
+                  onUploaded={(url) => onUpdate({ src: url })}
+                />
+                <div style={{ marginTop: 8 }}>
+                  <TextInput label="URL (voliteľné)" value={element.src} onChange={(v) => onUpdate({ src: v })} placeholder="https://..." />
+                </div>
                 <div style={{ marginTop: 8 }}>
                   <TextInput label="Alt text" value={element.alt} onChange={(v) => onUpdate({ alt: v })} placeholder="Popis obrázka" />
                 </div>
@@ -318,11 +380,28 @@ export default function PropertiesPanel({ element, onUpdate, onUpdateStyle, onDe
               <TextInput label="Šírka" value={s.width} onChange={(v) => us({ width: v })} placeholder="100%" />
               <TextInput label="Výška" value={s.height} onChange={(v) => us({ height: v })} placeholder="auto" />
             </div>
+            <div style={{ marginTop: 4 }}>
+              <TextInput label="Max. šírka (napr. 600px)" value={s.maxWidth} onChange={(v) => us({ maxWidth: v })} placeholder="napr. 600px alebo 80%" />
+            </div>
             {element.type === 'container' && (
               <div style={{ marginTop: 4 }}>
                 <NumInput label="Min. výška" value={s.minHeight} onChange={(v) => us({ minHeight: v })} />
               </div>
             )}
+
+            <Label>Zarovnanie bloku</Label>
+            <ToggleGroup
+              options={[
+                { value: 'left', label: '⬅ Vľavo' },
+                { value: 'center', label: '↔ Stred' },
+                { value: 'right', label: '➡ Vpravo' },
+              ]}
+              value={s.blockAlign ?? 'left'}
+              onChange={(v) => us({ blockAlign: v })}
+            />
+            <p style={{ fontSize: 9, color: '#4b5563', marginTop: 4, lineHeight: 1.4 }}>
+              Zarovná prvok v rámci rodičovského kontajnera. Pre vizuálny efekt nastavte max. šírku.
+            </p>
 
             <SpacingQuad
               label="Margin (px)"
@@ -465,6 +544,19 @@ export default function PropertiesPanel({ element, onUpdate, onUpdateStyle, onDe
                 />
               </>
             )}
+
+            <Label>Tieň</Label>
+            <ToggleGroup
+              options={[
+                { value: '', label: 'Žiadny' },
+                { value: '0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.1)', label: 'Jemný' },
+                { value: '0 4px 6px rgba(0,0,0,0.07), 0 10px 15px rgba(0,0,0,0.08)', label: 'Stredný' },
+                { value: '0 20px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.04)', label: 'Výrazný' },
+                { value: '0 25px 50px rgba(0,0,0,0.25)', label: 'XXL' },
+              ]}
+              value={s.boxShadow ?? ''}
+              onChange={(v) => us({ boxShadow: v })}
+            />
           </div>
         )}
       </div>

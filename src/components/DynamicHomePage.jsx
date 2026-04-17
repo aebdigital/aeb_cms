@@ -4,15 +4,22 @@ import { useAuth } from '../contexts/AuthContext'
 import { getPagesForSite } from '../api/pages'
 
 export default function DynamicHomePage() {
-  const { currentSite } = useAuth()
+  const { user, currentSite } = useAuth()
   const [firstNavSlug, setFirstNavSlug] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (currentSite?.id) {
       loadFirstNavPage()
+    } else {
+      setLoading(false)
     }
   }, [currentSite?.id])
+
+  // Espron account goes straight to the visual builder
+  if (user?.email === 'info@espron.sk') {
+    return <Navigate to="/visual-builder" replace />
+  }
 
   async function loadFirstNavPage() {
     try {

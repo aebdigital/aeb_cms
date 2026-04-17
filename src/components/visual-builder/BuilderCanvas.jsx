@@ -30,7 +30,17 @@ export default function BuilderCanvas({
           {elements.length === 0 ? (
             <EmptyCanvas onAddElement={onAddElement} onMoveElement={onMoveElement} onSelect={onSelect} onDragEnd={onDragEnd} />
           ) : (
-            <div style={{ padding: '40px 48px' }}>
+            <div
+              style={{
+                maxWidth: 1024,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                paddingLeft: 24,
+                paddingRight: 24,
+                paddingTop: 64,
+                paddingBottom: 64,
+              }}
+            >
               <DroppableArea
                 elements={elements}
                 parentId={null}

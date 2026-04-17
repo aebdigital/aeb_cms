@@ -22,8 +22,10 @@ import Login from './pages/Login'
 import CMSDashboard from './pages/CMSDashboard'
 import GalleryManager from './pages/GalleryManager'
 import DynamicHomePage from './components/DynamicHomePage'
-import EspronPageBuilder from './pages/EspronPageBuilder'
 import VisualBuilder from './pages/VisualBuilder'
+import VisualPagesList from './pages/VisualPagesList'
+import BlogsList from './pages/BlogsList'
+import BlogEditor from './pages/BlogEditor'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -45,9 +47,9 @@ function App() {
               }
             />
 
-            {/* Visual Builder */}
+            {/* Visual Builder full-screen editor (standalone) */}
             <Route
-              path="/visual-builder"
+              path="/visual-builder/edit/:id?"
               element={
                 <ProtectedRoute>
                   <VisualBuilder />
@@ -55,12 +57,12 @@ function App() {
               }
             />
 
-            {/* Espron Page Builder */}
+            {/* Espron blog editor (standalone full-screen) */}
             <Route
-              path="/espron"
+              path="/espron-blog/edit/:id?"
               element={
                 <ProtectedRoute>
-                  <EspronPageBuilder />
+                  <BlogEditor />
                 </ProtectedRoute>
               }
             />
@@ -94,6 +96,8 @@ function App() {
               <Route path="ludus-repertoar" element={<LudusRepertoar />} />
               <Route path="legis-blogy" element={<LegisBlogs />} />
               <Route path="viktorija" element={<ViktorijaBookings />} />
+              <Route path="visual-builder" element={<VisualPagesList />} />
+              <Route path="espron-blog" element={<BlogsList />} />
             </Route>
 
             {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
