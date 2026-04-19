@@ -211,6 +211,15 @@ function ContactFormPreview({ element, style }) {
             ))}
           </div>
         ))}
+        <div style={{ display: 'flex', alignItems: 'start', gap: 10 }}>
+          <div style={{
+            width: 16, height: 16, borderRadius: 4, border: '1px solid #e5e7eb',
+            background: '#fff', flexShrink: 0, marginTop: 1,
+          }} />
+          <p style={{ fontSize: 11, color: '#6b7280', margin: 0, lineHeight: 1.4 }}>
+            Súhlasím so spracovaním osobných údajov
+          </p>
+        </div>
         <div>
           <div style={{
             display: 'inline-block', background: '#172c70', color: '#fff',
