@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   ComputerDesktopIcon,
   DeviceTabletIcon,
@@ -78,6 +78,22 @@ const DEFAULT_STYLES = {
     backgroundColor: '#ede9fe', borderRadius: '999',
     borderWidth: '0', borderColor: 'transparent', borderStyle: 'solid', lineHeight: '1.5',
   },
+  contactForm: {
+    marginTop: '0', marginRight: '0', marginBottom: '16', marginLeft: '0',
+    paddingTop: '32', paddingRight: '32', paddingBottom: '32', paddingLeft: '32',
+    backgroundColor: '#ffffff', borderRadius: '24',
+    borderWidth: '1', borderColor: '#e5e7eb', borderStyle: 'solid',
+    width: '100%',
+  },
+}
+
+function defaultContactFields() {
+  return [
+    { id: 'f-name', name: 'name', label: 'Meno a priezvisko', type: 'text', placeholder: 'Ján Novák', required: false, width: 'half' },
+    { id: 'f-phone', name: 'phone', label: 'Telefón', type: 'tel', placeholder: '+421 9xx xxx xxx', required: false, width: 'half' },
+    { id: 'f-email', name: 'email', label: 'E-mail', type: 'email', placeholder: 'jan.novak@example.com', required: true, width: 'full' },
+    { id: 'f-message', name: 'message', label: 'Správa', type: 'textarea', placeholder: 'Opíšte váš projekt alebo otázku…', required: true, width: 'full' },
+  ]
 }
 
 const DEFAULT_CONTENT = {
@@ -96,6 +112,11 @@ function createNewElement(type) {
     alt: type === 'image' ? 'Popis obrázka' : '',
     level: type === 'heading' ? 'h2' : undefined,
     children: type === 'container' ? [] : undefined,
+    fields: type === 'contactForm' ? defaultContactFields() : undefined,
+    subject: type === 'contactForm' ? 'Kontaktný formulár – ESPRON' : undefined,
+    buttonText: type === 'contactForm' ? 'Odoslať správu' : undefined,
+    successTitle: type === 'contactForm' ? 'Ďakujeme!' : undefined,
+    successMessage: type === 'contactForm' ? 'Správa bola odoslaná. Ozveme sa vám čo najskôr.' : undefined,
     style: { ...(DEFAULT_STYLES[type] ?? {}) },
   }
 }
@@ -166,6 +187,14 @@ function hasDescendant(el, targetId) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const VIEWPORT_WIDTHS = { desktop: '100%', tablet: '768px', mobile: '390px' }
+const SITE_OPTIONS = [
+  { value: 'sk', label: 'SK', previewOrigin: 'http://localhost:3010' },
+  { value: 'cz', label: 'CZ', previewOrigin: 'http://localhost:3011' },
+]
+
+function getSiteOption(site) {
+  return SITE_OPTIONS.find(option => option.value === site) ?? SITE_OPTIONS[0]
+}
 
 function slugify(str) {
   return (str || '')
@@ -182,9 +211,12 @@ function slugify(str) {
 export default function VisualBuilder() {
   const navigate = useNavigate()
   const { id: routeId } = useParams()
+  const [searchParams] = useSearchParams()
   const isNew = !routeId || routeId === 'new'
+  const requestedSite = searchParams.get('site') === 'cz' ? 'cz' : 'sk'
 
   const [pageId, setPageId] = useState(isNew ? null : routeId)
+  const [site, setSite] = useState(requestedSite)
   const [title, setTitle] = useState('Nová stránka')
   const [slug, setSlug] = useState('')
   const [elements, setElements] = useState([])
@@ -204,6 +236,7 @@ export default function VisualBuilder() {
         if (cancelled) return
         setTitle(page.title)
         setSlug(page.slug)
+        setSite(page.site ?? 'sk')
         setElements(Array.isArray(page.elements) ? page.elements : [])
       } catch (err) {
         if (!cancelled) setLoadError(err.message)
@@ -220,9 +253,9 @@ export default function VisualBuilder() {
     try {
       setSaving(true)
       if (pageId) {
-        await updateVisualPage(pageId, { title, slug: finalSlug, elements })
+        await updateVisualPage(pageId, { site, title, slug: finalSlug, elements })
       } else {
-        const created = await createVisualPage({ title, slug: finalSlug, elements })
+        const created = await createVisualPage({ site, title, slug: finalSlug, elements })
         setPageId(created.id)
       }
       navigate('/visual-builder')
@@ -240,7 +273,7 @@ export default function VisualBuilder() {
       return
     }
     // Always include preview=1 — drafts are visible this way
-    window.open(`http://localhost:3006/p/${finalSlug}?preview=1`, '_blank', 'noopener,noreferrer')
+    window.open(`${getSiteOption(site).previewOrigin}/p/${finalSlug}?preview=1`, '_blank', 'noopener,noreferrer')
   }
 
   const selectedElement = selectedId ? findInTree(elements, selectedId) : null
@@ -357,19 +390,42 @@ export default function VisualBuilder() {
           </div>
 
           <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1 flex-shrink-0">
-            {[
-              { id: 'desktop', Icon: ComputerDesktopIcon, label: 'Desktop' },
-              { id: 'tablet', Icon: DeviceTabletIcon, label: 'Tablet' },
-              { id: 'mobile', Icon: DevicePhoneMobileIcon, label: 'Mobil' },
-            ].map(({ id, Icon, label }) => (
-              <button key={id} onClick={() => setViewport(id)} title={label}
-                className={`p-1.5 rounded-md transition-colors ${viewport === id ? 'bg-gray-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
-                <Icon className="h-4 w-4" />
-              </button>
-            ))}
+            <button
+              onClick={() => setViewport('desktop')}
+              title="Desktop"
+              className={`p-1.5 rounded-md transition-colors ${viewport === 'desktop' ? 'bg-gray-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              <ComputerDesktopIcon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewport('tablet')}
+              title="Tablet"
+              className={`p-1.5 rounded-md transition-colors ${viewport === 'tablet' ? 'bg-gray-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              <DeviceTabletIcon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewport('mobile')}
+              title="Mobil"
+              className={`p-1.5 rounded-md transition-colors ${viewport === 'mobile' ? 'bg-gray-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              <DevicePhoneMobileIcon className="h-4 w-4" />
+            </button>
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            <label className="flex items-center gap-1.5 text-xs text-gray-500">
+              Web
+              <select
+                value={site}
+                onChange={(e) => setSite(e.target.value)}
+                className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-xs font-semibold text-gray-200 outline-none hover:bg-gray-700 focus:border-indigo-500"
+              >
+                {SITE_OPTIONS.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
             <span className="text-xs text-gray-600 hidden md:inline">{elements.length} prvkov</span>
             <button
               onClick={handlePreview}

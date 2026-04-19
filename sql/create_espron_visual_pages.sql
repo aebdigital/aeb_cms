@@ -4,12 +4,14 @@
 
 create table if not exists public.espron_visual_pages (
   id uuid primary key default gen_random_uuid(),
-  slug text unique not null,
+  site text not null default 'sk' check (site in ('sk', 'cz')),
+  slug text not null,
   title text not null default 'Nová stránka',
   elements jsonb not null default '[]'::jsonb,
   is_published boolean not null default false,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (site, slug)
 );
 
 alter table public.espron_visual_pages enable row level security;

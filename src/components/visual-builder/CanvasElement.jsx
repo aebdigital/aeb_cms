@@ -61,6 +61,7 @@ const TYPE_LABEL = {
   divider: () => 'HR',
   spacer: () => 'SPACER',
   badge: () => 'BADGE',
+  contactForm: () => 'FORM',
 }
 
 // ─── Element renderer ─────────────────────────────────────────────────────────
@@ -148,6 +149,9 @@ function ElementRenderer({ element, selectedId, draggingId, onSelect, onAddEleme
         </div>
       )
 
+    case 'contactForm':
+      return <ContactFormPreview element={element} style={s} />
+
     default:
       return (
         <div style={{ padding: 8, background: '#f3f4f6', borderRadius: 4, fontSize: 12, color: '#6b7280' }}>
@@ -155,6 +159,69 @@ function ElementRenderer({ element, selectedId, draggingId, onSelect, onAddEleme
         </div>
       )
   }
+}
+
+// ─── Contact form preview (non-interactive) ──────────────────────────────────
+
+function ContactFormPreview({ element, style }) {
+  const fields = Array.isArray(element.fields) ? element.fields : []
+  const rows = []
+  for (let i = 0; i < fields.length; i++) {
+    const f = fields[i]
+    const next = fields[i + 1]
+    if (f.width === 'half' && next && next.width === 'half') {
+      rows.push([f, next])
+      i++
+    } else {
+      rows.push([f])
+    }
+  }
+  const inputStyle = {
+    width: '100%', border: '1px solid #e5e7eb', borderRadius: 12,
+    padding: '10px 14px', fontSize: 13, color: '#374151',
+    background: '#fff', boxSizing: 'border-box',
+  }
+  return (
+    <div style={style}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {rows.map((row, idx) => (
+          <div
+            key={idx}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: row.length === 2 ? '1fr 1fr' : '1fr',
+              gap: 16,
+            }}
+          >
+            {row.map(f => (
+              <div key={f.id}>
+                <p style={{ fontSize: 12, fontWeight: 500, color: '#6b7280', margin: '0 0 6px' }}>
+                  {f.label || f.name}{f.required ? ' *' : ''}
+                </p>
+                {f.type === 'textarea' ? (
+                  <div style={{ ...inputStyle, minHeight: 96, color: '#9ca3af' }}>
+                    {f.placeholder || ''}
+                  </div>
+                ) : (
+                  <div style={{ ...inputStyle, color: '#9ca3af' }}>
+                    {f.placeholder || ''}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+        <div>
+          <div style={{
+            display: 'inline-block', background: '#172c70', color: '#fff',
+            padding: '14px 32px', borderRadius: 9999, fontSize: 13, fontWeight: 700,
+          }}>
+            {element.buttonText || 'Odoslať'}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ─── Main CanvasElement ───────────────────────────────────────────────────────

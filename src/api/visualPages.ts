@@ -2,6 +2,8 @@ import { supabase } from '../lib/supabaseClient'
 import { STORAGE_BUCKET } from '../lib/constants'
 import { compressImage, generateUUID, getFileExtension } from '../lib/fileUtils'
 
+export type EspronVisualSite = 'sk' | 'cz'
+
 export async function uploadBuilderImage(file: File): Promise<string> {
   const compressed = await compressImage(file, 800, 2400, 1600)
   const ext = getFileExtension(compressed)
@@ -27,6 +29,7 @@ export interface VisualElement {
 
 export interface VisualPage {
   id: string
+  site: EspronVisualSite
   slug: string
   title: string
   elements: VisualElement[]
@@ -37,10 +40,18 @@ export interface VisualPage {
 
 export type VisualPageUpsert = {
   id?: string
+  site?: EspronVisualSite
   slug: string
   title: string
   elements: VisualElement[]
   is_published?: boolean
+}
+
+function normalizeVisualPage(page: Record<string, unknown>): VisualPage {
+  return {
+    ...page,
+    site: (page.site ?? 'sk') as EspronVisualSite,
+  } as VisualPage
 }
 
 export async function listVisualPages(): Promise<VisualPage[]> {
@@ -49,7 +60,7 @@ export async function listVisualPages(): Promise<VisualPage[]> {
     .select('*')
     .order('updated_at', { ascending: false })
   if (error) throw error
-  return (data ?? []) as VisualPage[]
+  return (data ?? []).map(normalizeVisualPage)
 }
 
 export async function getVisualPage(id: string): Promise<VisualPage> {
@@ -59,23 +70,28 @@ export async function getVisualPage(id: string): Promise<VisualPage> {
     .eq('id', id)
     .single()
   if (error) throw error
-  return data as VisualPage
+  return normalizeVisualPage(data)
 }
 
-export async function getVisualPageBySlug(slug: string): Promise<VisualPage | null> {
+export async function getVisualPageBySlug(
+  slug: string,
+  site: EspronVisualSite = 'sk',
+): Promise<VisualPage | null> {
   const { data, error } = await supabase
     .from('espron_visual_pages')
     .select('*')
+    .eq('site', site)
     .eq('slug', slug)
     .maybeSingle()
   if (error) throw error
-  return (data as VisualPage) ?? null
+  return data ? normalizeVisualPage(data) : null
 }
 
 export async function createVisualPage(page: VisualPageUpsert): Promise<VisualPage> {
   const { data, error } = await supabase
     .from('espron_visual_pages')
     .insert({
+      site: page.site ?? 'sk',
       slug: page.slug,
       title: page.title,
       elements: page.elements,
@@ -84,7 +100,7 @@ export async function createVisualPage(page: VisualPageUpsert): Promise<VisualPa
     .select()
     .single()
   if (error) throw error
-  return data as VisualPage
+  return normalizeVisualPage(data)
 }
 
 export async function updateVisualPage(id: string, updates: Partial<VisualPageUpsert>): Promise<VisualPage> {
@@ -95,7 +111,7 @@ export async function updateVisualPage(id: string, updates: Partial<VisualPageUp
     .select()
     .single()
   if (error) throw error
-  return data as VisualPage
+  return normalizeVisualPage(data)
 }
 
 export async function deleteVisualPage(id: string): Promise<void> {

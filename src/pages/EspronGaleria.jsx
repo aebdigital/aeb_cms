@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   PlusIcon,
   TrashIcon,
@@ -34,16 +34,7 @@ export default function EspronGaleria() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    setActiveSlug(services[0]?.slug ?? '')
-  }, [site, services])
-
-  useEffect(() => {
-    if (!activeSlug) return
-    load()
-  }, [activeSlug, site])
-
-  async function load() {
+  const load = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -54,7 +45,16 @@ export default function EspronGaleria() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeSlug, site])
+
+  useEffect(() => {
+    setActiveSlug(services[0]?.slug ?? '')
+  }, [site, services])
+
+  useEffect(() => {
+    if (!activeSlug) return
+    load()
+  }, [activeSlug, load])
 
   async function handleUpload(event) {
     const files = Array.from(event.target.files ?? [])
@@ -139,8 +139,8 @@ export default function EspronGaleria() {
   const publishedCount = items.filter((i) => i.is_published).length
 
   return (
-    <div className="px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-wrap items-end gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Espron — Realizácie (galérie)</h1>
           <p className="mt-1 text-sm text-gray-500">

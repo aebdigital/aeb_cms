@@ -56,7 +56,10 @@ export default function Layout() {
   const [navPages, setNavPages] = useState([])
   const [allPages, setAllPages] = useState([])
   const [loadingPages, setLoadingPages] = useState(true)
+  const isOwnerUser = user?.email === 'alexander.hidveghy@gmail.com'
+  const canUseEspronTools = isOwnerUser || user?.email === 'info@espron.sk'
   const isVavrostavUser = user?.id === VAVROSTAV_OWNER_ID
+  const hasStaticSidebarLinks = isOwnerUser || canUseEspronTools || isVavrostavUser
 
   // 1. Fetch pages when site changes
   useEffect(() => {
@@ -212,13 +215,13 @@ export default function Layout() {
                     </Link>
                   )
                 })
-              ) : (
+              ) : hasStaticSidebarLinks ? null : (
                 <div className="px-3 py-4 text-center">
                   <p className="text-gray-400 text-sm">Žiadne stránky v navigácii</p>
                 </div>
               )}
               {/* Viktorija nav - only for specific user */}
-              {user?.email === 'alexander.hidveghy@gmail.com' && (
+              {isOwnerUser && (
                 <Link
                   to="/viktorija"
                   className={`${location.pathname === '/viktorija'
@@ -232,7 +235,7 @@ export default function Layout() {
                 </Link>
               )}
               {/* Visual Builder - for alexander + info@espron.sk (labelled "Espron Builder" for espron) */}
-              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+              {canUseEspronTools && (
                 <Link
                   to="/visual-builder"
                   className={`${location.pathname === '/visual-builder'
@@ -246,7 +249,7 @@ export default function Layout() {
                 </Link>
               )}
               {/* Espron Blog - alexander + info@espron.sk */}
-              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+              {canUseEspronTools && (
                 <Link
                   to="/espron-blog"
                   className={`${location.pathname.startsWith('/espron-blog')
@@ -260,7 +263,7 @@ export default function Layout() {
                 </Link>
               )}
               {/* Espron Realizácie / galérie - alexander + info@espron.sk */}
-              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+              {canUseEspronTools && (
                 <Link
                   to="/espron-galeria"
                   className={`${location.pathname.startsWith('/espron-galeria')
@@ -351,7 +354,7 @@ export default function Layout() {
                     </Link>
                   )
                 })
-              ) : (
+              ) : hasStaticSidebarLinks ? null : (
                 <div className="text-center py-8">
                   <DocumentIcon className="h-8 w-8 text-gray-500 mx-auto mb-2" />
                   <p className="text-gray-400 text-sm">Žiadne stránky</p>
@@ -359,7 +362,7 @@ export default function Layout() {
                 </div>
               )}
               {/* Viktorija nav - only for specific user */}
-              {user?.email === 'alexander.hidveghy@gmail.com' && (
+              {isOwnerUser && (
                 <Link
                   to="/viktorija"
                   className={`${location.pathname === '/viktorija'
@@ -372,7 +375,7 @@ export default function Layout() {
                 </Link>
               )}
               {/* Visual Builder - for alexander + info@espron.sk (labelled "Espron Builder" for espron) */}
-              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+              {canUseEspronTools && (
                 <Link
                   to="/visual-builder"
                   className={`${location.pathname === '/visual-builder'
@@ -385,7 +388,7 @@ export default function Layout() {
                 </Link>
               )}
               {/* Espron Blog - alexander + info@espron.sk */}
-              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+              {canUseEspronTools && (
                 <Link
                   to="/espron-blog"
                   className={`${location.pathname.startsWith('/espron-blog')
@@ -398,7 +401,7 @@ export default function Layout() {
                 </Link>
               )}
               {/* Espron Realizácie / galérie - alexander + info@espron.sk */}
-              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+              {canUseEspronTools && (
                 <Link
                   to="/espron-galeria"
                   className={`${location.pathname.startsWith('/espron-galeria')

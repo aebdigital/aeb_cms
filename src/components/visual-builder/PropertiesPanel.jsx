@@ -204,6 +204,150 @@ function SpacingQuad({ label, top, right, bottom, left, onChange }) {
   )
 }
 
+// ─── Contact form field editor ───────────────────────────────────────────────
+
+const FIELD_TYPES = [
+  { value: 'text', label: 'Text' },
+  { value: 'email', label: 'E-mail' },
+  { value: 'tel', label: 'Telefón' },
+  { value: 'textarea', label: 'Viacriadkový' },
+]
+
+let _fieldCounter = 0
+function genFieldId() {
+  return `f-${Date.now()}-${++_fieldCounter}`
+}
+
+function ContactFormEditor({ element, onUpdate }) {
+  const fields = Array.isArray(element.fields) ? element.fields : []
+
+  function updateFields(next) {
+    onUpdate({ fields: next })
+  }
+
+  function updateField(id, patch) {
+    updateFields(fields.map(f => f.id === id ? { ...f, ...patch } : f))
+  }
+
+  function removeField(id) {
+    updateFields(fields.filter(f => f.id !== id))
+  }
+
+  function moveField(id, delta) {
+    const idx = fields.findIndex(f => f.id === id)
+    if (idx < 0) return
+    const next = idx + delta
+    if (next < 0 || next >= fields.length) return
+    const copy = fields.slice()
+    const [item] = copy.splice(idx, 1)
+    copy.splice(next, 0, item)
+    updateFields(copy)
+  }
+
+  function addField() {
+    updateFields([
+      ...fields,
+      { id: genFieldId(), name: `field_${fields.length + 1}`, label: 'Nové pole', type: 'text', placeholder: '', required: false, width: 'full' },
+    ])
+  }
+
+  return (
+    <div>
+      <Label>Predmet e-mailu</Label>
+      <TextInput value={element.subject ?? ''} onChange={(v) => onUpdate({ subject: v })} placeholder="Správa z webu" />
+
+      <Label>Text tlačidla</Label>
+      <TextInput value={element.buttonText ?? ''} onChange={(v) => onUpdate({ buttonText: v })} placeholder="Odoslať" />
+
+      <Label>Nadpis po odoslaní</Label>
+      <TextInput value={element.successTitle ?? ''} onChange={(v) => onUpdate({ successTitle: v })} placeholder="Ďakujeme!" />
+
+      <Label>Správa po odoslaní</Label>
+      <TextInput value={element.successMessage ?? ''} onChange={(v) => onUpdate({ successMessage: v })} placeholder="Správa bola odoslaná." />
+
+      <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #1f2937' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b7280', margin: 0 }}>
+            Polia formulára
+          </p>
+          <button
+            onClick={addField}
+            style={{
+              background: '#6366f1', color: '#fff', border: 'none',
+              borderRadius: 6, padding: '3px 8px', fontSize: 10, fontWeight: 600, cursor: 'pointer',
+            }}
+          >+ Pole</button>
+        </div>
+
+        {fields.length === 0 && (
+          <p style={{ fontSize: 10, color: '#4b5563', padding: '8px 0' }}>Žiadne polia.</p>
+        )}
+
+        {fields.map((f, idx) => (
+          <div key={f.id} style={{ border: '1px solid #1f2937', borderRadius: 8, padding: 8, marginBottom: 8, background: '#0f1420' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#818cf8' }}>#{idx + 1}</span>
+              <div style={{ display: 'flex', gap: 2 }}>
+                <button
+                  onClick={() => moveField(f.id, -1)}
+                  disabled={idx === 0}
+                  style={{ background: '#1f2937', border: 'none', color: '#9ca3af', borderRadius: 4, padding: '1px 5px', fontSize: 10, cursor: 'pointer', opacity: idx === 0 ? 0.4 : 1 }}
+                >↑</button>
+                <button
+                  onClick={() => moveField(f.id, 1)}
+                  disabled={idx === fields.length - 1}
+                  style={{ background: '#1f2937', border: 'none', color: '#9ca3af', borderRadius: 4, padding: '1px 5px', fontSize: 10, cursor: 'pointer', opacity: idx === fields.length - 1 ? 0.4 : 1 }}
+                >↓</button>
+                <button
+                  onClick={() => removeField(f.id)}
+                  style={{ background: '#450a0a', border: 'none', color: '#f87171', borderRadius: 4, padding: '1px 5px', fontSize: 10, cursor: 'pointer' }}
+                >✕</button>
+              </div>
+            </div>
+            <TextInput label="Popisok" value={f.label} onChange={(v) => updateField(f.id, { label: v })} />
+            <div style={{ marginTop: 6 }}>
+              <TextInput label="Názov (key)" value={f.name} onChange={(v) => updateField(f.id, { name: v })} mono />
+            </div>
+            <div style={{ marginTop: 6 }}>
+              <SelectInput
+                label="Typ"
+                value={f.type}
+                onChange={(v) => updateField(f.id, { type: v })}
+                options={FIELD_TYPES}
+              />
+            </div>
+            <div style={{ marginTop: 6 }}>
+              <TextInput label="Placeholder" value={f.placeholder} onChange={(v) => updateField(f.id, { placeholder: v })} />
+            </div>
+            <div style={{ marginTop: 6 }}>
+              <p style={{ fontSize: 9, color: '#9ca3af', marginBottom: 3 }}>Šírka</p>
+              <ToggleGroup
+                options={[
+                  { value: 'full', label: 'Celá' },
+                  { value: 'half', label: 'Polovica' },
+                ]}
+                value={f.width ?? 'full'}
+                onChange={(v) => updateField(f.id, { width: v })}
+              />
+            </div>
+            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input
+                type="checkbox"
+                checked={!!f.required}
+                onChange={(e) => updateField(f.id, { required: e.target.checked })}
+                id={`req-${f.id}`}
+              />
+              <label htmlFor={`req-${f.id}`} style={{ fontSize: 10, color: '#9ca3af' }}>
+                Povinné
+              </label>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main panel ───────────────────────────────────────────────────────────────
 
 const FONT_WEIGHTS = [
@@ -350,6 +494,10 @@ export default function PropertiesPanel({ element, onUpdate, onUpdateStyle, onDe
                 <Label>Výška (px)</Label>
                 <NumInput value={s.height} onChange={(v) => us({ height: v })} />
               </>
+            )}
+
+            {element.type === 'contactForm' && (
+              <ContactFormEditor element={element} onUpdate={onUpdate} />
             )}
 
             {element.type === 'divider' && (

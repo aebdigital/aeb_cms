@@ -25,8 +25,10 @@ export default function BuilderCanvas({
             boxShadow: '0 25px 80px rgba(0,0,0,0.5)',
             transition: 'width 0.3s ease',
             position: 'relative',
+            overflow: 'hidden',
           }}
         >
+          <HeroPreview />
           {elements.length === 0 ? (
             <EmptyCanvas onAddElement={onAddElement} onMoveElement={onMoveElement} onSelect={onSelect} onDragEnd={onDragEnd} />
           ) : (
@@ -37,7 +39,7 @@ export default function BuilderCanvas({
                 marginRight: 'auto',
                 paddingLeft: 24,
                 paddingRight: 24,
-                paddingTop: 64,
+                paddingTop: 40,
                 paddingBottom: 64,
               }}
             >
@@ -59,6 +61,32 @@ export default function BuilderCanvas({
           )}
         </div>
         <div style={{ height: 80 }} />
+      </div>
+    </div>
+  )
+}
+
+function HeroPreview() {
+  return (
+    <div
+      title="Hero sekcia sa automaticky zobrazí na nasadenej stránke"
+      style={{
+        position: 'relative',
+        width: '100%',
+        minHeight: 200,
+        background:
+          'radial-gradient(circle at top left, rgba(255,255,255,0.14), transparent 34%), linear-gradient(120deg, rgba(255,255,255,0.06), transparent 26%), #0f1d4a',
+        overflow: 'hidden',
+        pointerEvents: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <div style={{
+        position: 'absolute', top: 8, left: 10,
+        fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
+        color: 'rgba(255,255,255,0.45)',
+      }}>
+        Hero · automatické · nedá sa upraviť
       </div>
     </div>
   )

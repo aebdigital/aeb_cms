@@ -85,6 +85,17 @@ const PALETTE_GROUPS = [
           </svg>
         ),
       },
+      {
+        type: 'contactForm',
+        label: 'Kontakt. formulár',
+        desc: 'Form so SMTP2GO',
+        icon: (
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+            <rect x="1" y="2" width="14" height="12" rx="2" />
+            <path d="M3.5 5.5h9M3.5 8h9M3.5 10.5h5" strokeLinecap="round" />
+          </svg>
+        ),
+      },
     ],
   },
   {

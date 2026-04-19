@@ -12,6 +12,7 @@ const TYPE_LABEL = {
   container: () => 'Kontajner',
   divider: () => 'Oddeľovač',
   spacer: () => 'Spacer',
+  contactForm: () => 'Formulár',
 }
 
 function TypeIcon({ type, level }) {
@@ -46,6 +47,8 @@ function TypeIcon({ type, level }) {
       return <svg {...common}><path d="M2 8h12" strokeLinecap="round" /></svg>
     case 'spacer':
       return <svg {...common}><path d="M8 3v10M4 3h8M4 13h8" strokeLinecap="round" /></svg>
+    case 'contactForm':
+      return <svg {...common}><rect x="1" y="2" width="14" height="12" rx="2" /><path d="M3.5 5.5h9M3.5 8h9M3.5 10.5h5" strokeLinecap="round" /></svg>
     default:
       return <span style={{ width: 12, height: 12, display: 'inline-block' }} />
   }
