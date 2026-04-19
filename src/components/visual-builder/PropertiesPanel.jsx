@@ -389,7 +389,7 @@ export default function PropertiesPanel({ element, onUpdate, onUpdateStyle, onDe
               </div>
             )}
 
-            <Label>Zarovnanie bloku</Label>
+            <Label>Zarovnanie</Label>
             <ToggleGroup
               options={[
                 { value: 'left', label: '⬅ Vľavo' },
@@ -397,10 +397,31 @@ export default function PropertiesPanel({ element, onUpdate, onUpdateStyle, onDe
                 { value: 'right', label: '➡ Vpravo' },
               ]}
               value={s.blockAlign ?? 'left'}
-              onChange={(v) => us({ blockAlign: v })}
+              onChange={(v) => {
+                const updates = { blockAlign: v }
+                const flexVal = v === 'center' ? 'center' : v === 'right' ? 'flex-end' : 'flex-start'
+                if (element.type === 'container') {
+                  // Cascade text-align to all descendants (works regardless of width)
+                  updates.textAlign = v
+                  // For flex containers, also align children along the relevant axis
+                  const isFlex = (s.display ?? 'flex') === 'flex'
+                  if (isFlex) {
+                    const dir = s.flexDirection ?? 'row'
+                    const isRow = dir === 'row' || dir === 'row-reverse'
+                    if (isRow) updates.justifyContent = flexVal
+                    else updates.alignItems = flexVal
+                  }
+                } else if (['heading', 'paragraph', 'button', 'badge'].includes(element.type)) {
+                  // Set the element's own text-align — visible even at width 100%
+                  updates.textAlign = v
+                }
+                us(updates)
+              }}
             />
             <p style={{ fontSize: 9, color: '#4b5563', marginTop: 4, lineHeight: 1.4 }}>
-              Zarovná prvok v rámci rodičovského kontajnera. Pre vizuálny efekt nastavte max. šírku.
+              {element.type === 'container'
+                ? 'Centruje text vo vnútri (cez text-align) a flex potomkov. Pre centrovanie samotného boxu nastavte max. šírku.'
+                : 'Centruje text v prvku. Pre centrovanie celého bloku v rodičovi nastavte max. šírku < 100%.'}
             </p>
 
             <SpacingQuad

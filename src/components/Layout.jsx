@@ -19,7 +19,10 @@ import {
   NewspaperIcon,
   CalendarDaysIcon,
   SparklesIcon,
+  ShoppingBagIcon,
 } from '@heroicons/react/24/outline'
+
+const VAVROSTAV_OWNER_ID = '9083c583-0fcf-483d-b3f1-ba435287ec04'
 
 // Map page slugs to icons
 const iconMap = {
@@ -53,6 +56,7 @@ export default function Layout() {
   const [navPages, setNavPages] = useState([])
   const [allPages, setAllPages] = useState([])
   const [loadingPages, setLoadingPages] = useState(true)
+  const isVavrostavUser = user?.id === VAVROSTAV_OWNER_ID
 
   // 1. Fetch pages when site changes
   useEffect(() => {
@@ -111,7 +115,7 @@ export default function Layout() {
     // - root path (handled by DynamicHomePage)
     // - nastavenia (Settings) - assuming it's available for all
     // - empty/dashboard
-    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija', 'visual-builder', 'espron-blog'];
+    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija', 'visual-builder', 'espron-blog', 'espron-galeria', 'vavrostav-obchod'];
 
     if (!alwaysAllowed.includes(currentSlug)) {
       // Check if current slug corresponds to a defined page for this site
@@ -255,6 +259,33 @@ export default function Layout() {
                   Espron Blog
                 </Link>
               )}
+              {/* Espron Realizácie / galérie - alexander + info@espron.sk */}
+              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+                <Link
+                  to="/espron-galeria"
+                  className={`${location.pathname.startsWith('/espron-galeria')
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <PhotoIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                  Espron Realizácie
+                </Link>
+              )}
+              {isVavrostavUser && (
+                <Link
+                  to="/vavrostav-obchod"
+                  className={`${location.pathname === '/vavrostav-obchod'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <ShoppingBagIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                  Vavrostav obchod
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -364,6 +395,31 @@ export default function Layout() {
                 >
                   <NewspaperIcon className="mr-3 h-5 w-5 flex-shrink-0" />
                   Espron Blog
+                </Link>
+              )}
+              {/* Espron Realizácie / galérie - alexander + info@espron.sk */}
+              {(user?.email === 'alexander.hidveghy@gmail.com' || user?.email === 'info@espron.sk') && (
+                <Link
+                  to="/espron-galeria"
+                  className={`${location.pathname.startsWith('/espron-galeria')
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                >
+                  <PhotoIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  Espron Realizácie
+                </Link>
+              )}
+              {isVavrostavUser && (
+                <Link
+                  to="/vavrostav-obchod"
+                  className={`${location.pathname === '/vavrostav-obchod'
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                >
+                  <ShoppingBagIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  Vavrostav obchod
                 </Link>
               )}
             </nav>

@@ -163,3 +163,33 @@ export async function uploadProjectImage(options: UploadProjectImageOptions): Pr
 
   return { path }
 }
+
+// Upload an ecommerce product image
+export interface UploadProductImageOptions {
+  file: File
+  ownerSlug: string
+  productId?: string
+}
+
+export async function uploadProductImage(options: UploadProductImageOptions): Promise<{ path: string }> {
+  const { file, ownerSlug, productId } = options
+
+  const ext = getFileExtension(file)
+  const fileName = `product-${generateUUID()}.${ext}`
+  const path = productId
+    ? `${ownerSlug}/products/${productId}/${fileName}`
+    : `${ownerSlug}/products/temp/${fileName}`
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, {
+      upsert: true,
+      cacheControl: '3600',
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return { path }
+}

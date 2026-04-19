@@ -26,6 +26,8 @@ import VisualBuilder from './pages/VisualBuilder'
 import VisualPagesList from './pages/VisualPagesList'
 import BlogsList from './pages/BlogsList'
 import BlogEditor from './pages/BlogEditor'
+import EspronGaleria from './pages/EspronGaleria'
+import VavrostavEcommerce from './pages/VavrostavEcommerce'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -98,6 +100,8 @@ function App() {
               <Route path="viktorija" element={<ViktorijaBookings />} />
               <Route path="visual-builder" element={<VisualPagesList />} />
               <Route path="espron-blog" element={<BlogsList />} />
+              <Route path="espron-galeria" element={<EspronGaleria />} />
+              <Route path="vavrostav-obchod" element={<VavrostavEcommerce />} />
             </Route>
 
             {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
