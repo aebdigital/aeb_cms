@@ -26,6 +26,8 @@ import VisualBuilder from './pages/VisualBuilder'
 import VisualPagesList from './pages/VisualPagesList'
 import BlogsList from './pages/BlogsList'
 import BlogEditor from './pages/BlogEditor'
+import LexanBlogsList from './pages/LexanBlogsList'
+import LexanBlogEditor from './pages/LexanBlogEditor'
 import EspronGaleria from './pages/EspronGaleria'
 import VavrostavEcommerce from './pages/VavrostavEcommerce'
 import NotFound from './pages/NotFound'
@@ -69,6 +71,16 @@ function App() {
               }
             />
 
+            {/* Lexan blog editor (standalone full-screen) */}
+            <Route
+              path="/lexan-blog/edit/:id?"
+              element={
+                <ProtectedRoute>
+                  <LexanBlogEditor />
+                </ProtectedRoute>
+              }
+            />
+
             {/* All main routes require authentication */}
             <Route
               path="/"
@@ -100,6 +112,7 @@ function App() {
               <Route path="viktorija" element={<ViktorijaBookings />} />
               <Route path="visual-builder" element={<VisualPagesList />} />
               <Route path="espron-blog" element={<BlogsList />} />
+              <Route path="lexan-blog" element={<LexanBlogsList />} />
               <Route path="espron-galeria" element={<EspronGaleria />} />
               <Route path="vavrostav-obchod" element={<VavrostavEcommerce />} />
             </Route>

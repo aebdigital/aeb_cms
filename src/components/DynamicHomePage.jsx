@@ -27,6 +27,11 @@ export default function DynamicHomePage() {
     return <Navigate to="/vavrostav-obchod" replace />
   }
 
+  const isLexanUser = user?.email === 'zelenskystefan@gmail.com' || user?.id === 'e1ebe479-6724-4d37-a846-911e36329e4e'
+  if (isLexanUser) {
+    return <Navigate to="/lexan-blog" replace />
+  }
+
   async function loadFirstNavPage() {
     try {
       const pages = await getPagesForSite(currentSite.id)

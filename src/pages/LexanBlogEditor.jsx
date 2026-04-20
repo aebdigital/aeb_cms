@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+
 import {
   ArrowLeftIcon,
   EyeIcon,
@@ -14,7 +14,7 @@ import {
   getBlogPost,
   updateBlogPost,
   uploadBlogCoverImage,
-} from '../api/blogs'
+} from '../api/lexanBlogs'
 
 const PREVIEW_ORIGIN = 'http://localhost:3006'
 
@@ -31,12 +31,10 @@ function slugify(s) {
 
 const INITIAL_CONTENT = ''
 
-export default function BlogEditor() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const isNew = !id || id === 'new'
+export default function LexanBlogEditor({ editId, onClose }) {
+  const isNew = !editId || editId === 'new'
 
-  const [postId, setPostId] = useState(isNew ? null : id)
+  const [postId, setPostId] = useState(isNew ? null : editId)
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [slug, setSlug] = useState('')
@@ -47,9 +45,11 @@ export default function BlogEditor() {
   const [readingTime, setReadingTime] = useState('5 min')
   const [coverImage, setCoverImage] = useState(null)
   const [isPublished, setIsPublished] = useState(false)
+  const [selectedImgInfo, setSelectedImgInfo] = useState(null)
 
   const contentRef = useRef(null)
   const fileInputRef = useRef(null)
+  const inlineImageRef = useRef(null)
   const contentInitialized = useRef(false)
   const contentHtmlRef = useRef(INITIAL_CONTENT)
 
@@ -61,7 +61,7 @@ export default function BlogEditor() {
     let cancelled = false
     ;(async () => {
       try {
-        const post = await getBlogPost(id)
+        const post = await getBlogPost(editId)
         if (cancelled) return
         setPostId(post.id)
         setSlug(post.slug)
@@ -75,13 +75,13 @@ export default function BlogEditor() {
         contentHtmlRef.current = post.content_html || INITIAL_CONTENT
       } catch (err) {
         alert('Chyba pri načítaní: ' + err.message)
-        navigate('/espron-blog')
+        onClose()
       } finally {
         if (!cancelled) setLoading(false)
       }
     })()
     return () => { cancelled = true }
-  }, [id, isNew, navigate])
+  }, [editId, isNew, onClose])
 
   useEffect(() => {
     if (loading) return
@@ -98,6 +98,29 @@ export default function BlogEditor() {
 
   function onContentInput() {
     contentHtmlRef.current = contentRef.current.innerHTML
+    setSelectedImgInfo(null)
+  }
+
+  function handleEditorAction(e) {
+    if (e.target.tagName === 'IMG') {
+      setSelectedImgInfo({
+        node: e.target,
+        top: e.target.offsetTop,
+        left: e.target.offsetLeft,
+        width: e.target.offsetWidth,
+        height: e.target.offsetHeight
+      })
+    } else {
+      setSelectedImgInfo(null)
+    }
+  }
+
+  function removeSelectedImage() {
+    if (selectedImgInfo?.node) {
+      selectedImgInfo.node.remove()
+      setSelectedImgInfo(null)
+      onContentInput()
+    }
   }
 
   function exec(command, value = null) {
@@ -119,6 +142,19 @@ export default function BlogEditor() {
       setCoverImage(url)
     } catch (err) {
       alert('Upload zlyhal: ' + err.message)
+    } finally {
+      e.target.value = ''
+    }
+  }
+
+  async function handleInlineImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const url = await uploadBlogCoverImage(file, postId || 'inline-' + Date.now())
+      exec('insertImage', url)
+    } catch (err) {
+      alert('Upload obrázku zlyhal: ' + err.message)
     } finally {
       e.target.value = ''
     }
@@ -146,7 +182,6 @@ export default function BlogEditor() {
         const created = await createBlogPost(payload)
         setPostId(created.id)
         setIsPublished(created.is_published)
-        navigate(`/espron-blog/edit/${created.id}`, { replace: true })
       }
     } catch (err) {
       alert('Chyba pri ukladaní: ' + err.message)
@@ -167,13 +202,13 @@ export default function BlogEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <style>{ESPRON_PREVIEW_CSS}</style>
+    <div className="h-full bg-gray-100 flex flex-col relative">
+      <style>{LEXAN_PREVIEW_CSS}</style>
 
       {/* Top bar */}
       <div className="h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-3 sticky top-0 z-20">
         <button
-          onClick={() => navigate('/espron-blog')}
+          onClick={onClose}
           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600"
           title="Späť na zoznam"
         >
@@ -202,7 +237,7 @@ export default function BlogEditor() {
         <button
           onClick={openPreview}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
-          title="Otvoriť náhľad na espron.sk"
+          title="Otvoriť náhľad na lexan.sk"
         >
           <EyeIcon className="h-4 w-4" />
           Náhľad
@@ -235,6 +270,9 @@ export default function BlogEditor() {
         <div className="w-px h-5 bg-gray-200 mx-1" />
         <ToolbarBtn label="Tučné" onClick={() => exec('bold')}><BoldIcon className="h-4 w-4" /></ToolbarBtn>
         <ToolbarBtn label="Kurzíva" onClick={() => exec('italic')}><ItalicIcon className="h-4 w-4" /></ToolbarBtn>
+        <div className="w-px h-5 bg-gray-200 mx-1" />
+        <ToolbarBtn label="Obrázok" onClick={() => inlineImageRef.current?.click()}><PhotoIcon className="h-4 w-4" /></ToolbarBtn>
+        <input ref={inlineImageRef} type="file" accept="image/*" onChange={handleInlineImageUpload} className="hidden" />
         <ToolbarBtn label="Zoznam" onClick={() => exec('insertUnorderedList')}><ListBulletIcon className="h-4 w-4" /></ToolbarBtn>
         <ToolbarBtn
           label="Odkaz"
@@ -280,67 +318,74 @@ export default function BlogEditor() {
             />
           </Field>
 
-          <Field label="Úvodný obrázok" hint="Odporúčané 1920×840">
-            <div className="space-y-2">
-              {coverImage ? (
-                <div className="relative aspect-[16/9] rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-                  <img src={coverImage} alt="cover" className="absolute inset-0 w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400">
-                  <PhotoIcon className="h-8 w-8" />
-                </div>
-              )}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full px-3 py-2 text-xs font-semibold bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700"
-              >
-                {coverImage ? 'Nahrať nový' : 'Nahrať obrázok'}
-              </button>
-              {coverImage && (
-                <button
-                  onClick={() => setCoverImage(null)}
-                  className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 rounded-lg"
-                >
-                  Odstrániť
-                </button>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCoverUpload}
-                className="hidden"
-              />
-            </div>
-          </Field>
+
         </aside>
 
         {/* Main preview */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="espron-preview">
-            {/* Hero */}
-            <section className="espron-hero">
-              <div className="espron-hero-bg" />
-              <div className="espron-hero-inner">
-                <span className="espron-breadcrumb">← Blog</span>
-                <p className="espron-kicker">{category || 'Blog'}</p>
-                <h1 className="espron-hero-title">{title || 'Názov článku'}</h1>
-              </div>
-            </section>
+        <div className="flex-1 overflow-y-auto bg-gray-50 pb-24">
+          <section 
+            className="w-full flex items-center justify-center py-20"
+            style={{ 
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('http://localhost:3005/sources/Uvodna-stranka/Posuvacia-cast-2.jpg')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundColor: '#1a1a1a'
+            }}
+          >
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white uppercase tracking-[0.05em]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              Blog
+            </h1>
+          </section>
 
-            {/* Article */}
-            <article className="espron-article">
-              {excerpt && <p className="espron-lead">{excerpt}</p>}
-              <div
-                ref={contentRef}
-                contentEditable
-                suppressContentEditableWarning
-                onInput={onContentInput}
-                onBlur={onContentInput}
-                className="espron-content"
-              />
-            </article>
+          <div className="max-w-4xl mx-auto px-4 w-full mt-16">
+
+            <div className="bg-white shadow-xl shadow-gray-200/40 border border-gray-100 overflow-hidden">
+              <div className="p-8 md:p-16">
+                <div className="mb-12 border-b border-gray-100 pb-10 text-center">
+                  <div className="flex justify-center items-center gap-3 mb-6">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#5a5a58] bg-gray-100 px-3 py-1.5">{category || 'Kategória'}</span>
+                    <span className="text-sm text-gray-400 font-medium">•</span>
+                    <span className="text-[12px] font-bold text-gray-400 tracking-wider uppercase">{readingTime || 'Čas'}</span>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-[#333] leading-[1.1] mb-6" style={{ fontFamily: "'Montserrat', sans-serif" }}>{title || 'Názov článku'}</h1>
+                  {excerpt && (
+                    <p className="text-[1.1rem] text-gray-500 max-w-2xl mx-auto leading-relaxed" style={{ fontFamily: "'Montserrat', sans-serif" }}>{excerpt}</p>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <div
+                    ref={contentRef}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={onContentInput}
+                    onBlur={onContentInput}
+                    onClick={handleEditorAction}
+                    onKeyUp={handleEditorAction}
+                    className="lexan-content outline-none focus:outline-none min-h-[300px]"
+                  />
+                  {selectedImgInfo && (
+                    <div 
+                      className="absolute z-10 border-[3px] border-red-500 rounded-lg pointer-events-none"
+                      style={{ 
+                        top: selectedImgInfo.top, 
+                        left: selectedImgInfo.left, 
+                        width: selectedImgInfo.width, 
+                        height: selectedImgInfo.height 
+                      }}
+                    >
+                      <button 
+                        onClick={removeSelectedImage}
+                        className="absolute -top-4 -right-4 h-8 w-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold pointer-events-auto shadow-lg hover:bg-red-700 hover:scale-110 transition-transform"
+                        title="Odstrániť obrázok"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -376,131 +421,81 @@ function Field({ label, hint, children }) {
 
 // CSS matching espron-next-navrh theme tokens and the blog article layout.
 // Keep in sync with globals.css and app/(site)/blog/[slug]/page.tsx renderer.
-const ESPRON_PREVIEW_CSS = `
-.espron-preview {
-  --color-primary: #172c70;
-  --color-primary-dark: #0f1d4a;
-  --color-foreground: #1a1a1a;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  font-family: Manrope, ui-sans-serif, system-ui, sans-serif;
-  color: var(--color-foreground);
-}
+const LEXAN_PREVIEW_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
-.espron-hero {
-  position: relative;
-  overflow: hidden;
-  background: var(--color-primary-dark);
-  color: white;
-  padding: 7rem 0 4.5rem;
+.lexan-content {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #4a4a4a;
+  font-family: 'Montserrat', sans-serif;
 }
-.espron-hero-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at top left, rgba(255,255,255,0.14), transparent 34%),
-    linear-gradient(120deg, rgba(255,255,255,0.06), transparent 26%);
-  pointer-events: none;
+.lexan-content:empty::before {
+  content: "Začnite písať obsah článku…";
+  color: #cbd5e1;
 }
-.espron-hero-inner {
-  position: relative;
-  width: 92%;
-  max-width: 72rem;
-  margin: 0 auto;
+.lexan-content h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin: 3.5rem 0 1.5rem;
+  line-height: 1.3;
 }
-.espron-breadcrumb {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
-  display: inline-block;
+.lexan-content h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #333;
+  margin: 2.5rem 0 1rem;
+}
+.lexan-content p {
   margin-bottom: 1.5rem;
 }
-.espron-kicker {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: 1rem;
-}
-.espron-hero-title {
-  font-size: clamp(1.875rem, 4vw, 3.75rem);
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  color: white;
-  max-width: 56rem;
-}
-
-.espron-article {
-  width: 92%;
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 4rem 0 6rem;
-}
-.espron-lead {
-  font-size: 1rem;
-  line-height: 2;
-  color: rgba(26,26,26,0.75);
-  margin-bottom: 2.5rem;
-}
-
-.espron-content { outline: none; }
-.espron-content:focus { outline: none; }
-
-.espron-content h2 {
-  font-size: 1.25rem;
+.lexan-content strong {
+  color: #222;
   font-weight: 700;
-  line-height: 1.3;
-  color: var(--color-foreground);
-  margin: 2.5rem 0 1.25rem;
 }
-.espron-content h3 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-foreground);
-  margin: 2rem 0 0.75rem;
-}
-.espron-content p {
-  font-size: 0.875rem;
-  line-height: 1.75;
-  color: rgba(26,26,26,0.75);
-  margin: 0 0 1rem;
-}
-.espron-content strong { font-weight: 700; color: var(--color-foreground); }
-.espron-content em { font-style: italic; }
-.espron-content ul {
-  margin: 1rem 0 1.5rem;
-  padding-left: 1.25rem;
+.lexan-content ul {
+  margin: 1.5rem 0 2rem;
+  padding-left: 1rem;
   list-style: none;
 }
-.espron-content ul li {
+.lexan-content ul li {
   position: relative;
-  padding-left: 1.25rem;
-  font-size: 0.875rem;
-  line-height: 1.75;
-  color: rgba(26,26,26,0.75);
-  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
 }
-.espron-content ul li::before {
+.lexan-content ul li::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.55rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 9999px;
-  background: var(--color-primary);
+  top: 0.65rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #5a5a58;
 }
-.espron-content a {
-  color: var(--color-primary);
+.lexan-content a {
+  color: #5a5a58;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
+  font-weight: 600;
+  transition: color 0.2s ease;
 }
-.espron-content:empty::before {
-  content: "Začnite písať obsah článku…";
-  color: #cbd5e1;
+.lexan-content a:hover {
+  color: #000;
+}
+.lexan-content blockquote {
+  border-left: 4px solid #5a5a58;
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: #666;
+}
+.lexan-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 2.5rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 `
