@@ -41,6 +41,13 @@ export default function LuskReferences({ mode = 'kolekcie' }) {
   const [lightboxImage, setLightboxImage] = useState(null)
   const [previewFile, setPreviewFile] = useState(null)
   const [lightboxFile, setLightboxFile] = useState(null)
+  
+  // Reset active category when mode changes (navigation between Lusk Kolekcie and Lusk Realizácie)
+  useEffect(() => {
+    const firstCat = filteredCategories[0]?.value || 'maria-theresa'
+    setActiveCategory(firstCat)
+    setRefCategory(firstCat)
+  }, [mode])
 
   // Load references when site or category changes
   useEffect(() => {
