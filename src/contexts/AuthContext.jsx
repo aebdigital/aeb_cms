@@ -202,9 +202,19 @@ export function AuthProvider({ children }) {
       setMemberships(context.memberships)
       authFailed.current = false // Reset on success
 
-      // Set first site as default if none selected
+      // Set first site as default if none selected, but prioritize specific slugs for certain users
       if (context.memberships.length > 0) {
-        const defaultSite = context.memberships[0].sites
+        let defaultSite = context.memberships[0].sites
+
+        // Prioritize specific sites based on email to ensure correct landing page
+        if (context.user?.email === 'info@finoxsteel.com') {
+          const finox = context.memberships.find(m => m.sites.slug === 'finoxsteel')
+          if (finox) defaultSite = finox.sites
+        } else if (context.user?.email === 'zelenskystefan@gmail.com') {
+          const lexan = context.memberships.find(m => m.sites.slug === 'lexanzelensky')
+          if (lexan) defaultSite = lexan.sites
+        }
+
         setCurrentSite(prev => {
           if (prev?.id === defaultSite.id) return prev
           return defaultSite
