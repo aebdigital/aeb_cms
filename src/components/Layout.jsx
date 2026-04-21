@@ -58,9 +58,10 @@ export default function Layout() {
   const [loadingPages, setLoadingPages] = useState(true)
   const isOwnerUser = user?.email === 'alexander.hidveghy@gmail.com'
   const isLexanUser = user?.email === 'zelenskystefan@gmail.com' || user?.id === 'e1ebe479-6724-4d37-a846-911e36329e4e'
+  const isFinoxUser = user?.email === 'info@finoxsteel.com' || user?.id === '6376ca37-b6da-492b-80f7-3c8344c52138'
   const canUseEspronTools = isOwnerUser || user?.email === 'info@espron.sk'
   const isVavrostavUser = user?.id === VAVROSTAV_OWNER_ID
-  const hasStaticSidebarLinks = isOwnerUser || canUseEspronTools || isVavrostavUser || isLexanUser
+  const hasStaticSidebarLinks = isOwnerUser || canUseEspronTools || isVavrostavUser || isLexanUser || isFinoxUser
 
   // 1. Fetch pages when site changes
   useEffect(() => {
@@ -304,6 +305,20 @@ export default function Layout() {
                   Vavrostav obchod
                 </Link>
               )}
+              {/* Finoxsteel Gallery - alexander + info@finoxsteel.com */}
+              {(isOwnerUser || isFinoxUser) && (
+                <Link
+                  to="/galerie"
+                  className={`${location.pathname.startsWith('/galerie')
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <PhotoIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                  Finoxsteel Galéria
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -451,6 +466,19 @@ export default function Layout() {
                 >
                   <ShoppingBagIcon className="mr-3 h-5 w-5 flex-shrink-0" />
                   Vavrostav obchod
+                </Link>
+              )}
+              {/* Finoxsteel Gallery - alexander + info@finoxsteel.com */}
+              {(isOwnerUser || isFinoxUser) && (
+                <Link
+                  to="/galerie"
+                  className={`${location.pathname.startsWith('/galerie')
+                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                >
+                  <PhotoIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                  Finoxsteel Galéria
                 </Link>
               )}
             </nav>

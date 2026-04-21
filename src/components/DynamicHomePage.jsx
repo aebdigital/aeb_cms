@@ -32,6 +32,11 @@ export default function DynamicHomePage() {
     return <Navigate to="/lexan-blog" replace />
   }
 
+  const isFinoxUser = user?.email === 'info@finoxsteel.com' || user?.id === '6376ca37-b6da-492b-80f7-3c8344c52138'
+  if (isFinoxUser) {
+    return <Navigate to="/galerie" replace />
+  }
+
   async function loadFirstNavPage() {
     try {
       const pages = await getPagesForSite(currentSite.id)

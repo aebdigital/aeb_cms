@@ -33,6 +33,10 @@ export const GALLERY_CATEGORIES: { value: GalleryCategory; label: string; sites?
   { value: 'murarske-prace', label: 'Murárske práce', sites: ['psbuilding'] },
   { value: 'kamenna-dlazba', label: 'Kamenná dlažba', sites: ['psbuilding'] },
   { value: 'ine-prace', label: 'Iné práce', sites: ['psbuilding'] },
+  { value: 'brany', label: 'Hliníkové brány', sites: ['finoxsteel'] },
+  { value: 'schody-zabradlia', label: 'Schody a Zábradlia', sites: ['finoxsteel'] },
+  { value: 'pergoly', label: 'Pergoly', sites: ['finoxsteel'] },
+  { value: 'konstrukcie', label: 'Konštrukcie', sites: ['finoxsteel'] },
 ]
 
 export function getCategoriesForSite(siteSlug: string) {
