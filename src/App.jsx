@@ -29,6 +29,7 @@ import BlogEditor from './pages/BlogEditor'
 import LexanBlogsList from './pages/LexanBlogsList'
 import LexanBlogEditor from './pages/LexanBlogEditor'
 import EspronGaleria from './pages/EspronGaleria'
+import LuskReferences from './pages/LuskReferences'
 import VavrostavEcommerce from './pages/VavrostavEcommerce'
 import NotFound from './pages/NotFound'
 
@@ -114,6 +115,8 @@ function App() {
               <Route path="espron-blog" element={<BlogsList />} />
               <Route path="lexan-blog" element={<LexanBlogsList />} />
               <Route path="espron-galeria" element={<EspronGaleria />} />
+              <Route path="lusk-references" element={<LuskReferences mode="kolekcie" />} />
+              <Route path="lusk-realizacie" element={<LuskReferences mode="realizacie" />} />
               <Route path="vavrostav-obchod" element={<VavrostavEcommerce />} />
             </Route>
 

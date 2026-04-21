@@ -37,6 +37,11 @@ export default function DynamicHomePage() {
     return <Navigate to="/galerie" replace />
   }
 
+  const isLuskUser = user?.email === 'lusk@lusk.sk' || user?.id === '02cdaccf-28c6-435c-b752-49b0ef1880c1'
+  if (isLuskUser) {
+    return <Navigate to="/lusk-references" replace />
+  }
+
   async function loadFirstNavPage() {
     try {
       const pages = await getPagesForSite(currentSite.id)
