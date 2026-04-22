@@ -28,7 +28,17 @@ export async function compressImage(
   if (isHeic) {
     console.log(`HEIC/HEIF detected for ${file.name}, converting to JPEG...`)
     try {
-      const convertedBlob = await heic2any({
+      // Handle potential default import issues with some bundlers
+      let convertFn = heic2any
+      if (typeof convertFn !== 'function' && (convertFn as any)?.default) {
+        convertFn = (convertFn as any).default
+      }
+
+      if (typeof convertFn !== 'function') {
+        throw new Error('heic2any is not a function - check import')
+      }
+
+      const convertedBlob = await convertFn({
         blob: file,
         toType: 'image/jpeg',
         quality: 0.8
@@ -47,8 +57,9 @@ export async function compressImage(
       
       console.log(`Conversion successful: ${processingFile.name}`)
     } catch (err) {
-      console.error('HEIC conversion failed, attempting normal flow:', err)
-      // If conversion fails, we still try the normal flow, though it might fail if browser doesn't support it
+      console.error('HEIC conversion failed:', err)
+      // If it's a HEIC file and conversion failed, we can't proceed because the browser won't load it
+      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. Skúste ho prosím skonvertovať ručne alebo nahrať iný formát.`)
     }
   }
 
