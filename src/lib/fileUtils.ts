@@ -1,4 +1,4 @@
-import heic2any from 'heic2any'
+import decode from 'heic-decode'
 
 export function getFileExtension(file: File): string {
   const parts = file.name.split('.')
@@ -12,7 +12,7 @@ export function generateUUID(): string {
 /**
  * Compress an image file to a target size (default 500KB)
  * Uses canvas to resize and compress the image.
- * Now also handles HEIC/HEIF conversion to JPEG.
+ * Now also handles HEIC/HEIF conversion to JPEG using heic-decode.
  */
 export async function compressImage(
   file: File,
@@ -28,31 +28,37 @@ export async function compressImage(
   if (isHeic) {
     console.log(`HEIC/HEIF detected: ${file.name}, size: ${file.size}, type: ${file.type}`)
     
-    // Check if browser natively supports HEIC (e.g. Safari)
-    // We still prefer converting to JPEG for consistent display across all browsers
-    
     try {
-      let convertFn = heic2any
-      if (typeof convertFn !== 'function' && (convertFn as any)?.default) {
-        convertFn = (convertFn as any).default
+      console.log('Decoding HEIC using heic-decode...')
+      const arrayBuffer = await file.arrayBuffer()
+      
+      // Handle potential default import issues
+      let decodeFn = decode
+      if (typeof decodeFn !== 'function' && (decodeFn as any)?.default) {
+        decodeFn = (decodeFn as any).default
       }
 
-      if (typeof convertFn !== 'function') {
-        throw new Error('heic2any is not available as a function')
-      }
-
-      console.log('Starting heic2any conversion...')
-      // Try to use a pure Blob instead of File object, sometimes more stable
-      const blobToConvert = file.slice(0, file.size)
-
-      const convertedBlob = await convertFn({
-        blob: blobToConvert,
-        toType: 'image/jpeg'
+      const { width, height, data } = await decodeFn({ buffer: arrayBuffer })
+      
+      console.log(`HEIC decoded: ${width}x${height}. Creating canvas...`)
+      
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      
+      if (!ctx) throw new Error('Failed to get canvas context')
+      
+      const imageData = new ImageData(new Uint8ClampedArray(data), width, height)
+      ctx.putImageData(imageData, 0, 0)
+      
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => {
+          if (b) resolve(b)
+          else reject(new Error('Canvas toBlob failed'))
+        }, 'image/jpeg', 0.9)
       })
 
-      // heic2any can return an array if multiple images are in one HEIC, we take the first one
-      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
-      
       // Create a new filename with .jpg extension
       const newName = file.name.replace(/\.(heic|heif)$/i, '') + '.jpg'
       
@@ -64,12 +70,8 @@ export async function compressImage(
       console.log(`Conversion successful: ${processingFile.name} (${processingFile.size} bytes)`)
     } catch (err: any) {
       console.error('HEIC conversion failed detailed error:', err)
-      if (err instanceof Error) {
-        console.error('Error message:', err.message)
-        console.error('Error stack:', err.stack)
-      }
-      // If it's a HEIC file and conversion failed, we can't proceed because the browser won't load it
-      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. (Detail: ${err?.message || 'Neznáma chyba'}). Skúste ho prosím skonvertovať ručne alebo nahrať iný formát.`)
+      // If it's a HEIC file and conversion failed, we can't proceed
+      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. (Detail: ${err?.message || 'Formát nie je podporovaný'}). Skúste ho prosím skonvertovať ručne.`)
     }
   }
 
