@@ -26,22 +26,28 @@ export async function compressImage(
 
   // Handle HEIC/HEIF conversion
   if (isHeic) {
-    console.log(`HEIC/HEIF detected for ${file.name}, converting to JPEG...`)
+    console.log(`HEIC/HEIF detected: ${file.name}, size: ${file.size}, type: ${file.type}`)
+    
+    // Check if browser natively supports HEIC (e.g. Safari)
+    // We still prefer converting to JPEG for consistent display across all browsers
+    
     try {
-      // Handle potential default import issues with some bundlers
       let convertFn = heic2any
       if (typeof convertFn !== 'function' && (convertFn as any)?.default) {
         convertFn = (convertFn as any).default
       }
 
       if (typeof convertFn !== 'function') {
-        throw new Error('heic2any is not a function - check import')
+        throw new Error('heic2any is not available as a function')
       }
 
+      console.log('Starting heic2any conversion...')
+      // Try to use a pure Blob instead of File object, sometimes more stable
+      const blobToConvert = file.slice(0, file.size)
+
       const convertedBlob = await convertFn({
-        blob: file,
-        toType: 'image/jpeg',
-        quality: 0.8
+        blob: blobToConvert,
+        toType: 'image/jpeg'
       })
 
       // heic2any can return an array if multiple images are in one HEIC, we take the first one
@@ -55,11 +61,15 @@ export async function compressImage(
         lastModified: Date.now()
       })
       
-      console.log(`Conversion successful: ${processingFile.name}`)
-    } catch (err) {
-      console.error('HEIC conversion failed:', err)
+      console.log(`Conversion successful: ${processingFile.name} (${processingFile.size} bytes)`)
+    } catch (err: any) {
+      console.error('HEIC conversion failed detailed error:', err)
+      if (err instanceof Error) {
+        console.error('Error message:', err.message)
+        console.error('Error stack:', err.stack)
+      }
       // If it's a HEIC file and conversion failed, we can't proceed because the browser won't load it
-      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. Skúste ho prosím skonvertovať ručne alebo nahrať iný formát.`)
+      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. (Detail: ${err?.message || 'Neznáma chyba'}). Skúste ho prosím skonvertovať ručne alebo nahrať iný formát.`)
     }
   }
 
