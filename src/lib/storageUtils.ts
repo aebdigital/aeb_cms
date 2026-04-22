@@ -12,14 +12,16 @@ export function getStoragePublicUrl(path: string): string {
   const ext = path.split('.').pop()?.toLowerCase()
   const isHeic = ext === 'heic' || ext === 'heif'
   
+  let url: string
   if (isHeic) {
     // Use Supabase Image Transformation for HEIC files
-    // Format: [supabaseUrl]/storage/v1/render/image/public/[bucket]/[path]?format=auto
-    // We add a large default width to ensure transformation triggers (some projects require it)
-    return `${supabaseUrl}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?width=2000&format=auto`
+    // Force JPG format to ensure browser compatibility
+    url = `${supabaseUrl}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?width=2000&format=jpg`
+  } else {
+    // Standard public URL
+    url = `${supabaseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`
   }
   
-  // Standard public URL
-  // Format: [supabaseUrl]/storage/v1/object/public/[bucket]/[path]
-  return `${supabaseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`
+  console.log(`Image URL [${isHeic ? 'TRANSFORMED' : 'STANDARD'}]:`, url)
+  return url
 }
