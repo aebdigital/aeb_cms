@@ -39,30 +39,30 @@ export async function compressImage(
         throw new Error('heic2any is not available as a function')
       }
 
-      console.log('Converting HEIC using heic2any (multiple: true)...')
+      console.log('Converting HEIC to PNG first (sometimes more compatible)...')
       
       const convertedBlob = await convertFn({
         blob: file,
-        toType: 'image/jpeg',
-        multiple: true // Handles containers with multiple images better
+        toType: 'image/png', // Try PNG as an intermediate format
+        multiple: true
       })
 
       // heic2any can return an array if multiple images are in one HEIC, we take the first one
       const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
       
-      // Create a new filename with .jpg extension
+      // Create a new filename with .jpg extension (since we will compress it to jpg later anyway)
       const newName = file.name.replace(/\.(heic|heif)$/i, '') + '.jpg'
       
       processingFile = new File([blob], newName, {
-        type: 'image/jpeg',
+        type: 'image/png', // Mark as PNG for now
         lastModified: Date.now()
       })
       
-      console.log(`Conversion successful: ${processingFile.name} (${processingFile.size} bytes)`)
+      console.log(`Conversion to PNG successful: ${processingFile.name} (${processingFile.size} bytes)`)
     } catch (err: any) {
       console.error('HEIC conversion failed detailed error:', err)
       // If it's a HEIC file and conversion failed, we can't proceed
-      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. (Detail: ${err?.message || 'Formát nie je podporovaný'}). Skúste ho prosím skonvertovať ručne.`)
+      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. (Detail: ${err?.message || 'Formát nie je podporovaný'}). Tento konkrétny súbor má formát, ktorý váš prehliadač nevie spracovať. Skúste ho nahrať cez Safari alebo ho najprv uložte ako JPG.`)
     }
   }
 
