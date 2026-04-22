@@ -1,4 +1,4 @@
-import decode from 'heic-decode'
+import heic2any from 'heic2any'
 
 export function getFileExtension(file: File): string {
   const parts = file.name.split('.')
@@ -12,7 +12,7 @@ export function generateUUID(): string {
 /**
  * Compress an image file to a target size (default 500KB)
  * Uses canvas to resize and compress the image.
- * Now also handles HEIC/HEIF conversion to JPEG using heic-decode.
+ * Now also handles HEIC/HEIF conversion to JPEG using heic2any.
  */
 export async function compressImage(
   file: File,
@@ -29,36 +29,27 @@ export async function compressImage(
     console.log(`HEIC/HEIF detected: ${file.name}, size: ${file.size}, type: ${file.type}`)
     
     try {
-      console.log('Decoding HEIC using heic-decode...')
-      const arrayBuffer = await file.arrayBuffer()
-      
       // Handle potential default import issues
-      let decodeFn = decode
-      if (typeof decodeFn !== 'function' && (decodeFn as any)?.default) {
-        decodeFn = (decodeFn as any).default
+      let convertFn = heic2any
+      if (typeof convertFn !== 'function' && (convertFn as any)?.default) {
+        convertFn = (convertFn as any).default
       }
 
-      const { width, height, data } = await decodeFn({ buffer: arrayBuffer })
+      if (typeof convertFn !== 'function') {
+        throw new Error('heic2any is not available as a function')
+      }
+
+      console.log('Converting HEIC using heic2any (multiple: true)...')
       
-      console.log(`HEIC decoded: ${width}x${height}. Creating canvas...`)
-      
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      
-      if (!ctx) throw new Error('Failed to get canvas context')
-      
-      const imageData = new ImageData(new Uint8ClampedArray(data), width, height)
-      ctx.putImageData(imageData, 0, 0)
-      
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((b) => {
-          if (b) resolve(b)
-          else reject(new Error('Canvas toBlob failed'))
-        }, 'image/jpeg', 0.9)
+      const convertedBlob = await convertFn({
+        blob: file,
+        toType: 'image/jpeg',
+        multiple: true // Handles containers with multiple images better
       })
 
+      // heic2any can return an array if multiple images are in one HEIC, we take the first one
+      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+      
       // Create a new filename with .jpg extension
       const newName = file.name.replace(/\.(heic|heif)$/i, '') + '.jpg'
       
