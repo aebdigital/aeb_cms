@@ -58,11 +58,11 @@ export async function compressImage(
         lastModified: Date.now()
       })
       
-      console.log(`Conversion to PNG successful: ${processingFile.name} (${processingFile.size} bytes)`)
+      console.log(`Conversion successful: ${processingFile.name} (${processingFile.size} bytes)`)
     } catch (err: any) {
-      console.error('HEIC conversion failed detailed error:', err)
-      // If it's a HEIC file and conversion failed, we can't proceed
-      throw new Error(`Nepodarilo sa skonvertovať HEIC súbor: ${file.name}. (Detail: ${err?.message || 'Formát nie je podporovaný'}). Tento konkrétny súbor má formát, ktorý váš prehliadač nevie spracovať. Skúste ho nahrať cez Safari alebo ho najprv uložte ako JPG.`)
+      console.warn('HEIC conversion failed, falling back to original file upload:', err)
+      // Return original file immediately to skip compression logic (which would fail anyway)
+      return file
     }
   }
 
