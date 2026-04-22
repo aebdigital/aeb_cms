@@ -1,3 +1,5 @@
+import heic2any from 'heic2any'
+
 export function getFileExtension(file: File): string {
   const parts = file.name.split('.')
   return parts.length > 1 ? parts.pop()!.toLowerCase() : 'jpg'
@@ -9,7 +11,8 @@ export function generateUUID(): string {
 
 /**
  * Compress an image file to a target size (default 500KB)
- * Uses canvas to resize and compress the image
+ * Uses canvas to resize and compress the image.
+ * Now also handles HEIC/HEIF conversion to JPEG.
  */
 export async function compressImage(
   file: File,
@@ -17,18 +20,50 @@ export async function compressImage(
   maxWidth: number = 1920,
   maxHeight: number = 1080
 ): Promise<File> {
-  // Skip if file is already small enough
-  if (file.size <= maxSizeKB * 1024) {
-    console.log(`Image ${file.name} already under ${maxSizeKB}KB, skipping compression`)
-    return file
+  let processingFile = file
+  const extension = getFileExtension(file)
+  const isHeic = extension === 'heic' || extension === 'heif' || file.type === 'image/heic' || file.type === 'image/heif'
+
+  // Handle HEIC/HEIF conversion
+  if (isHeic) {
+    console.log(`HEIC/HEIF detected for ${file.name}, converting to JPEG...`)
+    try {
+      const convertedBlob = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.8
+      })
+
+      // heic2any can return an array if multiple images are in one HEIC, we take the first one
+      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+      
+      // Create a new filename with .jpg extension
+      const newName = file.name.replace(/\.(heic|heif)$/i, '') + '.jpg'
+      
+      processingFile = new File([blob], newName, {
+        type: 'image/jpeg',
+        lastModified: Date.now()
+      })
+      
+      console.log(`Conversion successful: ${processingFile.name}`)
+    } catch (err) {
+      console.error('HEIC conversion failed, attempting normal flow:', err)
+      // If conversion fails, we still try the normal flow, though it might fail if browser doesn't support it
+    }
   }
 
-  // Skip non-image files
-  if (!file.type.startsWith('image/')) {
-    return file
+  // Skip if file is already small enough AND it's not a HEIC (since HEIC must be converted anyway)
+  if (!isHeic && processingFile.size <= maxSizeKB * 1024) {
+    console.log(`Image ${processingFile.name} already under ${maxSizeKB}KB, skipping compression`)
+    return processingFile
   }
 
-  console.log(`Compressing ${file.name}: ${(file.size / 1024).toFixed(1)}KB -> target ${maxSizeKB}KB`)
+  // Skip non-image files (after possible conversion)
+  if (!processingFile.type.startsWith('image/')) {
+    return processingFile
+  }
+
+  console.log(`Compressing ${processingFile.name}: ${(processingFile.size / 1024).toFixed(1)}KB -> target ${maxSizeKB}KB`)
 
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -68,7 +103,14 @@ export async function compressImage(
 
             if (sizeKB <= maxSizeKB || quality <= 0.1) {
               // Success or minimum quality reached
-              const compressedFile = new File([blob], file.name, {
+              // Use the original (or converted) name but Ensure it has a .jpg extension if we compressed it
+              const finalExtension = getFileExtension(processingFile)
+              let finalName = processingFile.name
+              if (finalExtension !== 'jpg' && finalExtension !== 'jpeg') {
+                finalName = finalName.replace(new RegExp(`\\.${finalExtension}$`, 'i'), '') + '.jpg'
+              }
+
+              const compressedFile = new File([blob], finalName, {
                 type: 'image/jpeg',
                 lastModified: Date.now(),
               })
@@ -93,7 +135,7 @@ export async function compressImage(
     }
 
     // Load image from file
-    img.src = URL.createObjectURL(file)
+    img.src = URL.createObjectURL(processingFile)
   })
 }
 
