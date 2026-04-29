@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient'
 import { STORAGE_BUCKET } from '../lib/constants'
 import { getFileExtension, generateUUID } from '../lib/fileUtils'
+import { getStoragePublicUrl } from '../lib/storageUtils'
 
 export interface UploadGalleryImageOptions {
   file: File
@@ -35,9 +36,5 @@ export async function deleteGalleryImageFromStorage(path: string): Promise<void>
 }
 
 export function getGalleryImagePublicUrl(path: string): string {
-  const { data } = supabase.storage
-    .from(STORAGE_BUCKET)
-    .getPublicUrl(path)
-
-  return data.publicUrl
+  return getStoragePublicUrl(path)
 }

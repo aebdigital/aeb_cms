@@ -1,3 +1,4 @@
+import decode from 'heic-decode'
 import heic2any from 'heic2any'
 
 export function getFileExtension(file: File): string {
@@ -12,7 +13,7 @@ export function generateUUID(): string {
 /**
  * Compress an image file to a target size (default 500KB)
  * Uses canvas to resize and compress the image.
- * Now also handles HEIC/HEIF conversion to JPEG using heic2any.
+ * Now also handles HEIC/HEIF conversion to JPEG with multiple fallbacks.
  */
 export async function compressImage(
   file: File,
@@ -28,41 +29,60 @@ export async function compressImage(
   if (isHeic) {
     console.log(`HEIC/HEIF detected: ${file.name}, size: ${file.size}, type: ${file.type}`)
     
+    // Strategy 1: heic-decode (modern decoder)
     try {
-      // Handle potential default import issues
-      let convertFn = heic2any
-      if (typeof convertFn !== 'function' && (convertFn as any)?.default) {
-        convertFn = (convertFn as any).default
+      console.log('Attempting heic-decode...')
+      const arrayBuffer = await file.arrayBuffer()
+      let decodeFn = decode
+      if (typeof decodeFn !== 'function' && (decodeFn as any)?.default) {
+        decodeFn = (decodeFn as any).default
       }
-
-      if (typeof convertFn !== 'function') {
-        throw new Error('heic2any is not available as a function')
-      }
-
-      console.log('Converting HEIC to PNG first (sometimes more compatible)...')
       
-      const convertedBlob = await convertFn({
-        blob: file,
-        toType: 'image/png', // Try PNG as an intermediate format
-        multiple: true
+      const { width, height, data } = await decodeFn({ buffer: arrayBuffer })
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('Canvas context failed')
+      
+      const imageData = new ImageData(new Uint8ClampedArray(data), width, height)
+      ctx.putImageData(imageData, 0, 0)
+      
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/jpeg', 0.9)
       })
 
-      // heic2any can return an array if multiple images are in one HEIC, we take the first one
-      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
-      
-      // Create a new filename with .jpg extension (since we will compress it to jpg later anyway)
       const newName = file.name.replace(/\.(heic|heif)$/i, '') + '.jpg'
+      processingFile = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() })
+      console.log('heic-decode successful')
       
-      processingFile = new File([blob], newName, {
-        type: 'image/png', // Mark as PNG for now
-        lastModified: Date.now()
-      })
+    } catch (err1) {
+      console.warn('heic-decode failed, trying heic2any...', err1)
       
-      console.log(`Conversion successful: ${processingFile.name} (${processingFile.size} bytes)`)
-    } catch (err: any) {
-      console.warn('HEIC conversion failed, falling back to original file upload:', err)
-      // Return original file immediately to skip compression logic (which would fail anyway)
-      return file
+      // Strategy 2: heic2any (mature library)
+      try {
+        let convertFn = heic2any
+        if (typeof convertFn !== 'function' && (convertFn as any)?.default) {
+          convertFn = (convertFn as any).default
+        }
+
+        const convertedBlob = await (convertFn as any)({
+          blob: file,
+          toType: 'image/jpeg',
+          multiple: true
+        })
+
+        const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+        const newName = file.name.replace(/\.(heic|heif)$/i, '') + '.jpg'
+        
+        processingFile = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() })
+        console.log('heic2any successful')
+        
+      } catch (err2) {
+        console.warn('All client-side HEIC conversions failed. Falling back to raw upload.', err2)
+        // Strategy 3: Raw upload (depends on server-side transformation for display)
+        return file
+      }
     }
   }
 

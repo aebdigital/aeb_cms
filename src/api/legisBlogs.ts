@@ -74,7 +74,7 @@ export async function deleteLegisBlog(blogId: string) {
 
 export async function uploadLegisBlogImage(file: File, path: string) {
     const { data, error } = await supabase.storage
-        .from('site-assets')
+        .from('site-uploads')
         .upload(path, file, {
             upsert: true
         })
@@ -82,7 +82,7 @@ export async function uploadLegisBlogImage(file: File, path: string) {
     if (error) throw error
 
     const { data: { publicUrl } } = supabase.storage
-        .from('site-assets')
+        .from('site-uploads')
         .getPublicUrl(path)
 
     return publicUrl

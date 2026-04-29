@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient'
 import { STORAGE_BUCKET } from '../lib/constants'
 import { getFileExtension, generateUUID } from '../lib/fileUtils'
+import { getStoragePublicUrl } from '../lib/storageUtils'
 
 export interface UploadCarImageOptions {
   file: File
@@ -42,11 +43,7 @@ export async function deleteCarImageFromStorage(path: string): Promise<void> {
 }
 
 export function getPublicUrl(path: string): string {
-  const { data } = supabase.storage
-    .from(STORAGE_BUCKET)
-    .getPublicUrl(path)
-
-  return data.publicUrl
+  return getStoragePublicUrl(path)
 }
 
 // Upload a PDF/file for a car

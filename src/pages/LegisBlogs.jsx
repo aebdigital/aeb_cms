@@ -331,6 +331,49 @@ export default function LegisBlogs() {
                                         </div>
                                     </div>
                                 </div>
+
+                                <div>
+                                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Obrázok článku</h3>
+                                    <div
+                                        className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-indigo-300 transition-all group"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        {formData.image_url ? (
+                                            <div className="relative">
+                                                <img
+                                                    src={formData.image_url}
+                                                    alt="Blog obrázok"
+                                                    className="w-full h-40 object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span className="text-white text-xs font-bold bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">ZMENIŤ</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="p-6 text-center">
+                                                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                                    <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-[11px] text-gray-400 font-medium">Kliknutím nahrať obrázok</p>
+                                            </div>
+                                        )}
+                                        {submitting && (
+                                            <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                                                <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    {formData.image_url && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, image_url: '' })); }}
+                                            className="mt-2 text-[10px] text-red-500 hover:text-red-700 font-bold transition-colors"
+                                        >
+                                            ODSTRÁNIŤ OBRÁZOK
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Main Content Pane */}
