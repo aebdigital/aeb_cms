@@ -121,7 +121,7 @@ export default function Layout() {
     // - root path (handled by DynamicHomePage)
     // - nastavenia (Settings) - assuming it's available for all
     // - empty/dashboard
-    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija', 'visual-builder', 'espron-blog', 'espron-galeria', 'vavrostav-obchod', 'lexan-blog', 'lusk-references'];
+    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija', 'visual-builder', 'espron-blog', 'espron-galeria', 'vavrostav-objednavky', 'vavrostav-produkty', 'vavrostav-kategorie', 'lexan-blog', 'lusk-references', 'lusk-realizacie'];
 
     if (!alwaysAllowed.includes(currentSlug)) {
       // Check if current slug corresponds to a defined page for this site
@@ -294,17 +294,41 @@ export default function Layout() {
                 </Link>
               )}
               {isVavrostavUser && (
-                <Link
-                  to="/vavrostav-obchod"
-                  className={`${location.pathname === '/vavrostav-obchod'
-                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                    } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <ShoppingBagIcon className="mr-4 h-5 w-5 flex-shrink-0" />
-                  Vavrostav obchod
-                </Link>
+                <>
+                  <Link
+                    to="/vavrostav-objednavky"
+                    className={`${location.pathname === '/vavrostav-objednavky'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <ShoppingBagIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                    Vavrostav Objednávky
+                  </Link>
+                  <Link
+                    to="/vavrostav-produkty"
+                    className={`${location.pathname === '/vavrostav-produkty'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <SparklesIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                    Vavrostav Produkty
+                  </Link>
+                  <Link
+                    to="/vavrostav-kategorie"
+                    className={`${location.pathname === '/vavrostav-kategorie'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <DocumentIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                    Vavrostav Kategórie
+                  </Link>
+                </>
               )}
               {/* Finoxsteel Gallery - alexander + info@finoxsteel.com */}
               {(isOwnerUser || isFinoxUser) && (
@@ -472,16 +496,38 @@ export default function Layout() {
                 </Link>
               )}
               {isVavrostavUser && (
-                <Link
-                  to="/vavrostav-obchod"
-                  className={`${location.pathname === '/vavrostav-obchod'
-                    ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                    } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
-                >
-                  <ShoppingBagIcon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  Vavrostav obchod
-                </Link>
+                <>
+                  <Link
+                    to="/vavrostav-objednavky"
+                    className={`${location.pathname === '/vavrostav-objednavky'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                  >
+                    <ShoppingBagIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    Vavrostav Objednávky
+                  </Link>
+                  <Link
+                    to="/vavrostav-produkty"
+                    className={`${location.pathname === '/vavrostav-produkty'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                  >
+                    <SparklesIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    Vavrostav Produkty
+                  </Link>
+                  <Link
+                    to="/vavrostav-kategorie"
+                    className={`${location.pathname === '/vavrostav-kategorie'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                  >
+                    <DocumentIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    Vavrostav Kategórie
+                  </Link>
+                </>
               )}
               {/* Finoxsteel Gallery - alexander + info@finoxsteel.com */}
               {(isOwnerUser || isFinoxUser) && (

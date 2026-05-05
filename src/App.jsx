@@ -30,7 +30,9 @@ import LexanBlogsList from './pages/LexanBlogsList'
 import LexanBlogEditor from './pages/LexanBlogEditor'
 import EspronGaleria from './pages/EspronGaleria'
 import LuskReferences from './pages/LuskReferences'
-import VavrostavEcommerce from './pages/VavrostavEcommerce'
+import VavrostavOrders from './pages/VavrostavOrders'
+import VavrostavProducts from './pages/VavrostavProducts'
+import VavrostavCategories from './pages/VavrostavCategories'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -117,7 +119,10 @@ function App() {
               <Route path="espron-galeria" element={<EspronGaleria />} />
               <Route path="lusk-references" element={<LuskReferences mode="kolekcie" />} />
               <Route path="lusk-realizacie" element={<LuskReferences mode="realizacie" />} />
-              <Route path="vavrostav-obchod" element={<VavrostavEcommerce />} />
+              <Route path="vavrostav-objednavky" element={<VavrostavOrders />} />
+              <Route path="vavrostav-produkty" element={<VavrostavProducts />} />
+              <Route path="vavrostav-kategorie" element={<VavrostavCategories />} />
+              <Route path="vavrostav-obchod" element={<Navigate to="/vavrostav-objednavky" replace />} />
             </Route>
 
             {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
