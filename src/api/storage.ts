@@ -190,3 +190,34 @@ export async function uploadProductImage(options: UploadProductImageOptions): Pr
 
   return { path }
 }
+
+// Upload a product download file (PDF/spec sheet/manual)
+export interface UploadProductDownloadFileOptions {
+  file: File
+  ownerSlug: string
+  productId?: string
+}
+
+export async function uploadProductDownloadFile(options: UploadProductDownloadFileOptions): Promise<{ path: string }> {
+  const { file, ownerSlug, productId } = options
+
+  const ext = getFileExtension(file)
+  const fileName = `download-${generateUUID()}.${ext}`
+  const path = productId
+    ? `${ownerSlug}/products/${productId}/downloads/${fileName}`
+    : `${ownerSlug}/products/temp/downloads/${fileName}`
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, {
+      upsert: false,
+      cacheControl: '3600',
+      contentType: file.type || 'application/pdf',
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return { path }
+}

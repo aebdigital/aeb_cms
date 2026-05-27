@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getPagesForSite } from '../api/pages'
+import { KOCHLIK_OWNER_ID } from '../api/kochlik'
 
 const VAVROSTAV_OWNER_ID = '9083c583-0fcf-483d-b3f1-ba435287ec04'
 
@@ -23,8 +24,16 @@ export default function DynamicHomePage() {
     return <Navigate to="/visual-builder" replace />
   }
 
+  if (currentSite?.slug === 'viktorija') {
+    return <Navigate to="/viktorija" replace />
+  }
+
   if (user?.id === VAVROSTAV_OWNER_ID) {
     return <Navigate to="/vavrostav-obchod" replace />
+  }
+
+  if (user?.id === KOCHLIK_OWNER_ID || user?.email === 'info@kochlik.eu') {
+    return <Navigate to="/kochlik-produkty" replace />
   }
 
   const isLexanUser = user?.email === 'zelenskystefan@gmail.com' || user?.id === 'e1ebe479-6724-4d37-a846-911e36329e4e'

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getPagesForSite } from '../api/pages'
+import { KOCHLIK_OWNER_ID } from '../api/kochlik'
 import { useTranslation } from '../i18n'
 import {
   FolderIcon,
@@ -60,9 +61,10 @@ export default function Layout() {
   const isLexanUser = user?.email === 'zelenskystefan@gmail.com' || user?.id === 'e1ebe479-6724-4d37-a846-911e36329e4e'
   const isFinoxUser = user?.email === 'info@finoxsteel.com' || user?.id === '6376ca37-b6da-492b-80f7-3c8344c52138'
   const isLuskUser = user?.email === 'lusk@lusk.sk' || user?.id === '02cdaccf-28c6-435c-b752-49b0ef1880c1'
+  const isKochlikUser = user?.email === 'info@kochlik.eu' || user?.id === KOCHLIK_OWNER_ID
   const canUseEspronTools = isOwnerUser || user?.email === 'info@espron.sk'
   const isVavrostavUser = user?.id === VAVROSTAV_OWNER_ID
-  const hasStaticSidebarLinks = isOwnerUser || canUseEspronTools || isVavrostavUser || isLexanUser || isFinoxUser || isLuskUser
+  const hasStaticSidebarLinks = isOwnerUser || canUseEspronTools || isVavrostavUser || isLexanUser || isFinoxUser || isLuskUser || isKochlikUser
 
   // 1. Fetch pages when site changes
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function Layout() {
     // - root path (handled by DynamicHomePage)
     // - nastavenia (Settings) - assuming it's available for all
     // - empty/dashboard
-    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija', 'visual-builder', 'espron-blog', 'espron-galeria', 'vavrostav-objednavky', 'vavrostav-produkty', 'vavrostav-kategorie', 'lexan-blog', 'lusk-references', 'lusk-realizacie'];
+    const alwaysAllowed = ['', 'nastavenia', 'cms', 'viktorija', 'visual-builder', 'espron-blog', 'espron-galeria', 'vavrostav-objednavky', 'vavrostav-produkty', 'vavrostav-kategorie', 'kochlik-produkty', 'kochlik-kategorie', 'lexan-blog', 'lusk-references', 'lusk-realizacie'];
 
     if (!alwaysAllowed.includes(currentSlug)) {
       // Check if current slug corresponds to a defined page for this site
@@ -223,8 +225,8 @@ export default function Layout() {
                   <p className="text-gray-400 text-sm">Žiadne stránky v navigácii</p>
                 </div>
               )}
-              {/* Viktorija nav - only for specific user */}
-              {isOwnerUser && (
+              {/* Viktorija nav - only for specific user or when site is selected */}
+              {(isOwnerUser || currentSite?.slug === 'viktorija') && (
                 <Link
                   to="/viktorija"
                   className={`${location.pathname === '/viktorija'
@@ -330,6 +332,32 @@ export default function Layout() {
                   </Link>
                 </>
               )}
+              {isKochlikUser && (
+                <>
+                  <Link
+                    to="/kochlik-produkty"
+                    className={`${location.pathname === '/kochlik-produkty'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <ShoppingBagIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                    Kochlik Produkty
+                  </Link>
+                  <Link
+                    to="/kochlik-kategorie"
+                    className={`${location.pathname === '/kochlik-kategorie'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 mt-2`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <DocumentIcon className="mr-4 h-5 w-5 flex-shrink-0" />
+                    Kochlik Kategórie
+                  </Link>
+                </>
+              )}
               {/* Finoxsteel Gallery - alexander + info@finoxsteel.com */}
               {(isOwnerUser || isFinoxUser) && (
                 <Link
@@ -430,8 +458,8 @@ export default function Layout() {
                   <p className="text-gray-500 text-xs mt-1">Pridajte stránky v nastaveniach</p>
                 </div>
               )}
-              {/* Viktorija nav - only for specific user */}
-              {isOwnerUser && (
+              {/* Viktorija nav - only for specific user or when site is selected */}
+              {(isOwnerUser || currentSite?.slug === 'viktorija') && (
                 <Link
                   to="/viktorija"
                   className={`${location.pathname === '/viktorija'
@@ -526,6 +554,30 @@ export default function Layout() {
                   >
                     <DocumentIcon className="mr-3 h-5 w-5 flex-shrink-0" />
                     Vavrostav Kategórie
+                  </Link>
+                </>
+              )}
+              {isKochlikUser && (
+                <>
+                  <Link
+                    to="/kochlik-produkty"
+                    className={`${location.pathname === '/kochlik-produkty'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                  >
+                    <ShoppingBagIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    Kochlik Produkty
+                  </Link>
+                  <Link
+                    to="/kochlik-kategorie"
+                    className={`${location.pathname === '/kochlik-kategorie'
+                      ? 'bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow-lg'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      } group flex items-center px-4 py-3 text-sm font-light rounded-xl transition-all duration-200 hover:transform hover:scale-105 mt-2`}
+                  >
+                    <DocumentIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    Kochlik Kategórie
                   </Link>
                 </>
               )}

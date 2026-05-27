@@ -33,6 +33,8 @@ import LuskReferences from './pages/LuskReferences'
 import VavrostavOrders from './pages/VavrostavOrders'
 import VavrostavProducts from './pages/VavrostavProducts'
 import VavrostavCategories from './pages/VavrostavCategories'
+import KochlikProducts from './pages/KochlikProducts'
+import KochlikCategories from './pages/KochlikCategories'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -123,6 +125,8 @@ function App() {
               <Route path="vavrostav-produkty" element={<VavrostavProducts />} />
               <Route path="vavrostav-kategorie" element={<VavrostavCategories />} />
               <Route path="vavrostav-obchod" element={<Navigate to="/vavrostav-objednavky" replace />} />
+              <Route path="kochlik-produkty" element={<KochlikProducts />} />
+              <Route path="kochlik-kategorie" element={<KochlikCategories />} />
             </Route>
 
             {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
