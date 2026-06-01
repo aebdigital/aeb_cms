@@ -45,6 +45,17 @@ export default function KochlikCategories() {
     loadData()
   }, [authLoading, hasAccess])
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isModalOpen])
+
   async function loadData() {
     setLoading(true)
     try {

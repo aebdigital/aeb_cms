@@ -180,3 +180,20 @@ export async function deleteKochlikProduct(id: string): Promise<void> {
 
   if (error) throw error
 }
+
+export async function updateKochlikProductsOrder(
+  products: { id: string; sort_order: number }[]
+): Promise<void> {
+  const updates = products.map(p => ({
+    id: p.id,
+    owner_id: KOCHLIK_OWNER_ID,
+    sort_order: p.sort_order,
+  }))
+
+  const { error } = await supabase
+    .from('kochlik_products')
+    .upsert(updates)
+
+  if (error) throw error
+}
+

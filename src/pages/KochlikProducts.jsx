@@ -24,6 +24,7 @@ import {
   listKochlikCategories,
   listKochlikProducts,
   updateKochlikProduct,
+  updateKochlikProductsOrder,
   uploadProductDownloadFile,
   uploadProductImage,
 } from '../api'
@@ -122,14 +123,23 @@ function productToForm(product) {
     description: product.description || '',
     main_image_url: product.main_image_url || product.gallery_images?.[0] || '',
     gallery_images: uniqueImages(product.main_image_url, product.gallery_images || []),
-    color_options: product.color_options || [],
+    color_options: (product.color_options || []).map(color => ({
+      name: color.name || '',
+      family: color.family || '',
+      hex: color.hex || '',
+      image_url: color.image_url || '',
+    })),
     dimensions_text: (product.dimensions || []).join('\n'),
     dimension_groups: product.dimension_groups || [],
-    variations: (product.variations || []).map(variation => ({
-      label: variation.label || '',
-      dimensions: variation.dimensions || '',
-      price_cents: variation.price_cents == null ? '' : (Number(variation.price_cents) / 100).toFixed(2),
-    })),
+    variations: (product.variations || []).map(variation => {
+      const label = variation.label || ''
+      const dimensions = variation.dimensions || ''
+      return {
+        label: label === dimensions ? '' : label,
+        dimensions,
+        price_cents: variation.price_cents == null ? '' : (Number(variation.price_cents) / 100).toFixed(2),
+      }
+    }),
     specifications: product.specifications || [],
     download_files: product.download_files || [],
     supplier_url: product.supplier_url || '',
@@ -159,14 +169,14 @@ function formToProductPayload(form) {
 
   const variations = (form.variations || [])
     .map(variation => ({
-      label: String(variation.label || '').trim() || null,
+      label: null,
       dimensions: String(variation.dimensions || '').trim() || null,
       price: null,
       price_cents: variation.price_cents === '' || variation.price_cents == null
         ? null
         : Math.round(Number(variation.price_cents || 0) * 100),
     }))
-    .filter(variation => variation.label || variation.dimensions || variation.price_cents != null)
+    .filter(variation => variation.dimensions || variation.price_cents != null)
 
   const specifications = (form.specifications || [])
     .map(spec => ({
@@ -199,13 +209,13 @@ function formToProductPayload(form) {
       : galleryImages,
     color_options: colorOptions,
     color_families: Array.from(new Set(colorOptions.map(color => color.family).filter(Boolean))),
-    dimensions: listFromText(form.dimensions_text),
-    dimension_groups: form.dimension_groups || [],
+    dimensions: Array.from(new Set(variations.map(v => v.dimensions).filter(Boolean))),
+    dimension_groups: [],
     variations,
-    specifications,
+    specifications: [],
     download_files: downloadFiles,
-    supplier_url: form.supplier_url.trim() || null,
-    source_url: form.source_url.trim() || null,
+    supplier_url: null,
+    source_url: null,
     is_featured: Boolean(form.is_featured),
     is_active: Boolean(form.is_active),
     sort_order: Number(form.sort_order || 0),
@@ -231,6 +241,7 @@ export default function KochlikProducts() {
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [brandFilter, setBrandFilter] = useState('all')
   const [viewMode, setViewMode] = useState('rows')
+  const [draggedIndex, setDraggedIndex] = useState(null)
 
   const hasAccess = user?.id === KOCHLIK_OWNER_ID || user?.email === 'alexander.hidveghy@gmail.com'
   const categoryById = useMemo(() => new Map(categories.map(cat => [cat.id, cat])), [categories])
@@ -272,6 +283,8 @@ export default function KochlikProducts() {
     })
   }, [categoryById, categoryFilter, brandFilter, products, searchTerm])
 
+  const isReorderEnabled = searchTerm.trim() === '' && categoryFilter === 'all' && brandFilter === 'all'
+
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
@@ -293,6 +306,17 @@ export default function KochlikProducts() {
     if (authLoading || !hasAccess) return
     loadData()
   }, [authLoading, hasAccess, loadData])
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isModalOpen])
 
   function openCreateModal() {
     setEditingProduct(null)
@@ -640,6 +664,7 @@ export default function KochlikProducts() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                {isReorderEnabled && <th className="w-10 px-4 py-4"></th>}
                 <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Obrázok</th>
                 <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Názov</th>
                 <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Kategória</th>
@@ -653,12 +678,61 @@ export default function KochlikProducts() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {visibleProducts.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-6 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={isReorderEnabled ? 9 : 8} className="px-6 py-12 text-center text-sm text-gray-500">
                     Nenašli sa žiadne produkty.
                   </td>
                 </tr>
-              ) : visibleProducts.map(product => (
-                <tr key={product.id} className="transition hover:bg-gray-50">
+              ) : visibleProducts.map((product, index) => (
+                <tr
+                  key={product.id}
+                  onClick={() => openEditModal(product)}
+                  className={`cursor-pointer transition hover:bg-gray-50 ${draggedIndex === index ? 'opacity-50' : ''}`}
+                  draggable={isReorderEnabled}
+                  onDragStart={(e) => {
+                    if (!isReorderEnabled) return;
+                    setDraggedIndex(index);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    if (!isReorderEnabled) return;
+                    e.preventDefault();
+                    if (draggedIndex === null || draggedIndex === index) return;
+                    
+                    const newProducts = [...products];
+                    const dragItem = newProducts[draggedIndex];
+                    newProducts.splice(draggedIndex, 1);
+                    newProducts.splice(index, 0, dragItem);
+                    
+                    setProducts(newProducts);
+                    setDraggedIndex(index);
+                  }}
+                  onDragEnd={async () => {
+                    setDraggedIndex(null);
+                    if (!isReorderEnabled) return;
+                    
+                    try {
+                      const updates = products.map((p, idx) => ({
+                        id: p.id,
+                        sort_order: idx,
+                      }));
+                      await updateKochlikProductsOrder(updates);
+                      showNotification('Poradie produktov bolo uložené', 'success');
+                    } catch (err) {
+                      console.error('Failed to save product order:', err);
+                      showNotification('Nepodarilo sa uložiť poradie', 'error');
+                    }
+                  }}
+                >
+                  {isReorderEnabled && (
+                    <td
+                      onClick={(e) => e.stopPropagation()}
+                      className="px-4 py-4 cursor-grab active:cursor-grabbing text-gray-400"
+                    >
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                      </svg>
+                    </td>
+                  )}
                   <td className="whitespace-nowrap px-6 py-4">
                     <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
                       {getProductImage(product) ? (
@@ -672,7 +746,16 @@ export default function KochlikProducts() {
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                    <div className="text-xs text-gray-500">/{product.slug}</div>
+                    <a
+                      href={`https://kochlik.sk/produkt/${product.kochlik_categories?.slug || 'vsetky'}/${product.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="relative z-10 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline truncate block max-w-[240px]"
+                      title={`https://kochlik.sk/produkt/${product.kochlik_categories?.slug || 'vsetky'}/${product.slug}`}
+                    >
+                      {`https://kochlik.sk/produkt/${product.kochlik_categories?.slug || 'vsetky'}/${product.slug}`}
+                    </a>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <div className="text-sm text-gray-500">
@@ -699,11 +782,13 @@ export default function KochlikProducts() {
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                    <button onClick={() => openEditModal(product)} className="mr-3 inline-flex items-center text-indigo-600 hover:text-indigo-900">
-                      <PencilSquareIcon className="mr-1 h-4 w-4" />
-                      Upraviť
-                    </button>
-                    <button onClick={() => handleDeleteProduct(product)} className="inline-flex items-center text-red-600 hover:text-red-900">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteProduct(product)
+                      }}
+                      className="relative z-10 inline-flex items-center text-red-600 hover:text-red-900"
+                    >
                       <TrashIcon className="mr-1 h-4 w-4" />
                       Vymazať
                     </button>
@@ -719,32 +804,73 @@ export default function KochlikProducts() {
             <div className="p-12 text-center text-sm text-gray-500">Nenašli sa žiadne produkty.</div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {visibleProducts.map(product => (
-                <button
+              {visibleProducts.map((product, index) => (
+                <div
                   key={product.id}
-                  type="button"
-                  onClick={() => openEditModal(product)}
-                  className="group overflow-hidden rounded-2xl bg-gray-50 text-left ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"
+                  draggable={isReorderEnabled}
+                  onDragStart={(e) => {
+                    if (!isReorderEnabled) return;
+                    setDraggedIndex(index);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    if (!isReorderEnabled) return;
+                    e.preventDefault();
+                    if (draggedIndex === null || draggedIndex === index) return;
+                    
+                    const newProducts = [...products];
+                    const dragItem = newProducts[draggedIndex];
+                    newProducts.splice(draggedIndex, 1);
+                    newProducts.splice(index, 0, dragItem);
+                    
+                    setProducts(newProducts);
+                    setDraggedIndex(index);
+                  }}
+                  onDragEnd={async () => {
+                    setDraggedIndex(null);
+                    if (!isReorderEnabled) return;
+                    
+                    try {
+                      const updates = products.map((p, idx) => ({
+                        id: p.id,
+                        sort_order: idx,
+                      }));
+                      await updateKochlikProductsOrder(updates);
+                      showNotification('Poradie produktov bolo uložené', 'success');
+                    } catch (err) {
+                      console.error('Failed to save product order:', err);
+                      showNotification('Nepodarilo sa uložiť poradie', 'error');
+                    }
+                  }}
+                  className={`group relative overflow-hidden rounded-2xl bg-gray-50 text-left ring-1 ring-gray-100 transition duration-200 ${
+                    isReorderEnabled ? 'cursor-grab active:cursor-grabbing' : ''
+                  } ${draggedIndex === index ? 'opacity-50' : 'hover:-translate-y-0.5 hover:bg-white hover:shadow-lg'}`}
                 >
-                  <div className="relative aspect-square bg-gray-100">
-                    {getProductImage(product) ? (
-                      <img src={getProductImage(product)} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-gray-300">
-                        <PhotoIcon className="h-12 w-12" />
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(product)}
+                    className="w-full h-full text-left outline-none"
+                  >
+                    <div className="relative aspect-square bg-gray-100">
+                      {getProductImage(product) ? (
+                        <img src={getProductImage(product)} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-gray-300">
+                          <PhotoIcon className="h-12 w-12" />
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent p-4 text-white">
+                        <h3 className="line-clamp-2 text-sm font-extrabold leading-tight">{product.name}</h3>
+                        <p className="mt-1 text-sm font-semibold text-white/90">{formatPrice(product)}</p>
                       </div>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent p-4 text-white">
-                      <h3 className="line-clamp-2 text-sm font-extrabold leading-tight">{product.name}</h3>
-                      <p className="mt-1 text-sm font-semibold text-white/90">{formatPrice(product)}</p>
+                      <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold ${
+                        product.is_active ? 'bg-emerald-500 text-white' : 'bg-gray-900/70 text-white'
+                      }`}>
+                        {product.is_active ? 'Aktívny' : 'Skrytý'}
+                      </span>
                     </div>
-                    <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold ${
-                      product.is_active ? 'bg-emerald-500 text-white' : 'bg-gray-900/70 text-white'
-                    }`}>
-                      {product.is_active ? 'Aktívny' : 'Skrytý'}
-                    </span>
-                  </div>
-                </button>
+                  </button>
+                </div>
               ))}
             </div>
           )}
@@ -762,350 +888,350 @@ export default function KochlikProducts() {
             </div>
 
             <form onSubmit={handleSubmitProduct} className="p-6">
-              <div className="grid gap-5 lg:grid-cols-2">
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Názov</span>
-                  <input
-                    value={productForm.name}
-                    onChange={(event) => setProductForm(prev => ({
-                      ...prev,
-                      name: event.target.value,
-                      slug: editingProduct ? prev.slug : slugify(event.target.value),
-                    }))}
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
-                    required
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">URL slug</span>
-                  <input
-                    value={productForm.slug}
-                    onChange={(event) => setProductForm(prev => ({ ...prev, slug: slugify(event.target.value) }))}
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
-                    required
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Kategória</span>
-                  <select
-                    value={productForm.category_id}
-                    onChange={(event) => setProductForm(prev => ({ ...prev, category_id: event.target.value }))}
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
-                  >
-                    <option value="">Bez kategórie</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Značka</span>
-                  <input
-                    value={productForm.brand}
-                    onChange={(event) => setProductForm(prev => ({ ...prev, brand: event.target.value }))}
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Základná cena (€)</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={productForm.price}
-                    onChange={(event) => setProductForm(prev => ({ ...prev, price: event.target.value }))}
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
-                  />
-                </label>
-              </div>
+              <div className="grid gap-6 lg:grid-cols-2 items-start">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  {/* Gallery Section */}
+                  <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <span className="text-sm font-semibold text-gray-700">GALÉRIA</span>
+                        <p className="text-xs text-gray-500">Hviezdička označuje hlavný obrázok produktu.</p>
+                      </div>
+                      <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-gray-200 px-4 py-2 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
+                        {uploadingGallery ? 'Nahrávam...' : 'Pridať obrázky'}
+                        <input type="file" multiple accept="image/*" className="hidden" disabled={uploadingGallery} onChange={handleGalleryImageUpload} />
+                      </label>
+                    </div>
 
-              <div className="mt-5 grid gap-5 lg:grid-cols-2">
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Popis produktu</span>
-                  <textarea
-                    rows={4}
-                    value={productForm.short_description}
-                    onChange={(event) => setProductForm(prev => ({ ...prev, short_description: event.target.value }))}
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Krátky popis</span>
-                  <textarea
-                    rows={4}
-                    value={productForm.description}
-                    onChange={(event) => setProductForm(prev => ({ ...prev, description: event.target.value }))}
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2"
-                  />
-                </label>
-              </div>
-
-              <section className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <span className="text-sm font-semibold text-gray-700">Galéria</span>
-                    <p className="text-xs text-gray-500">Hviezdička označuje hlavný obrázok produktu. Naraz môže byť vybraný iba jeden.</p>
-                  </div>
-                  <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-gray-200 px-4 py-2 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
-                    {uploadingGallery ? 'Nahrávam...' : 'Pridať obrázky'}
-                    <input type="file" multiple accept="image/*" className="hidden" disabled={uploadingGallery} onChange={handleGalleryImageUpload} />
-                  </label>
-                </div>
-                {(productForm.gallery_images || []).length === 0 ? (
-                  <div className="flex aspect-[4/1] min-h-36 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white text-sm font-semibold text-gray-400">
-                    Zatiaľ bez obrázkov
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
-                    {(productForm.gallery_images || []).map((url, idx) => {
-                      const isMainImage = productForm.main_image_url === url
-                      return (
-                        <div
-                          key={url}
-                          className={`group relative aspect-square overflow-hidden rounded-2xl bg-white ring-2 transition ${
-                            isMainImage ? 'ring-amber-400' : 'ring-gray-100'
-                          }`}
-                        >
-                          <img src={url} alt={`Galéria ${idx + 1}`} className="h-full w-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => setMainGalleryImage(url)}
-                            className={`absolute left-2 top-2 rounded-full p-2 shadow-sm backdrop-blur transition ${
-                              isMainImage ? 'bg-amber-400 text-white' : 'bg-white/90 text-gray-500 hover:bg-amber-50 hover:text-amber-600'
-                            }`}
-                            title={isMainImage ? 'Hlavný obrázok' : 'Nastaviť ako hlavný'}
-                          >
-                            <StarIcon className={`h-4 w-4 ${isMainImage ? 'fill-current' : ''}`} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeGalleryImage(idx)}
-                            className="absolute right-2 top-2 rounded-full bg-white/90 p-2 text-red-600 opacity-0 shadow-sm backdrop-blur transition hover:bg-red-50 group-hover:opacity-100"
-                            title="Odstrániť obrázok"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                          {isMainImage && (
-                            <span className="absolute bottom-2 left-2 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-extrabold text-white shadow-sm">
-                              Hlavný
-                            </span>
-                          )}
+                    <div className="w-full">
+                      {(productForm.gallery_images || []).length === 0 ? (
+                        <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white text-sm font-semibold text-gray-400">
+                          Zatiaľ bez obrázkov
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </section>
-
-              <section className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-semibold text-gray-700">Farby a varianty</span>
-                    <p className="text-xs text-gray-500">Každá farba môže mať text, rodinu, hex farbu alebo obrázkovú vzorku.</p>
-                  </div>
-                  <button type="button" onClick={addColorOption} className="rounded-xl bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
-                    Pridať farbu
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {(productForm.color_options || []).map((color, index) => (
-                    <div key={index} className="grid gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 lg:grid-cols-[1.2fr_1fr_auto_auto_auto]">
-                      <input
-                        value={color.name || ''}
-                        onChange={(event) => updateColorOption(index, 'name', event.target.value)}
-                        placeholder="Napr. SALVIA DI SARDEGNA"
-                        className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                      />
-                      <select
-                        value={color.family || ''}
-                        onChange={(event) => updateColorOption(index, 'family', event.target.value)}
-                        className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                      >
-                        <option value="">Bez rodiny</option>
-                        {COLOR_FAMILIES.map(family => (
-                          <option key={family} value={family}>{family}</option>
-                        ))}
-                      </select>
-                      <label className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm">
-                        <input
-                          type="color"
-                          value={color.hex || '#ffffff'}
-                          onChange={(event) => updateColorOption(index, 'hex', event.target.value)}
-                          className="h-8 w-10 cursor-pointer"
-                        />
-                        <span className="text-gray-500">{color.hex || 'hex'}</span>
-                      </label>
-                      <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-200">
-                        {uploadingColorIndex === index ? 'Nahrávam...' : color.image_url ? 'Zmeniť vzorku' : 'Obrázok'}
-                        <input type="file" accept="image/*" className="hidden" onChange={(event) => handleColorImageUpload(index, event)} />
-                      </label>
-                      <button type="button" onClick={() => removeColorOption(index)} className="rounded-xl bg-red-50 px-3 py-2 text-red-600 hover:bg-red-100">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                      {color.image_url && (
-                        <div className="lg:col-span-5">
-                          <img src={color.image_url} alt={color.name || 'Vzorka farby'} className="h-12 w-12 rounded-full border border-gray-200 object-cover" />
+                      ) : (
+                        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
+                          {(productForm.gallery_images || []).map((url, idx) => {
+                            const isMainImage = productForm.main_image_url === url
+                            return (
+                              <div
+                                key={url}
+                                className={`group relative aspect-square overflow-hidden rounded-xl bg-white ring-2 transition ${
+                                  isMainImage ? 'ring-amber-400' : 'ring-gray-100'
+                                }`}
+                              >
+                                <img src={url} alt={`Galéria ${idx + 1}`} className="h-full w-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setMainGalleryImage(url)}
+                                  className={`absolute left-1 top-1 rounded-full p-1 shadow-sm backdrop-blur transition ${
+                                    isMainImage ? 'bg-amber-400 text-white' : 'bg-white/90 text-gray-500 hover:bg-amber-50 hover:text-amber-600'
+                                  }`}
+                                  title={isMainImage ? 'Hlavný obrázok' : 'Nastaviť ako hlavný'}
+                                >
+                                  <StarIcon className={`h-3 w-3 ${isMainImage ? 'fill-current' : ''}`} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeGalleryImage(idx)}
+                                  className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-red-600 opacity-0 shadow-sm backdrop-blur transition hover:bg-red-50 group-hover:opacity-100"
+                                  title="Odstrániť obrázok"
+                                >
+                                  <TrashIcon className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              </section>
+                  </section>
 
-              <div className="mt-5 grid gap-5 lg:grid-cols-2">
-                <label className="block rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                  <span className="text-sm font-semibold text-gray-700">Rozmery</span>
-                  <textarea
-                    rows={5}
-                    value={productForm.dimensions_text}
-                    placeholder={'24x20 cm\n34x28 cm'}
-                    onChange={(event) => setProductForm(prev => ({ ...prev, dimensions_text: event.target.value }))}
-                    className="mt-2 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                  />
-                </label>
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                  <span className="text-sm font-semibold text-gray-700">Rozmerové filtre</span>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    {DIMENSION_GROUPS.map(group => (
-                      <label key={group} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm text-gray-700 ring-1 ring-gray-100">
+                  {/* Basic Data Card */}
+                  <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="block sm:col-span-2">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Názov</span>
                         <input
-                          type="checkbox"
-                          checked={productForm.dimension_groups.includes(group)}
-                          onChange={(event) => {
-                            setProductForm(prev => ({
-                              ...prev,
-                              dimension_groups: event.target.checked
-                                ? [...prev.dimension_groups, group]
-                                : prev.dimension_groups.filter(item => item !== group),
-                            }))
-                          }}
-                          className="h-4 w-4 rounded border-gray-300 text-emerald-600"
+                          value={productForm.name}
+                          onChange={(event) => setProductForm(prev => ({
+                            ...prev,
+                            name: event.target.value,
+                            slug: editingProduct ? prev.slug : slugify(event.target.value),
+                          }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                          required
                         />
-                        {group}
                       </label>
-                    ))}
+                      <label className="block sm:col-span-2">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">URL slug</span>
+                        <input
+                          value={productForm.slug}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, slug: slugify(event.target.value) }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                          required
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Kategória</span>
+                        <select
+                          value={productForm.category_id}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, category_id: event.target.value }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                        >
+                          <option value="">Bez kategórie</option>
+                          {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Značka</span>
+                        <input
+                          value={productForm.brand}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, brand: event.target.value }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </label>
+                      <label className="block sm:col-span-2">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Základná cena (€)</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={productForm.price}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, price: event.target.value }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </label>
+                    </div>
+                  </section>
+
+                  {/* Colors and Variants */}
+                  <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-semibold text-gray-700">FARBY A VARIANTY</span>
+                        <p className="text-xs text-gray-500">Hex farba alebo obrázková vzorka.</p>
+                      </div>
+                      <button type="button" onClick={addColorOption} className="rounded-xl bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
+                        Pridať farbu
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {(productForm.color_options || []).map((color, index) => {
+                        const hasImage = !!color.image_url
+                        const hasHex = !!color.hex && color.hex !== ''
+                        
+                        const isImageActive = hasImage
+                        const isHexActive = !hasImage && hasHex
+                        const isTextActive = !hasImage && !hasHex
+
+                        return (
+                          <div
+                            key={index}
+                            className="grid gap-3 rounded-2xl bg-white p-3 border border-gray-150 transition-all lg:grid-cols-[1.2fr_1fr_auto_auto_auto] items-center"
+                          >
+                            <input
+                              value={color.name || ''}
+                              onChange={(event) => updateColorOption(index, 'name', event.target.value)}
+                              placeholder="Napr. SALVIA"
+                              className={`rounded-xl border px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all ${
+                                isTextActive ? 'border-emerald-500 ring-2 ring-emerald-500/20 font-medium' : 'border-gray-200'
+                              }`}
+                            />
+                            <select
+                              value={color.family || ''}
+                              onChange={(event) => updateColorOption(index, 'family', event.target.value)}
+                              className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                            >
+                              <option value="">Bez rodiny</option>
+                              {COLOR_FAMILIES.map(family => (
+                                <option key={family} value={family}>{family}</option>
+                              ))}
+                            </select>
+                            <label className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm cursor-pointer transition-all ${
+                              isHexActive ? 'border-emerald-500 ring-2 ring-emerald-500/20 font-medium' : 'border-gray-200'
+                            }`}>
+                              <input
+                                type="color"
+                                value={color.hex || '#ffffff'}
+                                onChange={(event) => updateColorOption(index, 'hex', event.target.value)}
+                                className="h-8 w-10 cursor-pointer"
+                              />
+                              <span className="text-gray-500">{color.hex || 'hex'}</span>
+                            </label>
+                            {color.image_url ? (
+                              <div className="relative h-12 w-12 flex-shrink-0">
+                                <label className={`relative block h-full w-full cursor-pointer overflow-hidden rounded-full border transition-all ${
+                                  isImageActive ? 'border-emerald-500 ring-4 ring-emerald-500/30' : 'border-gray-200'
+                                }`}>
+                                  <img
+                                    src={color.image_url}
+                                    alt={color.name || 'Vzorka farby'}
+                                    className="h-full w-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-[9px] text-white font-bold text-center">
+                                    Zmeniť
+                                  </div>
+                                  <input type="file" accept="image/*" className="hidden" onChange={(event) => handleColorImageUpload(index, event)} />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => updateColorOption(index, 'image_url', '')}
+                                  className="absolute -right-1 -top-1 rounded-full bg-red-500 p-0.5 text-white shadow-sm hover:bg-red-600 transition duration-150 z-10"
+                                  title="Odstrániť obrázok"
+                                >
+                                  <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-200 h-10">
+                                {uploadingColorIndex === index ? 'Nahrávam...' : 'Obrázok'}
+                                <input type="file" accept="image/*" className="hidden" onChange={(event) => handleColorImageUpload(index, event)} />
+                              </label>
+                            )}
+                            <button type="button" onClick={() => removeColorOption(index)} className="rounded-xl bg-red-50 px-3 py-2 text-red-600 hover:bg-red-100 self-center">
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </section>
+
+                  {/* Súbory na stiahnutie */}
+                  <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-semibold text-gray-700">SÚBORY NA STIAHNUTIE</span>
+                        <p className="text-xs text-gray-500">Dokumenty na stiahnutie k produktu.</p>
+                      </div>
+                      <button type="button" onClick={addDownloadFile} className="rounded-xl bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
+                        Pridať súbor
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {(productForm.download_files || []).map((file, index) => (
+                        <div key={index} className="grid gap-2 rounded-2xl bg-white p-3 ring-1 ring-gray-100 lg:grid-cols-[150px_1fr_auto_auto]">
+                          <input
+                            value={file.label || ''}
+                            onChange={(event) => updateDownloadFile(index, 'label', event.target.value)}
+                            placeholder="Technický list"
+                            className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                          />
+                          <input
+                            value={file.url || ''}
+                            onChange={(event) => updateDownloadFile(index, 'url', event.target.value)}
+                            placeholder="https://..."
+                            className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                          />
+                          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-200">
+                            {uploadingDownloadIndex === index ? 'Nahrávam...' : 'PDF'}
+                            <input
+                              type="file"
+                              accept="application/pdf,.pdf"
+                              className="hidden"
+                              disabled={uploadingDownloadIndex === index}
+                              onChange={(event) => handleDownloadFileUpload(index, event)}
+                            />
+                          </label>
+                          <button type="button" onClick={() => removeDownloadFile(index)} className="rounded-xl bg-red-50 px-3 py-2 text-red-600 hover:bg-red-100">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {/* Descriptions Card */}
+                  <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="space-y-4">
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Popis produktu</span>
+                        <textarea
+                          rows={4}
+                          value={productForm.short_description}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, short_description: event.target.value }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Krátky popis</span>
+                        <textarea
+                          rows={4}
+                          value={productForm.description}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, description: event.target.value }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </label>
+                    </div>
+                  </section>
+
+                  {/* Variations and Prices */}
+                  <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">VARIANTY A CENY</span>
+                      <button type="button" onClick={addVariation} className="rounded-xl bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
+                        Pridať variant
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {(productForm.variations || []).map((variation, index) => (
+                        <div key={index} className="grid gap-2 rounded-2xl bg-white p-3 ring-1 ring-gray-100 lg:grid-cols-[2.5fr_1.5fr_auto]">
+                          <input value={variation.dimensions || ''} onChange={(e) => updateVariation(index, 'dimensions', e.target.value)} placeholder="Rozmer (napr. 57x57x29 cm)" className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                          <input type="number" step="0.01" min="0" value={variation.price_cents || ''} onChange={(e) => updateVariation(index, 'price_cents', e.target.value)} placeholder="Cena €" className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                          <button type="button" onClick={() => removeVariation(index)} className="rounded-xl bg-red-50 px-3 py-2 text-red-600 hover:bg-red-100">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* SEO Settings Card */}
+                  <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="space-y-4">
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">SEO titulok</span>
+                        <input
+                          value={productForm.seo_title}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, seo_title: event.target.value }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">SEO popis</span>
+                        <textarea
+                          rows={3}
+                          value={productForm.seo_description}
+                          onChange={(event) => setProductForm(prev => ({ ...prev, seo_description: event.target.value }))}
+                          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+                        />
+                      </label>
+                    </div>
+                  </section>
+
+                  {/* Checkbox Options */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="flex items-center gap-2 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 cursor-pointer select-none">
+                      <input type="checkbox" checked={productForm.is_featured} onChange={(event) => setProductForm(prev => ({ ...prev, is_featured: event.target.checked }))} className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                      Odporúčaný produkt
+                    </label>
+                    <label className="flex items-center gap-2 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 cursor-pointer select-none">
+                      <input type="checkbox" checked={productForm.is_active} onChange={(event) => setProductForm(prev => ({ ...prev, is_active: event.target.checked }))} className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                      Aktívny na webe
+                    </label>
                   </div>
                 </div>
               </div>
 
-              <section className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-700">Varianty a ceny</span>
-                  <button type="button" onClick={addVariation} className="rounded-xl bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
-                    Pridať variant
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {(productForm.variations || []).map((variation, index) => (
-                    <div key={index} className="grid gap-2 rounded-2xl bg-white p-3 ring-1 ring-gray-100 lg:grid-cols-[1fr_1fr_1fr_auto]">
-                      <input value={variation.label || ''} onChange={(e) => updateVariation(index, 'label', e.target.value)} placeholder="Názov variantu" className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
-                      <input value={variation.dimensions || ''} onChange={(e) => updateVariation(index, 'dimensions', e.target.value)} placeholder="Rozmer" className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
-                      <input type="number" step="0.01" min="0" value={variation.price_cents || ''} onChange={(e) => updateVariation(index, 'price_cents', e.target.value)} placeholder="Cena €" className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
-                      <button type="button" onClick={() => removeVariation(index)} className="rounded-xl bg-red-50 px-3 py-2 text-red-600 hover:bg-red-100">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-700">Technické parametre</span>
-                  <button type="button" onClick={addSpecification} className="rounded-xl bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
-                    Pridať parameter
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {(productForm.specifications || []).map((spec, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input value={spec.key} onChange={(e) => updateSpecification(index, 'key', e.target.value)} placeholder="Napr. Materiál" className="w-1/3 rounded-xl border border-gray-200 px-3 py-2 text-sm" />
-                      <input value={spec.value} onChange={(e) => updateSpecification(index, 'value', e.target.value)} placeholder="Napr. PE živica" className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm" />
-                      <button type="button" onClick={() => removeSpecification(index)} className="rounded-xl bg-red-50 px-3 text-red-600 hover:bg-red-100">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-semibold text-gray-700">Súbory na stiahnutie</span>
-                    <p className="text-xs text-gray-500">Názov sa zobrazí na webe. Ak ho necháte prázdny, použije sa Technický dokument.</p>
-                  </div>
-                  <button type="button" onClick={addDownloadFile} className="rounded-xl bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-gray-300">
-                    Pridať súbor
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {(productForm.download_files || []).map((file, index) => (
-                    <div key={index} className="grid gap-2 rounded-2xl bg-white p-3 ring-1 ring-gray-100 lg:grid-cols-[240px_1fr_auto_auto]">
-                      <input
-                        value={file.label || ''}
-                        onChange={(event) => updateDownloadFile(index, 'label', event.target.value)}
-                        placeholder="Technický dokument"
-                        className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                      />
-                      <input
-                        value={file.url || ''}
-                        onChange={(event) => updateDownloadFile(index, 'url', event.target.value)}
-                        placeholder="https://..."
-                        className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                      />
-                      <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-200">
-                        {uploadingDownloadIndex === index ? 'Nahrávam...' : 'Nahrať PDF'}
-                        <input
-                          type="file"
-                          accept="application/pdf,.pdf"
-                          className="hidden"
-                          disabled={uploadingDownloadIndex === index}
-                          onChange={(event) => handleDownloadFileUpload(index, event)}
-                        />
-                      </label>
-                      <button type="button" onClick={() => removeDownloadFile(index)} className="rounded-xl bg-red-50 px-3 py-2 text-red-600 hover:bg-red-100">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <div className="mt-5 grid gap-5 lg:grid-cols-2">
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Dodávateľ URL</span>
-                  <input value={productForm.supplier_url} onChange={(event) => setProductForm(prev => ({ ...prev, supplier_url: event.target.value }))} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Pôvodná URL</span>
-                  <input value={productForm.source_url} onChange={(event) => setProductForm(prev => ({ ...prev, source_url: event.target.value }))} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">SEO titulok</span>
-                  <input value={productForm.seo_title} onChange={(event) => setProductForm(prev => ({ ...prev, seo_title: event.target.value }))} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">SEO popis</span>
-                  <input value={productForm.seo_description} onChange={(event) => setProductForm(prev => ({ ...prev, seo_description: event.target.value }))} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
-                </label>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700">Poradie</span>
-                  <input type="number" min="0" value={productForm.sort_order} onChange={(event) => setProductForm(prev => ({ ...prev, sort_order: event.target.value }))} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
-                </label>
-                <label className="flex items-center gap-2 rounded-2xl bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700">
-                  <input type="checkbox" checked={productForm.is_featured} onChange={(event) => setProductForm(prev => ({ ...prev, is_featured: event.target.checked }))} className="h-4 w-4 rounded border-gray-300 text-emerald-600" />
-                  Odporúčaný produkt
-                </label>
-                <label className="flex items-center gap-2 rounded-2xl bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700">
-                  <input type="checkbox" checked={productForm.is_active} onChange={(event) => setProductForm(prev => ({ ...prev, is_active: event.target.checked }))} className="h-4 w-4 rounded border-gray-300 text-emerald-600" />
-                  Aktívny na webe
-                </label>
-              </div>
-
+              {/* Sticky Footer */}
               <div className="sticky bottom-0 mt-6 flex justify-end gap-3 border-t border-gray-100 bg-white pb-2 pt-4">
                 <button type="button" onClick={closeModal} className="rounded-xl bg-gray-100 px-5 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-200">
                   Zrušiť

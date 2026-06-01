@@ -35,6 +35,9 @@ import VavrostavProducts from './pages/VavrostavProducts'
 import VavrostavCategories from './pages/VavrostavCategories'
 import KochlikProducts from './pages/KochlikProducts'
 import KochlikCategories from './pages/KochlikCategories'
+import KochlikContent from './pages/KochlikContent'
+import KochlikBlogs from './pages/KochlikBlogs'
+import KochlikColors from './pages/KochlikColors'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -127,6 +130,9 @@ function App() {
               <Route path="vavrostav-obchod" element={<Navigate to="/vavrostav-objednavky" replace />} />
               <Route path="kochlik-produkty" element={<KochlikProducts />} />
               <Route path="kochlik-kategorie" element={<KochlikCategories />} />
+              <Route path="kochlik-obsah" element={<KochlikContent />} />
+              <Route path="kochlik-blog" element={<KochlikBlogs />} />
+              <Route path="kochlik-farby" element={<KochlikColors />} />
             </Route>
 
             {/* Catch all - show 404 if authenticated, otherwise redirect to login */}
