@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabaseClient'
 import { STORAGE_BUCKET } from '../lib/constants'
 import { generateUUID, getFileExtension } from '../lib/fileUtils'
 import { getStoragePublicUrl } from '../lib/storageUtils'
-import { KOCHLIK_OWNER_ID, KOCHLIK_SITE_SLUG } from './kochlik'
+import { KOCHLIK_OWNER_ID, KOCHLIK_SITE_SLUG, triggerRevalidation } from './kochlik'
 
 export type KochlikHomeBanner = {
   id: string
@@ -84,6 +84,7 @@ export async function createKochlikHomeBanner(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data as KochlikHomeBanner
 }
 
@@ -100,6 +101,7 @@ export async function updateKochlikHomeBanner(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data as KochlikHomeBanner
 }
 
@@ -111,6 +113,7 @@ export async function deleteKochlikHomeBanner(id: string): Promise<void> {
     .eq('owner_id', KOCHLIK_OWNER_ID)
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
 }
 
 export async function listKochlikBlogPosts(
@@ -149,6 +152,7 @@ export async function createKochlikBlogPost(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data as KochlikBlogPost
 }
 
@@ -165,6 +169,7 @@ export async function updateKochlikBlogPost(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data as KochlikBlogPost
 }
 
@@ -176,6 +181,7 @@ export async function deleteKochlikBlogPost(id: string): Promise<void> {
     .eq('owner_id', KOCHLIK_OWNER_ID)
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
 }
 
 export async function togglePublishKochlikBlogPost(

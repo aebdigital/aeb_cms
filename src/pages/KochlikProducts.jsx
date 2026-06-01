@@ -283,7 +283,7 @@ export default function KochlikProducts() {
     })
   }, [categoryById, categoryFilter, brandFilter, products, searchTerm])
 
-  const isReorderEnabled = searchTerm.trim() === '' && categoryFilter === 'all' && brandFilter === 'all'
+  const isReorderEnabled = true
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -686,7 +686,7 @@ export default function KochlikProducts() {
                 <tr
                   key={product.id}
                   onClick={() => openEditModal(product)}
-                  className={`cursor-pointer transition hover:bg-gray-50 ${draggedIndex === index ? 'opacity-50' : ''}`}
+                  className={`cursor-pointer transition ${product.is_featured ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50'} ${draggedIndex === index ? 'opacity-50' : ''}`}
                   draggable={isReorderEnabled}
                   onDragStart={(e) => {
                     if (!isReorderEnabled) return;
@@ -698,24 +698,39 @@ export default function KochlikProducts() {
                     e.preventDefault();
                     if (draggedIndex === null || draggedIndex === index) return;
                     
-                    const newProducts = [...products];
-                    const dragItem = newProducts[draggedIndex];
-                    newProducts.splice(draggedIndex, 1);
-                    newProducts.splice(index, 0, dragItem);
+                    const draggedItem = visibleProducts[draggedIndex];
+                    const targetItem = visibleProducts[index];
+                    if (!draggedItem || !targetItem) return;
                     
-                    setProducts(newProducts);
-                    setDraggedIndex(index);
+                    const newProducts = [...products];
+                    const fullDraggedIdx = newProducts.findIndex(p => p.id === draggedItem.id);
+                    const fullTargetIdx = newProducts.findIndex(p => p.id === targetItem.id);
+                    
+                    if (fullDraggedIdx !== -1 && fullTargetIdx !== -1) {
+                      newProducts.splice(fullDraggedIdx, 1);
+                      newProducts.splice(fullTargetIdx, 0, draggedItem);
+                      setProducts(newProducts);
+                      setDraggedIndex(index);
+                    }
                   }}
                   onDragEnd={async () => {
                     setDraggedIndex(null);
                     if (!isReorderEnabled) return;
                     
+                    const updates = [];
+                    const updatedProducts = products.map((p, idx) => {
+                      if (p.sort_order !== idx) {
+                        updates.push({ id: p.id, sort_order: idx });
+                        return { ...p, sort_order: idx };
+                      }
+                      return p;
+                    });
+
+                    if (updates.length === 0) return;
+                    
                     try {
-                      const updates = products.map((p, idx) => ({
-                        id: p.id,
-                        sort_order: idx,
-                      }));
                       await updateKochlikProductsOrder(updates);
+                      setProducts(updatedProducts);
                       showNotification('Poradie produktov bolo uložené', 'success');
                     } catch (err) {
                       console.error('Failed to save product order:', err);
@@ -818,33 +833,48 @@ export default function KochlikProducts() {
                     e.preventDefault();
                     if (draggedIndex === null || draggedIndex === index) return;
                     
-                    const newProducts = [...products];
-                    const dragItem = newProducts[draggedIndex];
-                    newProducts.splice(draggedIndex, 1);
-                    newProducts.splice(index, 0, dragItem);
+                    const draggedItem = visibleProducts[draggedIndex];
+                    const targetItem = visibleProducts[index];
+                    if (!draggedItem || !targetItem) return;
                     
-                    setProducts(newProducts);
-                    setDraggedIndex(index);
+                    const newProducts = [...products];
+                    const fullDraggedIdx = newProducts.findIndex(p => p.id === draggedItem.id);
+                    const fullTargetIdx = newProducts.findIndex(p => p.id === targetItem.id);
+                    
+                    if (fullDraggedIdx !== -1 && fullTargetIdx !== -1) {
+                      newProducts.splice(fullDraggedIdx, 1);
+                      newProducts.splice(fullTargetIdx, 0, draggedItem);
+                      setProducts(newProducts);
+                      setDraggedIndex(index);
+                    }
                   }}
                   onDragEnd={async () => {
                     setDraggedIndex(null);
                     if (!isReorderEnabled) return;
                     
+                    const updates = [];
+                    const updatedProducts = products.map((p, idx) => {
+                      if (p.sort_order !== idx) {
+                        updates.push({ id: p.id, sort_order: idx });
+                        return { ...p, sort_order: idx };
+                      }
+                      return p;
+                    });
+
+                    if (updates.length === 0) return;
+                    
                     try {
-                      const updates = products.map((p, idx) => ({
-                        id: p.id,
-                        sort_order: idx,
-                      }));
                       await updateKochlikProductsOrder(updates);
+                      setProducts(updatedProducts);
                       showNotification('Poradie produktov bolo uložené', 'success');
                     } catch (err) {
                       console.error('Failed to save product order:', err);
                       showNotification('Nepodarilo sa uložiť poradie', 'error');
                     }
                   }}
-                  className={`group relative overflow-hidden rounded-2xl bg-gray-50 text-left ring-1 ring-gray-100 transition duration-200 ${
+                  className={`group relative overflow-hidden rounded-2xl ${product.is_featured ? 'bg-yellow-50 hover:bg-yellow-100' : 'bg-gray-50 hover:bg-white'} text-left ring-1 ring-gray-100 transition duration-200 ${
                     isReorderEnabled ? 'cursor-grab active:cursor-grabbing' : ''
-                  } ${draggedIndex === index ? 'opacity-50' : 'hover:-translate-y-0.5 hover:bg-white hover:shadow-lg'}`}
+                  } ${draggedIndex === index ? 'opacity-50' : 'hover:-translate-y-0.5 hover:shadow-lg'}`}
                 >
                   <button
                     type="button"
@@ -1220,8 +1250,23 @@ export default function KochlikProducts() {
                   {/* Checkbox Options */}
                   <div className="grid gap-3 sm:grid-cols-2">
                     <label className="flex items-center gap-2 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 cursor-pointer select-none">
-                      <input type="checkbox" checked={productForm.is_featured} onChange={(event) => setProductForm(prev => ({ ...prev, is_featured: event.target.checked }))} className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                      Odporúčaný produkt
+                      <input
+                        type="checkbox"
+                        checked={productForm.is_featured}
+                        onChange={(event) => {
+                          const isChecking = event.target.checked;
+                          if (isChecking) {
+                            const featuredCount = products.filter(p => p.is_featured && p.id !== editingProduct?.id).length;
+                            if (featuredCount >= 12) {
+                              showNotification('Môžete mať označených najviac 12 obľúbených produktov. Najprv zrušte výber iného produktu.', 'error');
+                              return;
+                            }
+                          }
+                          setProductForm(prev => ({ ...prev, is_featured: isChecking }));
+                        }}
+                        className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      Obľúbený produkt
                     </label>
                     <label className="flex items-center gap-2 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 cursor-pointer select-none">
                       <input type="checkbox" checked={productForm.is_active} onChange={(event) => setProductForm(prev => ({ ...prev, is_active: event.target.checked }))} className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />

@@ -89,6 +89,25 @@ export async function listKochlikCategories(
   return data || []
 }
 
+export async function triggerRevalidation(): Promise<void> {
+  const secret = 'kochlik_reval_sec_f982ea1d09e083c2'
+  const isLocal = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  
+  const baseUrl = isLocal ? 'http://localhost:3006' : 'https://kochlik.sk'
+  
+  try {
+    const res = await fetch(`${baseUrl}/api/revalidate?secret=${secret}`, {
+      method: 'POST',
+    })
+    if (!res.ok) {
+      console.warn('Revalidation failed:', await res.text())
+    }
+  } catch (err) {
+    console.warn('Revalidation error:', err)
+  }
+}
+
 export async function createKochlikCategory(
   category: Partial<KochlikCategory>
 ): Promise<KochlikCategory> {
@@ -99,6 +118,7 @@ export async function createKochlikCategory(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data
 }
 
@@ -115,6 +135,7 @@ export async function updateKochlikCategory(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data
 }
 
@@ -126,6 +147,7 @@ export async function deleteKochlikCategory(id: string): Promise<void> {
     .eq('owner_id', KOCHLIK_OWNER_ID)
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
 }
 
 export async function listKochlikProducts(
@@ -136,7 +158,7 @@ export async function listKochlikProducts(
     .select('*, kochlik_categories(id, name, slug)')
     .eq('owner_id', ownerId)
     .order('sort_order', { ascending: true })
-    .order('updated_at', { ascending: false })
+    .order('name', { ascending: true })
 
   if (error) throw error
   return data || []
@@ -152,6 +174,7 @@ export async function createKochlikProduct(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data
 }
 
@@ -168,6 +191,7 @@ export async function updateKochlikProduct(
     .single()
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
   return data
 }
 
@@ -179,21 +203,24 @@ export async function deleteKochlikProduct(id: string): Promise<void> {
     .eq('owner_id', KOCHLIK_OWNER_ID)
 
   if (error) throw error
+  triggerRevalidation().catch(console.error)
 }
 
 export async function updateKochlikProductsOrder(
   products: { id: string; sort_order: number }[]
 ): Promise<void> {
-  const updates = products.map(p => ({
-    id: p.id,
-    owner_id: KOCHLIK_OWNER_ID,
-    sort_order: p.sort_order,
-  }))
+  const promises = products.map(p =>
+    supabase
+      .from('kochlik_products')
+      .update({ sort_order: p.sort_order, updated_at: new Date().toISOString() })
+      .eq('id', p.id)
+      .eq('owner_id', KOCHLIK_OWNER_ID)
+  )
 
-  const { error } = await supabase
-    .from('kochlik_products')
-    .upsert(updates)
-
-  if (error) throw error
+  const results = await Promise.all(promises)
+  const failed = results.find(r => r.error)
+  if (failed && failed.error) {
+    throw failed.error
+  }
+  triggerRevalidation().catch(console.error)
 }
-
