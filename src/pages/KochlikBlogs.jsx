@@ -546,6 +546,8 @@ export default function KochlikBlogs() {
 function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadImage }) {
   const editorRef = useRef(null)
   const imageInputRef = useRef(null)
+  const replaceImageInputRef = useRef(null)
+  const selectedImageRef = useRef(null)
   const selectionRef = useRef(null)
   const resizeRef = useRef(null)
   const [isSourceView, setIsSourceView] = useState(false)
@@ -621,16 +623,39 @@ function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadIm
     }
   }
 
+  const handleReplaceImageUpload = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !file.type.startsWith('image/')) return
+
+    const img = selectedImageRef.current || imageControl?.node
+    if (!img) return
+
+    setUploadingInlineImage(true)
+    try {
+      const url = await onUploadImage(file)
+      img.src = url
+      updateImageControl(img)
+      handleInput()
+    } catch (err) {
+      console.error('Kochlik inline blog image replace error:', err)
+      alert('Obrázok sa nepodarilo vymeniť.')
+    } finally {
+      setUploadingInlineImage(false)
+    }
+  }
+
   const updateImageControl = (img) => {
     const wrapper = editorRef.current?.parentElement
     if (!wrapper || !img) return
 
     const imgRect = img.getBoundingClientRect()
     const wrapperRect = wrapper.getBoundingClientRect()
+    selectedImageRef.current = img
     setImageControl({
       node: img,
       top: imgRect.top - wrapperRect.top + wrapper.scrollTop + 10,
-      left: imgRect.right - wrapperRect.left + wrapper.scrollLeft - 42,
+      left: imgRect.right - wrapperRect.left + wrapper.scrollLeft - 108,
       handleTop: imgRect.bottom - wrapperRect.top + wrapper.scrollTop - 12,
       handleLeft: imgRect.left - wrapperRect.left + wrapper.scrollLeft + (imgRect.width / 2) - 32,
       height: Math.round(imgRect.height),
@@ -641,6 +666,13 @@ function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadIm
     if (event.target?.tagName === 'IMG') {
       updateImageControl(event.target)
     }
+  }
+
+  const handleEditorClick = (event) => {
+    if (event.target?.tagName !== 'IMG') return
+
+    updateImageControl(event.target)
+    replaceImageInputRef.current?.click()
   }
 
   const removeImage = () => {
@@ -655,6 +687,7 @@ function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadIm
     }
 
     setImageControl(null)
+    selectedImageRef.current = null
     handleInput()
   }
 
@@ -816,6 +849,13 @@ function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadIm
                 className="hidden"
                 onChange={handleInlineImageUpload}
               />
+              <input
+                ref={replaceImageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleReplaceImageUpload}
+              />
               <div className="w-[1px] h-4 bg-gray-200 mx-1" />
               <button
                 type="button"
@@ -911,6 +951,7 @@ function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadIm
                   onKeyUp={saveSelection}
                   onMouseUp={saveSelection}
                   onMouseOver={handleEditorMouseOver}
+                  onClick={handleEditorClick}
                   className="kochlik-blog-content min-h-[420px] outline-none"
                   data-placeholder="Začnite písať obsah článku..."
                 />
@@ -920,11 +961,12 @@ function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadIm
                     type="button"
                     onMouseEnter={() => updateImageControl(imageControl.node)}
                     onClick={removeImage}
-                    className="absolute z-20 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-red-600 opacity-95 shadow-lg ring-1 ring-black/10 transition hover:bg-red-600 hover:text-white"
+                    className="absolute z-20 inline-flex h-8 items-center justify-center gap-1 rounded-full bg-white/95 px-3 text-xs font-bold text-red-600 opacity-95 shadow-lg ring-1 ring-black/10 transition hover:bg-red-600 hover:text-white"
                     style={{ top: imageControl.top, left: imageControl.left }}
-                    title="Odstrániť obrázok"
+                    title="Vymazať obrázok"
                   >
-                    <XMarkIcon className="h-5 w-5" />
+                    <XMarkIcon className="h-4 w-4" />
+                    Vymazať
                   </button>
                   <button
                     type="button"
@@ -933,7 +975,7 @@ function RichTextEditor({ value, onChange, title, excerpt, dateLabel, onUploadIm
                     style={{ top: imageControl.handleTop, left: imageControl.handleLeft }}
                     title="Potiahnite pre zmenu výšky obrázka"
                   >
-                    {imageControl.height}px
+                    Ťahať výšku · {imageControl.height}px
                   </button>
                 </>
               )}
@@ -1304,6 +1346,7 @@ const KOCHLIK_BLOG_EDITOR_CSS = `
   max-width: 100%;
   height: auto;
   margin: 2em 0;
+  cursor: pointer;
 }
 
 .kochlik-blog-content figure img {
