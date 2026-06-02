@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+import { useEffect } from 'react'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
+import { KOCHLIK_OWNER_EMAIL, KOCHLIK_OWNER_ID, KOCHLIK_SITE_SLUG } from './api/kochlik'
 import Projekty from './pages/Projekty'
 import Galerie from './pages/Galerie'
 import Blogy from './pages/Blogy'
@@ -40,9 +42,22 @@ import KochlikBlogs from './pages/KochlikBlogs'
 import KochlikColors from './pages/KochlikColors'
 import NotFound from './pages/NotFound'
 
-function App() {
+function AppShell() {
+  const { user, currentSite } = useAuth()
+  const isKochlikCms = user?.email === KOCHLIK_OWNER_EMAIL
+    || user?.id === KOCHLIK_OWNER_ID
+    || currentSite?.slug === KOCHLIK_SITE_SLUG
+
+  useEffect(() => {
+    document.body.classList.toggle('kochlik-cms-font', isKochlikCms)
+
+    return () => {
+      document.body.classList.remove('kochlik-cms-font')
+    }
+  }, [isKochlikCms])
+
   return (
-    <AuthProvider>
+    <div className={isKochlikCms ? 'kochlik-cms-font min-h-full' : 'min-h-full'}>
       <NotificationProvider>
         <Router>
           <Routes>
@@ -147,6 +162,14 @@ function App() {
           </Routes>
         </Router>
       </NotificationProvider>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
     </AuthProvider>
   )
 }
