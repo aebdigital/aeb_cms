@@ -93,19 +93,26 @@ export async function triggerRevalidation(): Promise<void> {
   const secret = 'kochlik_reval_sec_f982ea1d09e083c2'
   const isLocal = typeof window !== 'undefined' && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  
-  const baseUrl = isLocal ? 'http://localhost:3006' : 'https://kochlik.sk'
-  
-  try {
-    const res = await fetch(`${baseUrl}/api/revalidate?secret=${secret}`, {
-      method: 'POST',
-    })
-    if (!res.ok) {
-      console.warn('Revalidation failed:', await res.text())
+
+  const targets = Array.from(new Set([
+    'https://kochlik.sk',
+    ...(isLocal ? ['http://localhost:3001', 'http://localhost:3006'] : []),
+  ]))
+
+  await Promise.allSettled(targets.map(async (baseUrl) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/revalidate?secret=${secret}`, {
+        method: 'POST',
+        mode: 'no-cors',
+      })
+
+      if (res.type !== 'opaque' && !res.ok) {
+        console.warn('Revalidation failed:', baseUrl, await res.text())
+      }
+    } catch (err) {
+      console.warn('Revalidation error:', baseUrl, err)
     }
-  } catch (err) {
-    console.warn('Revalidation error:', err)
-  }
+  }))
 }
 
 export async function createKochlikCategory(
