@@ -1304,10 +1304,6 @@ const KOCHLIK_BLOG_EDITOR_CSS = `
   margin: 1.6em 0 0.4em;
 }
 
-.kochlik-blog-content :where(h1, h2, h3, h4, h5, h6) :where(b, strong) {
-  font-weight: inherit;
-}
-
 .kochlik-blog-content a {
   color: var(--color-brand);
   text-decoration: underline;
@@ -1318,9 +1314,13 @@ const KOCHLIK_BLOG_EDITOR_CSS = `
   color: var(--color-brand-dark);
 }
 
-.kochlik-blog-content strong {
+.kochlik-blog-content :where(b, strong) {
   color: var(--color-brown);
   font-weight: 700;
+}
+
+.kochlik-blog-content :where(h1, h2, h3, h4, h5, h6) :where(b, strong) {
+  font-weight: inherit;
 }
 
 .kochlik-blog-content ul,
