@@ -17,6 +17,10 @@ export default function CMSDashboard() {
   const [selectedPage, setSelectedPage] = useState(null)
   const [activeSection, setActiveSection] = useState('pages')
 
+  if (user?.email === 'petras@raving.sk') {
+    return <Navigate to="/raving-projects" replace />
+  }
+
   async function handleLogout() {
     try {
       await logout()

@@ -19,7 +19,11 @@ export default function LoginForm() {
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      navigate(from, { replace: true })
+      if (user.email === 'petras@raving.sk') {
+        navigate('/raving-projects', { replace: true })
+      } else {
+        navigate(from, { replace: true })
+      }
     }
   }, [user, authLoading, navigate, from])
 
@@ -30,7 +34,11 @@ export default function LoginForm() {
     try {
       await login(email, password)
       showNotification('Prihlásenie úspešné', 'success')
-      navigate(location.state?.from?.pathname || '/')
+      if (email === 'petras@raving.sk') {
+        navigate('/raving-projects')
+      } else {
+        navigate(location.state?.from?.pathname || '/')
+      }
     } catch (err) {
       console.error('Login error:', err)
       showNotification(err.message === 'Invalid login credentials' ? 'Nesprávne meno alebo heslo' : err.message, 'error')

@@ -244,6 +244,9 @@ export function AuthProvider({ children }) {
         } else if (context.user?.email === 'zelenskystefan@gmail.com') {
           const lexan = context.memberships.find(m => m.sites.slug === 'lexanzelensky')
           if (lexan) defaultSite = lexan.sites
+        } else if (context.user?.email === 'petras@raving.sk') {
+          const raving = context.memberships.find(m => m.sites.slug === 'raving')
+          if (raving) defaultSite = raving.sites
         }
 
         setCurrentSite(prev => {
