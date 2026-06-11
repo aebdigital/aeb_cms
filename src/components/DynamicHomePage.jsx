@@ -3,8 +3,10 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getPagesForSite } from '../api/pages'
 import { KOCHLIK_OWNER_ID } from '../api/kochlik'
+import { FIDOHOME_ADMIN_EMAIL, FIDOHOME_OWNER_EMAIL } from '../api/fidohome'
 
 const VAVROSTAV_OWNER_ID = '9083c583-0fcf-483d-b3f1-ba435287ec04'
+const RAVING_OWNER_EMAIL = 'petras@raving.sk'
 
 export default function DynamicHomePage() {
   const { user, currentSite } = useAuth()
@@ -28,12 +30,20 @@ export default function DynamicHomePage() {
     return <Navigate to="/viktorija" replace />
   }
 
+  if (user?.email === RAVING_OWNER_EMAIL || currentSite?.slug === 'raving') {
+    return <Navigate to="/raving-projects" replace />
+  }
+
   if (user?.id === VAVROSTAV_OWNER_ID) {
     return <Navigate to="/vavrostav-obchod" replace />
   }
 
   if (user?.id === KOCHLIK_OWNER_ID || user?.email === 'info@kochlik.eu') {
     return <Navigate to="/kochlik-produkty" replace />
+  }
+
+  if (user?.email === FIDOHOME_OWNER_EMAIL || user?.email === FIDOHOME_ADMIN_EMAIL || currentSite?.slug === 'fidohome') {
+    return <Navigate to="/fidohome-katalog" replace />
   }
 
   const isLexanUser = user?.email === 'zelenskystefan@gmail.com' || user?.id === 'e1ebe479-6724-4d37-a846-911e36329e4e'
@@ -61,7 +71,7 @@ export default function DynamicHomePage() {
         'projekty', 'galerie', 'blogy', 'kontakt', 'nastavenia',
         'vozidla', 'ponuka', 'oznamy', 'dovolenka',
         'ludus-galeria', 'ludus-aktuality', 'ludus-program', 'ludus-repertoar',
-        'darius-vozidla', 'legis-blogy'
+        'darius-vozidla', 'legis-blogy', 'raving-projects', 'fidohome-katalog'
       ]
 
       const validNavPage = navPages.find(p => VALID_SLUGS.includes(p.slug))

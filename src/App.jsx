@@ -40,6 +40,8 @@ import KochlikCategories from './pages/KochlikCategories'
 import KochlikContent from './pages/KochlikContent'
 import KochlikBlogs from './pages/KochlikBlogs'
 import KochlikColors from './pages/KochlikColors'
+import RavingProjects from './pages/RavingProjects'
+import FidohomeCatalogue from './pages/FidohomeCatalogue'
 import NotFound from './pages/NotFound'
 
 function AppShell() {
@@ -48,16 +50,27 @@ function AppShell() {
     || user?.id === KOCHLIK_OWNER_ID
     || currentSite?.slug === KOCHLIK_SITE_SLUG
 
+  const isRavingCms = user?.email === 'petras@raving.sk'
+    || currentSite?.slug === 'raving'
+
   useEffect(() => {
     document.body.classList.toggle('kochlik-cms-font', isKochlikCms)
+    document.body.classList.toggle('raving-cms-font', isRavingCms)
 
     return () => {
       document.body.classList.remove('kochlik-cms-font')
+      document.body.classList.remove('raving-cms-font')
     }
-  }, [isKochlikCms])
+  }, [isKochlikCms, isRavingCms])
+
+  const containerClass = isKochlikCms
+    ? 'kochlik-cms-font min-h-full'
+    : isRavingCms
+      ? 'raving-cms-font min-h-full'
+      : 'min-h-full'
 
   return (
-    <div className={isKochlikCms ? 'kochlik-cms-font min-h-full' : 'min-h-full'}>
+    <div className={containerClass}>
       <NotificationProvider>
         <Router>
           <Routes>
@@ -148,6 +161,8 @@ function AppShell() {
               <Route path="kochlik-obsah" element={<KochlikContent />} />
               <Route path="kochlik-blog" element={<KochlikBlogs />} />
               <Route path="kochlik-farby" element={<KochlikColors />} />
+              <Route path="raving-projects" element={<RavingProjects />} />
+              <Route path="fidohome-katalog" element={<FidohomeCatalogue />} />
             </Route>
 
             {/* Catch all - show 404 if authenticated, otherwise redirect to login */}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Martel:wght@400;600;700;800;900&family=Catamaran:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Martel:wght@400;600;700;800;900&family=Catamaran:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=Roboto+Condensed:wght@300;400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -36,5 +36,19 @@
 
   .kochlik-cms-font :where(button, input, textarea, select) {
     font-family: inherit;
+  }
+
+  .raving-cms-font {
+    --font-heading: 'Roboto Condensed', sans-serif;
+    --font-body: 'Roboto', sans-serif;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .raving-cms-font :where(button, input, textarea, select) {
+    font-family: inherit;
+  }
+
+  .raving-cms-font :where(h1, h2, h3, h4, h5, h6) {
+    font-family: 'Roboto Condensed', sans-serif;
   }
 }

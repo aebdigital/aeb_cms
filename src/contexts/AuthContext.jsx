@@ -31,12 +31,38 @@ function isTokenExpired(token) {
   }
 }
 
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [memberships, setMemberships] = useState([])
-  const [currentSite, setCurrentSite] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('mock=raving')) {
+      return { email: 'petras@raving.sk', id: 'raving-mock-id' }
+    }
+    return null
+  })
+  const [profile, setProfile] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('mock=raving')) {
+      return { name: 'Raving Admin' }
+    }
+    return null
+  })
+  const [memberships, setMemberships] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('mock=raving')) {
+      return [{ role: 'owner', sites: { id: 'raving-id', name: 'Raving', slug: 'raving' } }]
+    }
+    return []
+  })
+  const [currentSite, setCurrentSite] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('mock=raving')) {
+      return { id: 'raving-id', name: 'Raving', slug: 'raving' }
+    }
+    return null
+  })
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('mock=raving')) {
+      return false
+    }
+    return true
+  })
   const [error, setError] = useState(null)
   const initialized = useRef(false)
   const loadingContext = useRef(false) // Lock to prevent concurrent loadUserContext calls
@@ -46,6 +72,11 @@ export function AuthProvider({ children }) {
     // Prevent double initialization in React strict mode
     if (initialized.current) return
     initialized.current = true
+
+    if (window.location.search.includes('mock=raving')) {
+      setLoading(false)
+      return
+    }
 
     // Check for existing session
     checkUser()
